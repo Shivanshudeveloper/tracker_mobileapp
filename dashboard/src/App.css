@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+
+* {
+  font-family: 'Roboto', sans-serif;
+}
+
+.marker-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .marker-btn img {
+    width: 40px;
+    height: 40px;
+  }
