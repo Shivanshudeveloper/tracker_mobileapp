@@ -136,7 +136,10 @@ const Locationview = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Full Name</TableCell>
-                <TableCell align="center">Latitude</TableCell>
+                <TableCell align="center">Country</TableCell>
+                <TableCell align="center">Address</TableCell>
+                <TableCell align="center">Street Name</TableCell>
+                <TableCell align="center">Date</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -144,7 +147,10 @@ const Locationview = () => {
                   <TableCell component="th" scope="row">
                     Shivanshu Gupta
                   </TableCell>
-                  <TableCell align="center">Place</TableCell>
+                  <TableCell align="center">India</TableCell>
+                  <TableCell align="center">B-58, Paschimi Marg, Vasant Vihar, Vasant Vihar Tehsil, New Delhi, Delhi, 110057, India</TableCell>
+                  <TableCell align="center">Paschimi Marg</TableCell>
+                  <TableCell align="center">November 11, 2021</TableCell>
                 </TableRow>
             </TableBody>
           </Table>
