@@ -1,17 +1,15 @@
+import React from 'react';
 import { Helmet } from 'react-helmet';
 import { Box, Container, Grid } from '@material-ui/core';
 import { useState } from 'react';
 import ReactMapGL, { Marker, Popup } from 'react-map-gl';
-
-
-
 import { makeStyles } from '@material-ui/styles';
 import CardHeader from '@material-ui/core/CardHeader';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import { red } from '@material-ui/core/colors';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-
+import { database } from '../Firebase/index';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -19,6 +17,12 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import axios from "axios";
+import date from 'date-and-time';
+
+import { API_SERVICE } from '../URI';
+
+const now = new Date();
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -45,15 +49,55 @@ const useStyles = makeStyles((theme) => ({
 
 const Locationview = () => {
   const classes = useStyles();
+  const [lat, setlat] = useState(28.568911);
+  const [long, setlong] = useState(77.162560);
+
+
 
   const [viewport, setViewport] = useState({
     width: '100%',
     height: 500,
-    latitude: 28.568911,
-    longitude: 77.162560,
+    latitude: lat,
+    longitude: long,
     zoom: 15
   });
+
   const [selectedPark, setSelectedPark] = useState(null);
+  const [userlocationdata, setuserlocationdata] = useState({});
+
+  const getLongLat = (lat, long) => {
+    axios
+        .get(
+          `${API_SERVICE}/api/v1/main/getlatlong/${lat}/${long}`
+        )
+        .then((response) => {
+          console.log(response.data);
+          setuserlocationdata(response.data);
+        })
+        .catch((err) => console.log(err));
+  }
+
+  React.useEffect(() => {
+    var starCountRef = database.ref('trackerapp/testuser');
+    starCountRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      // setalldata([data.work]);
+      setViewport({
+        width: '100%',
+        height: 500,
+        latitude: data.lat,
+        longitude: data.long,
+        zoom: 15
+      });
+      setlat(data.lat);
+      setlong(data.long);
+      getLongLat(data.lat, data.long);
+    });
+  }, []);
+
+
+
+  
 
   
 
@@ -84,7 +128,7 @@ const Locationview = () => {
           </IconButton>
         }
         title="Shivanshu Gupta"
-        subheader="November 11, 2021"
+        subheader=""
       />
 
 
@@ -97,8 +141,8 @@ const Locationview = () => {
         >
           <Marker
             key="India Gate1"
-            latitude={28.568911}
-            longitude={77.162560}
+            latitude={lat}
+            longitude={long}
           >
             <button
               className="marker-btn"
@@ -113,8 +157,8 @@ const Locationview = () => {
 
           {selectedPark ? (
           <Popup
-            latitude={28.612911}
-            longitude={77.229507}
+            latitude={lat}
+            longitude={long}
             onClose={() => {
               setSelectedPark(null);
             }}
@@ -147,10 +191,10 @@ const Locationview = () => {
                   <TableCell component="th" scope="row">
                     Shivanshu Gupta
                   </TableCell>
-                  <TableCell align="center">India</TableCell>
-                  <TableCell align="center">B-58, Paschimi Marg, Vasant Vihar, Vasant Vihar Tehsil, New Delhi, Delhi, 110057, India</TableCell>
-                  <TableCell align="center">Paschimi Marg</TableCell>
-                  <TableCell align="center">November 11, 2021</TableCell>
+                  <TableCell align="center">{userlocationdata.country}</TableCell>
+                  <TableCell align="center">{userlocationdata.formattedAddress}</TableCell>
+                  <TableCell align="center">{userlocationdata.neighbourhood}</TableCell>
+                  <TableCell align="center">{date.format(now, 'ddd, MMM DD YYYY')}</TableCell>
                 </TableRow>
             </TableBody>
           </Table>
