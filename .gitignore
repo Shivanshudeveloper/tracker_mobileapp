@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -40,6 +41,8 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+mobile_app/node_modules
+
 
 # TypeScript v1 declaration files
 typings/
@@ -71,12 +74,16 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+mobile_app/.editorconfig
+mobile_app/.env
+mobile_app/FirebaseCredentials*
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 
 # Next.js build output
 .next
+mobile_app/.next
 
 # Nuxt.js build / generate output
 .nuxt
