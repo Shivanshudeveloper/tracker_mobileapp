@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   Avatar,
   Box,
@@ -10,17 +11,47 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-const user = {
-  avatar: '/static/images/avatars/avatar_6.png',
-  city: 'Los Angeles',
-  country: 'USA',
-  jobTitle: 'Senior Developer',
-  name: 'Loading....',
-  timezone: 'GTM-7'
-};
 
-export const AccountProfile = (props) => (
-  <Card {...props}>
+export const AccountProfile = (props) => {
+
+  const [user, setUser] = useState({
+    avatar: '/static/images/avatars/avatar_6.png',
+    city: 'Loading...',
+    country: 'Loading...',
+    // jobTitle: 'Senior Developer',
+    name: 'Loading....',
+    //timezone: 'GTM-7'
+  })
+  useEffect(() => {
+
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    };
+
+    function success(pos) {
+      var crd = pos.coords;
+      axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
+
+        setUser({ ...res.data, name: window.sessionStorage.getItem('userName') })
+
+      })
+
+      /*  let location = 'Your current position is :' + ` Latitude : ${crd.latitude}` + ` Longitude: ${crd.longitude}`
+          + ` More or less ${crd.accuracy} meters.` */
+
+
+    }
+
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error, options);
+  }, [])
+
+  return (<><Card {...props}>
     <CardContent>
       <Box
         sx={{
@@ -50,12 +81,7 @@ export const AccountProfile = (props) => (
         >
           {`${user.city} ${user.country}`}
         </Typography>
-        <Typography
-          color="textSecondary"
-          variant="body2"
-        >
-          {user.timezone}
-        </Typography>
+
       </Box>
     </CardContent>
     <Divider />
@@ -69,4 +95,6 @@ export const AccountProfile = (props) => (
       </Button>
     </CardActions>
   </Card>
-);
+  </>
+  )
+};

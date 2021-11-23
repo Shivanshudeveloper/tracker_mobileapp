@@ -16,14 +16,14 @@ import {
 export const AccountProfileDetails = (props) => {
 
   const [values, setValues] = useState({
-    displayName: '',
-    formattedAddress: '',
-    state: '',
-    country: '',
-    city: '',
-    zipcode: '',
-    countryCode: '',
-    neighbourhood: ''
+    displayName: 'Loading...',
+    formattedAddress: 'Loading...',
+    state: 'Loading...',
+    country: 'Loading...',
+    city: 'Loading...',
+    zipcode: 'Loading...',
+    countryCode: 'Loading...',
+    neighbourhood: 'Loading...'
   });
 
   const handleChange = (event) => {
