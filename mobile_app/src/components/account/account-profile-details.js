@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -10,29 +11,19 @@ import {
   TextField
 } from '@mui/material';
 
-const states = [
-  {
-    value: 'alabama',
-    label: 'Alabama'
-  },
-  {
-    value: 'new-york',
-    label: 'New York'
-  },
-  {
-    value: 'san-francisco',
-    label: 'San Francisco'
-  }
-];
+
 
 export const AccountProfileDetails = (props) => {
+
   const [values, setValues] = useState({
-    firstName: 'Katarina',
-    lastName: 'Smith',
-    email: 'demo@devias.io',
-    phone: '',
-    state: 'Alabama',
-    country: 'USA'
+    displayName: '',
+    formattedAddress: '',
+    state: '',
+    country: '',
+    city: '',
+    zipcode: '',
+    countryCode: '',
+    neighbourhood: ''
   });
 
   const handleChange = (event) => {
@@ -42,6 +33,35 @@ export const AccountProfileDetails = (props) => {
     });
   };
 
+  useEffect(() => {
+
+    var options = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0
+    };
+
+    function success(pos) {
+      var crd = pos.coords;
+      axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
+
+        setValues({ ...res.data, displayName: window.sessionStorage.getItem('userName') })
+
+      })
+
+      /*  let location = 'Your current position is :' + ` Latitude : ${crd.latitude}` + ` Longitude: ${crd.longitude}`
+          + ` More or less ${crd.accuracy} meters.` */
+
+
+    }
+
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+
+    navigator.geolocation.getCurrentPosition(success, error, options);
+  }, [])
+
   return (
     <form
       autoComplete="off"
@@ -50,7 +70,7 @@ export const AccountProfileDetails = (props) => {
     >
       <Card>
         <CardHeader
-          subheader="The information can be edited"
+          subheader="The information can't be edited"
           title="Profile"
         />
         <Divider />
@@ -66,57 +86,11 @@ export const AccountProfileDetails = (props) => {
             >
               <TextField
                 fullWidth
-                helperText="Please specify the first name"
-                label="First name"
-                name="firstName"
-                onChange={handleChange}
+                label="Display name"
+                name="displayName"
                 required
-                value={values.firstName}
-                variant="outlined"
-              />
-            </Grid>
-            <Grid
-              item
-              md={6}
-              xs={12}
-            >
-              <TextField
-                fullWidth
-                label="Last name"
-                name="lastName"
-                onChange={handleChange}
-                required
-                value={values.lastName}
-                variant="outlined"
-              />
-            </Grid>
-            <Grid
-              item
-              md={6}
-              xs={12}
-            >
-              <TextField
-                fullWidth
-                label="Email Address"
-                name="email"
-                onChange={handleChange}
-                required
-                value={values.email}
-                variant="outlined"
-              />
-            </Grid>
-            <Grid
-              item
-              md={6}
-              xs={12}
-            >
-              <TextField
-                fullWidth
-                label="Phone Number"
-                name="phone"
-                onChange={handleChange}
-                type="number"
-                value={values.phone}
+                readonly
+                value={values.displayName}
                 variant="outlined"
               />
             </Grid>
@@ -129,7 +103,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="Country"
                 name="country"
-                onChange={handleChange}
+                readonly
                 required
                 value={values.country}
                 variant="outlined"
@@ -142,23 +116,104 @@ export const AccountProfileDetails = (props) => {
             >
               <TextField
                 fullWidth
-                label="Select State"
+                label="State"
                 name="state"
-                onChange={handleChange}
+                readonly
                 required
-                select
-                SelectProps={{ native: true }}
                 value={values.state}
                 variant="outlined"
               >
-                {states.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                  >
-                    {option.label}
-                  </option>
-                ))}
+
+              </TextField>
+            </Grid>
+            <Grid
+              item
+              md={6}
+              xs={12}
+            >
+              <TextField
+                fullWidth
+                label="City"
+                name="city"
+                readonly
+                required
+
+                value={values.city}
+                variant="outlined"
+              >
+
+              </TextField>
+            </Grid>
+
+            <Grid
+              item
+              md={6}
+              xs={12}
+            >
+              <TextField
+                fullWidth
+                label="Zip Code"
+                name="zipcode"
+                readonly
+                required
+                value={values.zipcode}
+                variant="outlined"
+              >
+
+              </TextField>
+            </Grid>
+            <Grid
+              item
+              md={6}
+              xs={12}
+            >
+              <TextField
+                fullWidth
+                label="Country code"
+                name="countrycode"
+                readonly
+                required
+
+                value={values.countryCode}
+                variant="outlined"
+              >
+
+              </TextField>
+            </Grid>
+            <Grid
+              item
+              md={12}
+              xs={12}
+            >
+              <TextField
+                fullWidth
+                label="Address"
+
+                name="address"
+                readonly
+                required
+                value={values.formattedAddress}
+                variant="outlined"
+              />
+            </Grid>
+
+
+            <Grid
+              item
+              md={12}
+              xs={12}
+            >
+              <TextField
+                fullWidth
+                label="Neighbourhood"
+                name="neighbourhood"
+                readonly
+                required
+
+                value={values.neighbourhood}
+                variant="outlined"
+              >
+
               </TextField>
             </Grid>
           </Grid>

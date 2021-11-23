@@ -8,13 +8,14 @@ import {
   Divider,
   Typography
 } from '@mui/material';
+import { useState, useEffect } from 'react';
 
 const user = {
   avatar: '/static/images/avatars/avatar_6.png',
   city: 'Los Angeles',
   country: 'USA',
   jobTitle: 'Senior Developer',
-  name: 'Katarina Smith',
+  name: 'Loading....',
   timezone: 'GTM-7'
 };
 

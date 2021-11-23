@@ -30,7 +30,7 @@ const Dashboard = () => {
       var crd = pos.coords;
       axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
         const data = Object.entries(res.data)
-        setLocation(data)
+        setLocation(data.slice(2, data.length - 1))
 
       })
 
@@ -67,7 +67,7 @@ const Dashboard = () => {
 
 
         <Box sx={{ bgcolor: 'background.paper' }}>
-          <List>{location.map((item) => <ListItem>   <ListItemText justifyContent="center" primary={`${item[0]} : ${item[1]}`} />
+          <List>{location.map((item) => <ListItem>   <ListItemText primary={`${item[0]} : ${item[1]}`} />
           </ListItem>)
           }</List>
         </Box>
