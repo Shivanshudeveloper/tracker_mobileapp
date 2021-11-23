@@ -26,7 +26,6 @@ export const DashboardLayout = (props) => {
 
   useEffect(() => {
     const accessToken = window.localStorage.getItem('accessToken')
-    console.log(accessToken)
     if (!(accessToken && isValidToken(accessToken))) {
       router.push('/login')
     }
