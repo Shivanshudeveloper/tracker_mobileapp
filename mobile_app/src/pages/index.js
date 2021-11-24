@@ -67,7 +67,7 @@ const Dashboard = () => {
 
 
         <Box sx={{ bgcolor: 'background.paper' }}>
-          <List>{location.map((item) => <ListItem>   <ListItemText primary={`${item[0]} : ${item[1]}`} />
+          <List>{location.map((item) => <ListItem key={item[0]}>   <ListItemText primary={`${item[0]} : ${item[1]}`} />
           </ListItem>)
           }</List>
         </Box>

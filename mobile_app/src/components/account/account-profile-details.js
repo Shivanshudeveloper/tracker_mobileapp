@@ -130,7 +130,7 @@ export const AccountProfileDetails = (props) => {
                 label="Display name"
                 name="displayName"
                 required
-                readonly
+                readOnly
                 value={values.displayName}
                 variant="outlined"
               />
@@ -144,7 +144,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="Country"
                 name="country"
-                readonly
+                readOnly
                 required
                 value={values.country}
                 variant="outlined"
@@ -159,7 +159,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="State"
                 name="state"
-                readonly
+                readOnly
                 required
                 value={values.state}
                 variant="outlined"
@@ -176,7 +176,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="City"
                 name="city"
-                readonly
+                readOnly
                 required
 
                 value={values.city}
@@ -195,7 +195,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="Zip Code"
                 name="zipcode"
-                readonly
+                readOnly
                 required
                 value={values.zipcode}
                 variant="outlined"
@@ -212,7 +212,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="Country code"
                 name="countrycode"
-                readonly
+                readOnly
                 required
 
                 value={values.countryCode}
@@ -231,7 +231,7 @@ export const AccountProfileDetails = (props) => {
                 label="Address"
 
                 name="address"
-                readonly
+                readOnly
                 required
                 value={values.formattedAddress}
                 variant="outlined"
@@ -248,7 +248,7 @@ export const AccountProfileDetails = (props) => {
                 fullWidth
                 label="Neighbourhood"
                 name="neighbourhood"
-                readonly
+                readOnly
                 required
 
                 value={values.neighbourhood}
