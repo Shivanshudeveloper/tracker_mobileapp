@@ -216,7 +216,6 @@ const Register = () => {
               name="phoneNumber"
               onBlur={formik.handleBlur}
               onChange={formik.handleChange}
-              type="email"
               value={formik.values.phoneNumber}
               variant="outlined"
             />

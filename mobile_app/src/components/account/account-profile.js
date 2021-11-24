@@ -40,7 +40,7 @@ export const AccountProfile = (props) => {
     city: 'Loading...',
     country: 'Loading...',
     // jobTitle: 'Senior Developer',
-    name: User.displayName,
+    name: 'Loading...',
     //timezone: 'GTM-7'
   })
 
@@ -56,7 +56,7 @@ export const AccountProfile = (props) => {
       var crd = pos.coords;
       axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
 
-        setUser({ ...res.data })
+        setUser({ ...res.data, name: User.displayName })
 
       })
 

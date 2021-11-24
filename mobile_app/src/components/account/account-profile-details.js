@@ -38,7 +38,7 @@ export const AccountProfileDetails = (props) => {
   const User = auth.currentUser;
 
   const [values, setValues] = useState({
-    displayName: User.displayName,
+    displayName: 'Loading...',
     formattedAddress: 'Loading...',
     state: 'Loading...',
     country: 'Loading...',
@@ -66,7 +66,7 @@ export const AccountProfileDetails = (props) => {
       var crd = pos.coords;
       axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
 
-        setValues({ ...res.data })
+        setValues({ ...res.data, displayName: User.displayName })
 
       })
 
