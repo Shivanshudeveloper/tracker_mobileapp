@@ -22,6 +22,10 @@ export const AccountProfile = (props) => {
     name: 'Loading....',
     //timezone: 'GTM-7'
   })
+
+
+
+
   useEffect(() => {
 
     var options = {
@@ -40,7 +44,6 @@ export const AccountProfile = (props) => {
 
       /*  let location = 'Your current position is :' + ` Latitude : ${crd.latitude}` + ` Longitude: ${crd.longitude}`
           + ` More or less ${crd.accuracy} meters.` */
-
 
     }
 
