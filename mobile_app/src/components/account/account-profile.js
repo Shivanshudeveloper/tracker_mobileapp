@@ -10,21 +10,39 @@ import {
   Typography
 } from '@mui/material';
 import { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from "firebase/auth";
 
 
 export const AccountProfile = (props) => {
+
+
+
+
+  const firebaseConfig = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APPID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
+  }
+
+  initializeApp(firebaseConfig);
+
+  const auth = getAuth();
+  const User = auth.currentUser;
 
   const [user, setUser] = useState({
     avatar: '/static/images/avatars/avatar_6.png',
     city: 'Loading...',
     country: 'Loading...',
     // jobTitle: 'Senior Developer',
-    name: 'Loading....',
+    name: User.displayName,
     //timezone: 'GTM-7'
   })
-
-
-
 
   useEffect(() => {
 
@@ -38,7 +56,7 @@ export const AccountProfile = (props) => {
       var crd = pos.coords;
       axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
 
-        setUser({ ...res.data, name: window.sessionStorage.getItem('userName') })
+        setUser({ ...res.data })
 
       })
 

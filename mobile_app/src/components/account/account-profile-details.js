@@ -14,20 +14,12 @@ import {
 import { getDatabase, ref, set } from "firebase/database";
 
 import { initializeApp } from 'firebase/app';
+import { getAuth } from "firebase/auth";
 
 
 export const AccountProfileDetails = (props) => {
 
-  const [values, setValues] = useState({
-    displayName: 'Loading...',
-    formattedAddress: 'Loading...',
-    state: 'Loading...',
-    country: 'Loading...',
-    city: 'Loading...',
-    zipcode: 'Loading...',
-    countryCode: 'Loading...',
-    neighbourhood: 'Loading...'
-  });
+
 
   const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -41,6 +33,20 @@ export const AccountProfileDetails = (props) => {
   }
 
   initializeApp(firebaseConfig);
+
+  const auth = getAuth();
+  const User = auth.currentUser;
+
+  const [values, setValues] = useState({
+    displayName: User.displayName,
+    formattedAddress: 'Loading...',
+    state: 'Loading...',
+    country: 'Loading...',
+    city: 'Loading...',
+    zipcode: 'Loading...',
+    countryCode: 'Loading...',
+    neighbourhood: 'Loading...'
+  });
 
   const handleChange = (event) => {
     setValues({
@@ -60,7 +66,7 @@ export const AccountProfileDetails = (props) => {
       var crd = pos.coords;
       axios.get(`http://localhost:5000/api/v1/main/getlatlong/${crd.latitude}/${crd.longitude}`).then((res) => {
 
-        setValues({ ...res.data, displayName: window.sessionStorage.getItem('userName') })
+        setValues({ ...res.data })
 
       })
 
@@ -77,27 +83,13 @@ export const AccountProfileDetails = (props) => {
     navigator.geolocation.getCurrentPosition(success, error, options);
 
     const interval = setInterval(() => {
-      var options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      };
-
-      function success(pos) {
-        let crd = pos.coords;
+      navigator.geolocation.watchPosition(position => {
         const db = getDatabase();
         set(ref(db, 'trackerapp/testuser'), {
-          lat: crd.latitude,
-          long: crd.longitude
+          lat: position.latitude,
+          long: position.longitude
         });
-      }
-
-      function error(err) {
-        console.warn(`ERROR(${err.code}): ${err.message}`);
-      }
-
-      navigator.geolocation.getCurrentPosition(success, error, options);
-
+      })
     }, 60000);
 
     return () => clearInterval(interval);

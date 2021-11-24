@@ -44,7 +44,8 @@ const Dashboard = () => {
       console.warn(`ERROR(${err.code}): ${err.message}`);
     }
 
-    navigator.geolocation.getCurrentPosition(success, error, options);
+    window.navigator.geolocation.getCurrentPosition(success, error, options);
+
   }, [])
 
   return (<>
