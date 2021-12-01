@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import Colors from '../constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -8,13 +8,97 @@ import {
   View,
   useColorScheme,
 } from 'react-native'
-import { Button, Headline, TextInput, Subheading } from 'react-native-paper'
+import {
+  Button,
+  Headline,
+  TextInput,
+  Subheading,
+  Snackbar,
+} from 'react-native-paper'
+import auth from '@react-native-firebase/auth'
 
-const VerifyOtpScreen = () => {
+const VerifyOtpScreen = (props) => {
   const [code, setCode] = useState('')
+  const [confirm, setConfirm] = useState(null)
+  const [timer, setTimer] = useState(59)
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState(null)
 
   const navigation = useNavigation()
   const colorScheme = useColorScheme()
+
+  const { phoneNumber } = props.route.params
+
+  let clockCall = null
+
+  // getting verification code
+  const signInWithPhoneNumber = async () => {
+    try {
+      const confirmation = await auth().signInWithPhoneNumber(
+        `+91${phoneNumber}`,
+        true
+      )
+      setConfirm(confirmation)
+    } catch (error) {
+      console.log(error)
+      setMessage(error.code.split('/')[1])
+      setVisible(true)
+    }
+  }
+
+  useEffect(() => {
+    signInWithPhoneNumber()
+  }, [])
+
+  // resend timer
+  useEffect(() => {
+    clockCall = setInterval(() => {
+      decrementClock()
+    }, 1000)
+
+    return () => {
+      clearInterval(clockCall)
+    }
+  })
+
+  const decrementClock = () => {
+    if (timer === 0) {
+      setTimer(0)
+      clearInterval(clockCall)
+    } else {
+      setTimer(timer - 1)
+    }
+  }
+
+  // function to confirm code and
+  // sending to main activity if authenticated
+  const confirmCode = async () => {
+    try {
+      await confirm.confirm(code)
+    } catch (error) {
+      console.log(error)
+      setMessage(error.code.split('/')[1])
+      setVisible(true)
+    }
+  }
+
+  // function to resend the code
+  const resendCode = async () => {
+    try {
+      const confirmationLink = await auth().signInWithPhoneNumber(
+        `+91${phoneNumber}`,
+        true
+      )
+      setConfirm(confirmationLink)
+      setTimer(59)
+    } catch (error) {
+      console.log(error)
+      setMessage(error.code.split('/')[1])
+      setVisible(true)
+    }
+  }
+
+  const onDismissSnackBar = () => setVisible(false)
 
   return (
     <KeyboardAvoidingView style={styles.container}>
@@ -28,7 +112,10 @@ const VerifyOtpScreen = () => {
       </View>
       <View style={styles.subHeadingContainer}>
         <Subheading style={{ textAlign: 'center' }}>
-          We have sent a 6-digit verification code to XXX-XXX-XXXX
+          We have sent a 6-digit verification code to
+        </Subheading>
+        <Subheading style={{ textAlign: 'center' }}>
+          {`+91 ${phoneNumber}`}
         </Subheading>
       </View>
       <View style={styles.inputContainer}>
@@ -36,26 +123,56 @@ const VerifyOtpScreen = () => {
           mode='outlined'
           label='Verification Code'
           value={code}
-          onChangeText={(code) => setCode(code)}
+          onChangeText={(val) => setCode(val)}
         />
       </View>
       <View style={styles.buttonContainer}>
+        {timer > 0 ? (
+          <Button
+            disabled
+            labelStyle={styles.btnLabelStyle}
+            style={styles.getCodeButton}
+            mode='contained'
+            onPress={() => resendCode()}
+          >
+            Resend
+          </Button>
+        ) : (
+          <Button
+            labelStyle={styles.btnLabelStyle}
+            style={styles.getCodeButton}
+            mode='contained'
+            onPress={() => resendCode()}
+          >
+            Resend
+          </Button>
+        )}
         <Button
           labelStyle={styles.btnLabelStyle}
           style={styles.getCodeButton}
           mode='contained'
-        >
-          Resend
-        </Button>
-        <Button
-          labelStyle={styles.btnLabelStyle}
-          style={styles.getCodeButton}
-          mode='contained'
-          onPress={() => navigation.navigate('MainStack')}
+          onPress={() => confirmCode()}
         >
           Verify
         </Button>
       </View>
+      <View style={styles.timerContainer}>
+        <Subheading style={styles.timerText}>
+          Resend code in {timer}s
+        </Subheading>
+      </View>
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Close',
+          onPress: () => {
+            setVisible(false)
+          },
+        }}
+      >
+        {message}
+      </Snackbar>
     </KeyboardAvoidingView>
   )
 }
@@ -99,5 +216,11 @@ const styles = StyleSheet.create({
   btnLabelStyle: {
     paddingVertical: 7,
     paddingHorizontal: 21,
+  },
+  timerContainer: {
+    marginVertical: 15,
+  },
+  timerText: {
+    textAlign: 'center',
   },
 })

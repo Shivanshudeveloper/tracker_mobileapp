@@ -1,0 +1,15 @@
+com/gpstracker/nativeapp/ReactNativeFlipper.java
+ com.gpstracker.nativeapp.ReactNativeFlipper
+ com.gpstracker.nativeapp.ReactNativeFlipper$1
+ com.gpstracker.nativeapp.ReactNativeFlipper$2
+ com.gpstracker.nativeapp.ReactNativeFlipper$2$1
+com/gpstracker/nativeapp/MainApplication.java
+ com.gpstracker.nativeapp.MainApplication
+ com.gpstracker.nativeapp.MainApplication$1
+com/gpstracker/nativeapp/MainActivity.java
+ com.gpstracker.nativeapp.MainActivity
+ com.gpstracker.nativeapp.MainActivity$1
+com/gpstracker/nativeapp/BuildConfig.java
+ com.gpstracker.nativeapp.BuildConfig
+com/facebook/react/PackageList.java
+ com.facebook.react.PackageList

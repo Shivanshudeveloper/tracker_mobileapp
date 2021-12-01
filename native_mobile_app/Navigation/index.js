@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons'
 import {
   NavigationContainer,
@@ -18,14 +18,39 @@ import LoginScreen from '../Screens/LoginScreen'
 import RegisterScreen from '../Screens/RegisterScreen'
 import VerifyOtpScreen from '../Screens/VerifyOtpScreen'
 import TrackerListScreen from '../Screens/TrackerListScreen'
+import auth from '@react-native-firebase/auth'
 
 const Navigation = ({ colorScheme }) => {
-  console.log(colorScheme)
+  const [initializing, setInitializing] = useState(true)
+  const [user, setUser] = useState()
+
+  // Handle user state changes
+  async function onAuthStateChanged(user) {
+    setUser(user)
+    if (initializing) setInitializing(false)
+  }
+
+  useEffect(() => {
+    return auth().onAuthStateChanged(onAuthStateChanged)
+  }, [])
+
+  if (initializing) return null
+
+  if (!user) {
+    return (
+      <NavigationContainer
+        theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+      >
+        <AuthNavigator />
+      </NavigationContainer>
+    )
+  }
+
   return (
     <NavigationContainer
       theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
     >
-      <AuthNavigator />
+      <RootNavigator />
     </NavigationContainer>
   )
 }

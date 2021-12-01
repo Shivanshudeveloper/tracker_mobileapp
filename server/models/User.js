@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const educationUserSchema = new mongoose.Schema({
   userId: { type: String },
@@ -10,6 +10,6 @@ const educationUserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
-const educationUserData = mongoose.model("educationUser", educationUserSchema);
-module.exports = educationUserData;
+})
+const educationUserData = mongoose.model('educationUser', educationUserSchema)
+module.exports = educationUserData

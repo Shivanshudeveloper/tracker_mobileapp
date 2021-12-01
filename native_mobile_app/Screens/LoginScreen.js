@@ -9,13 +9,46 @@ import {
   View,
   useColorScheme,
 } from 'react-native'
-import { Button, Headline, TextInput, Subheading } from 'react-native-paper'
+import {
+  Button,
+  Headline,
+  TextInput,
+  Subheading,
+  Snackbar,
+} from 'react-native-paper'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [visible, setVisible] = useState(false)
+  const [message, setMessage] = useState(null)
 
   const navigation = useNavigation()
   const colorScheme = useColorScheme()
+
+  const { userInfo } = AsyncStorage.getItem('userInfo')
+    ? AsyncStorage.getItem('userInfo')
+    : null
+
+  const onDismissSnackBar = () => setVisible(false)
+
+  const checkUserInStorageAndGetOTP = () => {
+    if (userInfo !== undefined) {
+      getVerificationCode()
+    } else {
+      setMessage('This Phone number is not registered. Sign Up first')
+      setVisible(true)
+    }
+  }
+
+  const getVerificationCode = () => {
+    if (phoneNumber.length !== 10) {
+      setMessage('10 digit phone number is required!')
+      setVisible(true)
+    } else {
+      navigation.navigate('VerifyOtp', { phoneNumber })
+    }
+  }
 
   return (
     <KeyboardAvoidingView style={styles.container}>
@@ -41,7 +74,7 @@ const LoginScreen = () => {
           labelStyle={styles.btnLabelStyle}
           style={styles.getCodeButton}
           mode='contained'
-          onPress={() => navigation.navigate('VerifyOtp')}
+          onPress={() => checkUserInStorageAndGetOTP()}
         >
           Login
         </Button>
@@ -54,6 +87,18 @@ const LoginScreen = () => {
           <Subheading style={styles.registerLink}>Sign-up for free</Subheading>
         </TouchableWithoutFeedback>
       </View>
+      <Snackbar
+        visible={visible}
+        onDismiss={onDismissSnackBar}
+        action={{
+          label: 'Close',
+          onPress: () => {
+            setVisible(false)
+          },
+        }}
+      >
+        {message}
+      </Snackbar>
     </KeyboardAvoidingView>
   )
 }

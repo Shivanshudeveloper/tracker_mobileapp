@@ -1,7 +1,7 @@
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
-import * as Yup from 'yup';
-import { Formik } from 'formik';
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet'
+import * as Yup from 'yup'
+import { Formik } from 'formik'
 import {
   Box,
   Button,
@@ -9,13 +9,15 @@ import {
   Grid,
   Link,
   TextField,
-  Typography
-} from '@material-ui/core';
-import FacebookIcon from '../icons/Facebook';
-import GoogleIcon from '../icons/Google';
+  Typography,
+} from '@material-ui/core'
+import FacebookIcon from '../icons/Facebook'
+import GoogleIcon from '../icons/Google'
+import axios from 'axios'
+import { API_SERVICE } from '../URI'
 
 const Login = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <>
@@ -28,21 +30,43 @@ const Login = () => {
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
-          justifyContent: 'center'
+          justifyContent: 'center',
         }}
       >
-        <Container maxWidth="sm">
+        <Container maxWidth='sm'>
           <Formik
             initialValues={{
               email: 'demo@devias.io',
-              password: 'Password123'
+              password: 'Password123',
             }}
             validationSchema={Yup.object().shape({
-              email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-              password: Yup.string().max(255).required('Password is required')
+              email: Yup.string()
+                .email('Must be a valid email')
+                .max(255)
+                .required('Email is required'),
+              password: Yup.string().max(255).required('Password is required'),
             })}
-            onSubmit={() => {
-              navigate('/app/dashboard', { replace: true });
+            onSubmit={async function (values) {
+              const config = {
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              }
+              const data = JSON.stringify(values)
+              await axios
+                .post(`${API_SERVICE}/api/v1/main/tracker/login`, data, config)
+                .then((res) => {
+                  if (res.data.success) {
+                    sessionStorage.setItem(
+                      'userInfo',
+                      JSON.stringify(res.data.data)
+                    )
+                    navigate('/app/dashboard', { replace: true })
+                  } else {
+                    alert(res.data.data)
+                  }
+                })
+                .catch((error) => alert(error))
             }}
           >
             {({
@@ -52,20 +76,17 @@ const Login = () => {
               handleSubmit,
               isSubmitting,
               touched,
-              values
+              values,
             }) => (
               <form onSubmit={handleSubmit}>
                 <Box sx={{ mb: 3 }}>
-                  <Typography
-                    color="textPrimary"
-                    variant="h2"
-                  >
+                  <Typography color='textPrimary' variant='h2'>
                     Sign in
                   </Typography>
                   <Typography
-                    color="textSecondary"
+                    color='textSecondary'
                     gutterBottom
-                    variant="body2"
+                    variant='body2'
                   >
                     Sign in on the internal platform
                   </Typography>
@@ -73,13 +94,13 @@ const Login = () => {
                 <Box
                   sx={{
                     pb: 1,
-                    pt: 3
+                    pt: 3,
                   }}
                 >
                   <Typography
-                    align="center"
-                    color="textSecondary"
-                    variant="body1"
+                    align='center'
+                    color='textSecondary'
+                    variant='body1'
                   >
                     or login with email address
                   </Typography>
@@ -88,47 +109,48 @@ const Login = () => {
                   error={Boolean(touched.email && errors.email)}
                   fullWidth
                   helperText={touched.email && errors.email}
-                  label="Email Address"
-                  margin="normal"
-                  name="email"
+                  label='Email Address'
+                  margin='normal'
+                  name='email'
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  type="email"
+                  type='email'
                   value={values.email}
-                  variant="outlined"
+                  variant='outlined'
                 />
                 <TextField
                   error={Boolean(touched.password && errors.password)}
                   fullWidth
                   helperText={touched.password && errors.password}
-                  label="Password"
-                  margin="normal"
-                  name="password"
+                  label='Password'
+                  margin='normal'
+                  name='password'
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  type="password"
+                  type='password'
                   value={values.password}
-                  variant="outlined"
+                  variant='outlined'
                 />
                 <Box sx={{ py: 2 }}>
                   <Button
-                    color="primary"
+                    color='primary'
                     disabled={isSubmitting}
                     fullWidth
-                    size="large"
-                    type="submit"
-                    variant="contained"
+                    size='large'
+                    type='submit'
+                    variant='contained'
                   >
                     Sign in now
                   </Button>
                 </Box>
-                <Typography
-                  color="textSecondary"
-                  variant="body1"
-                >
-                  Don&apos;t have an account?
-                  {' '}
-                  <Link component={RouterLink} to="/register" variant="h6" underline="hover">
+                <Typography color='textSecondary' variant='body1'>
+                  Don&apos;t have an account?{' '}
+                  <Link
+                    component={RouterLink}
+                    to='/register'
+                    variant='h6'
+                    underline='hover'
+                  >
                     Sign up
                   </Link>
                 </Typography>
@@ -138,7 +160,7 @@ const Login = () => {
         </Container>
       </Box>
     </>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login
