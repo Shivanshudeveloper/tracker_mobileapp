@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Box, Container, Typography } from '@material-ui/core'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
@@ -62,20 +64,30 @@ const Locationview = () => {
 
   const [selectedPark, setSelectedPark] = useState(null)
   const [userlocationdata, setuserlocationdata] = useState({})
-  const [requestPending, setRequestPending] = useState(null)
-  const [requestRejected, setRequestRejected] = useState(null)
+  const [requestPending, setRequestPending] = useState(true)
+  const [requestAccepted, setRequestAccepted] = useState(false)
+  const [formData, setFormdata] = useState(null)
+
+  const params = useParams()
+  const { requestId, phoneNumber } = params
 
   // getting phone number
+  const forms = useSelector((state) => state.forms)
+  const { userForms } = forms
 
-  const phoneNumber = sessionStorage.getItem('phoneNumber')
-    ? JSON.parse(sessionStorage.getItem('phoneNumber'))
-    : null
+  useEffect(() => {
+    if (userForms !== undefined && userForms !== null) {
+      const thisForm = userForms.filter((x) => x.requestId === requestId)
+      const data = thisForm[0]
+      setFormdata(data)
+    }
+  }, [userForms])
 
   const getLongLat = (lat, long) => {
     axios
       .get(`${API_SERVICE}/api/v1/main/getlatlong/${lat}/${long}`)
       .then((response) => {
-        console.log(response.data)
+        // console.log(response.data)
         setuserlocationdata(response.data)
       })
       .catch((err) => console.log(err))
@@ -99,34 +111,43 @@ const Locationview = () => {
     })
   }, [])
 
-  useEffect(async () => {
-    if (phoneNumber !== null) {
-      const dbRef = database.ref(`trackerapp/trackingRequest/${phoneNumber}`)
-      await dbRef.on('value', (snapshot) => {
-        if (snapshot !== null && snapshot.exists()) {
-          const data = snapshot.val()
+  useEffect(() => {
+    const requestRef = database.ref(
+      `trackerapp/trackingRequested/${phoneNumber}/${requestId}`
+    )
 
-          if (data.requestPending === true && data.requestRejected === false) {
-            setRequestPending(true)
-            setRequestRejected(false)
-          }
-
-          if (data.requestPending === false && data.requestRejected === true) {
-            setRequestRejected(true)
-            setRequestPending(false)
-            dbRef.remove().catch((error) => alert(error))
-          }
-
-          if (data.requestPending === false && data.requestRejected === false) {
-            // show map
-            setRequestRejected(false)
-            setRequestPending(false)
-            dbRef.remove().catch((error) => alert(error))
-          }
+    requestRef.on('value', (snapshot) => {
+      if (snapshot !== null && snapshot.exists()) {
+        const data = snapshot.val()
+        if (data.requestPending === true) {
+          setRequestPending(true)
         }
-      })
-    }
+      }
+    })
+
+    const acceptRef = database.ref(
+      `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
+    )
+
+    acceptRef.on('value', (snapshot) => {
+      if (snapshot !== null && snapshot.exists()) {
+        const data = snapshot.val()
+        if (data.requestAccepted === true) {
+          setRequestAccepted(true)
+          setRequestPending(false)
+        }
+      }
+    })
+
+    acceptRef.get().then((res) => {
+      const data = res.val()
+      console.log(data)
+      setRequestAccepted(data.requestAccepted)
+      setRequestPending(!data.requestAccepted)
+    })
   }, [])
+
+  console.log(formData)
 
   return (
     <>
@@ -155,7 +176,7 @@ const Locationview = () => {
             title='Shivanshu Gupta'
             subheader=''
           />
-          {requestPending === false && requestRejected === false && (
+          {requestAccepted && requestPending === false && (
             <ReactMapGL
               {...viewport}
               mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
@@ -194,15 +215,15 @@ const Locationview = () => {
             </ReactMapGL>
           )}
 
-          {requestPending === true && requestRejected === false && (
+          {requestPending && requestAccepted === false && (
             <Typography sx={{ margin: 10, textAlign: 'center' }} component='h1'>
               Tracking request is in pending
             </Typography>
           )}
 
-          {requestPending === false && requestRejected === true && (
+          {requestPending === false && requestAccepted === false && (
             <Typography sx={{ margin: 10, textAlign: 'center' }} component='h1'>
-              Tracking request has been rejected
+              Tracking request is rejected
             </Typography>
           )}
 
@@ -217,25 +238,31 @@ const Locationview = () => {
                   <TableCell align='center'>Date</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                <TableRow key={1}>
-                  <TableCell component='th' scope='row'>
-                    Shivanshu Gupta
-                  </TableCell>
-                  <TableCell align='center'>
-                    {userlocationdata.country}
-                  </TableCell>
-                  <TableCell align='center'>
-                    {userlocationdata.formattedAddress}
-                  </TableCell>
-                  <TableCell align='center'>
-                    {userlocationdata.neighbourhood}
-                  </TableCell>
-                  <TableCell align='center'>
-                    {date.format(now, 'ddd, MMM DD YYYY')}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
+              {requestAccepted && (
+                <TableBody>
+                  <TableRow key={1}>
+                    {formData !== null ? (
+                      <TableCell component='th' scope='row'>
+                        {formData.fullName}
+                      </TableCell>
+                    ) : (
+                      <TableCell component='th' scope='row'></TableCell>
+                    )}
+                    <TableCell align='center'>
+                      {userlocationdata.country}
+                    </TableCell>
+                    <TableCell align='center'>
+                      {userlocationdata.formattedAddress}
+                    </TableCell>
+                    <TableCell align='center'>
+                      {userlocationdata.neighbourhood}
+                    </TableCell>
+                    <TableCell align='center'>
+                      {date.format(now, 'ddd, MMM DD YYYY')}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              )}
             </Table>
           </TableContainer>
         </Container>

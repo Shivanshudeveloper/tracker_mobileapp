@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
   Container,
@@ -32,6 +33,7 @@ import Button from '@material-ui/core/Button'
 import { database } from '../Firebase/index'
 
 import { Search as SearchIcon } from 'react-feather'
+import { addForm, getForm, delForm } from '../store/actions/UserFormAction'
 
 const Dashboard = () => {
   const [open, setOpen] = React.useState(false)
@@ -41,6 +43,20 @@ const Dashboard = () => {
   const [designation, setDesignation] = React.useState('')
   const [salary, setSalary] = React.useState('')
 
+  const userInfo = sessionStorage.getItem('userInfo')
+    ? JSON.parse(sessionStorage.getItem('userInfo'))
+    : null
+
+  const dispatch = useDispatch()
+  const forms = useSelector((state) => state.forms)
+  const { success, error, userForms } = forms
+
+  let i = 0
+
+  useEffect(() => {
+    dispatch(getForm(userInfo.email))
+  }, [])
+
   const handleClickOpen = () => {
     setOpen(true)
   }
@@ -48,40 +64,36 @@ const Dashboard = () => {
     setOpen(false)
   }
 
-  const userInfo = sessionStorage.getItem('userInfo')
-    ? JSON.parse(sessionStorage.getItem('userInfo'))
-    : null
-
-  React.useEffect(async () => {
-    // if (phoneNumber !== '' && phoneNumber.length === 10) {
-    //   const dbRef = database.ref(`trackerapp/trackingRequest/${phoneNumber}`)
-    //   await dbRef
-    //     .get()
-    //     .then((snap) => {
-    //       if (snap.exists()) {
-    //         alert(snap.val().phoneNumber.requestPending)
-    //       } else {
-    //         alert('No data available')
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       console.error(error)
-    //     })
-    // }
-  })
-
   const submitHandler = async () => {
     if (phoneNumber !== '' && phoneNumber.length === 10) {
-      const dbRef = database.ref(`trackerapp/trackingRequest/${phoneNumber}`)
-      await dbRef
+      const requestRef = database.ref(
+        `trackerapp/trackingRequested/${phoneNumber}`
+      )
+      const acceptRef = database.ref(
+        `trackerapp/trackingAccepted/${phoneNumber}`
+      )
+      const requestId = requestRef.push().key
+      await requestRef
+        .child(requestId)
         .set({
-          requestPending: true,
-          requestRejected: false,
           companyName: userInfo.companyName,
+          requestPending: true,
         })
         .then(() => {
-          alert('Tracking request sent')
-          sessionStorage.setItem('phoneNumber', JSON.stringify(phoneNumber))
+          console.log(fullName, email, phoneNumber)
+          dispatch(
+            addForm(
+              fullName,
+              email,
+              phoneNumber,
+              designation,
+              salary,
+              userInfo.email,
+              requestId
+            )
+          )
+        })
+        .then(() => {
           handleClose()
           setFullName('')
           setDesignation('')
@@ -89,6 +101,15 @@ const Dashboard = () => {
           setPhoneNumber('')
           setSalary('')
         })
+        .then(() => alert('Tracking request sent'))
+        .catch((error) => console.log(error))
+
+      await acceptRef
+        .child(requestId)
+        .set({
+          requestAccepted: false,
+        })
+        .catch((error) => console.log(error))
     } else {
       alert('10 digit phone number is required')
     }
@@ -210,7 +231,6 @@ const Dashboard = () => {
               </Card>
             </Box>
           </Box>
-
           <TableContainer sx={{ mt: 2 }} component={Paper}>
             <Table aria-label='simple table'>
               <TableHead>
@@ -222,48 +242,53 @@ const Dashboard = () => {
                   <TableCell align='center'>Action</TableCell>
                 </TableRow>
               </TableHead>
-
               <TableBody>
-                <TableRow key={1}>
-                  <TableCell component='th' scope='row'>
-                    Shivanshu Gupta
-                  </TableCell>
-                  <TableCell align='right'>shivanshu@gmail.com</TableCell>
-                  <TableCell align='right'>+91 8273-293-332</TableCell>
-                  <TableCell align='right'>Software Engineer</TableCell>
-                  <TableCell align='center'>
-                    <Link to='/app/locationview/'>
-                      <Tooltip title='View Location'>
-                        <IconButton
-                          color='primary'
-                          aria-label='upload picture'
-                          component='span'
+                {userForms !== undefined &&
+                  userForms.map((item) => (
+                    <TableRow key={i++}>
+                      <TableCell component='th' scope='row'>
+                        {item.fullName}
+                      </TableCell>
+                      <TableCell align='right'>{item.email}</TableCell>
+                      <TableCell align='right'>{item.phoneNumber}</TableCell>
+                      <TableCell align='right'>{item.designation}</TableCell>
+                      <TableCell align='center'>
+                        <Link
+                          to={`/app/locationview/${item.phoneNumber}/${item.requestId}`}
                         >
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </Link>
-                    <Tooltip title='Delete User'>
-                      <IconButton
-                        color='primary'
-                        aria-label='upload picture'
-                        component='span'
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
+                          <Tooltip title='View Location'>
+                            <IconButton
+                              color='primary'
+                              aria-label='upload picture'
+                              component='span'
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Link>
+                        <Tooltip title='Delete User'>
+                          <IconButton
+                            color='primary'
+                            aria-label='upload picture'
+                            component='span'
+                            onClick={() => dispatch(delForm(item._id))}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
 
-                    <Tooltip title='Edit User'>
-                      <IconButton
-                        color='primary'
-                        aria-label='upload picture'
-                        component='span'
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
+                        <Tooltip title='Edit User'>
+                          <IconButton
+                            color='primary'
+                            aria-label='upload picture'
+                            component='span'
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { View, StyleSheet, useColorScheme } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  useColorScheme,
+  FlatList,
+  SafeAreaView,
+} from 'react-native'
 import { Button, List, Title } from 'react-native-paper'
 import AppBar from '../Components/AppBarComponent'
 import Colors from '../constants/Colors'
@@ -10,17 +16,14 @@ import database from '@react-native-firebase/database'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import MapComponent from '../Components/MapComponents/MapComponent'
-
-const requestList = []
+import RequestComponent from '../Components/RequestComponent'
 
 const HomeScreen = () => {
   const [menuVisible, setMenuVisible] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
   const [dbCoord, setDBCoord] = useState({ lat: 0, long: 0 })
   const [number, setPhoneNumber] = useState(null)
-  const [requestPending, setRequestPending] = useState(null)
-  const [requestRejected, setRequestRejected] = useState(null)
-  const [companyName, setCompanyName] = useState(null)
+  const [requestList, setRequestList] = useState([])
 
   const navigation = useNavigation()
   const colorScheme = useColorScheme()
@@ -28,8 +31,8 @@ const HomeScreen = () => {
 
   //asking for background location permission
   useEffect(async () => {
-    let { status } = await Location.requestBackgroundPermissionsAsync()
-    // let { status } = await Location.requestForegroundPermissionsAsync()
+    // let { status } = await Location.requestBackgroundPermissionsAsync()
+    let { status } = await Location.requestForegroundPermissionsAsync()
     if (status !== 'granted') {
       setErrorMsg('Permission to access location was denied')
     }
@@ -47,17 +50,37 @@ const HomeScreen = () => {
       .then((res) => {
         const { phoneNumber } = JSON.parse(res)
         setPhoneNumber(phoneNumber)
-        const dbRef = database().ref(
-          `trackerapp/trackingRequest/${phoneNumber}`
+
+        const requestRef = database().ref(
+          `trackerapp/trackingRequested/${phoneNumber}`
         )
-        dbRef.on('value', (snapshot) => {
-          if (snapshot !== null && snapshot.exists()) {
-            setRequestPending(true)
-            setRequestRejected(false)
-            setCompanyName(snapshot.val().companyName)
-          } else {
-            console.log('No Data Found')
-          }
+        requestRef.on('child_added', (data) => {
+          requestRef.once('value', (snapshot) => {
+            const arr = []
+            snapshot.forEach((childSnapshot) => {
+              var requestId = childSnapshot.key
+              var values = childSnapshot.val()
+              if (values.requestPending === true) {
+                arr.push({ requestId, values })
+              }
+            })
+            setRequestList(arr)
+          })
+        })
+
+        requestRef.on('child_changed', (data) => {
+          requestRef.once('value', (snapshot) => {
+            const arr = []
+            snapshot.forEach((childSnapshot) => {
+              var requestId = childSnapshot.key
+              var values = childSnapshot.val()
+              // arr.push({ requestId, values })
+              if (values.requestPending === true) {
+                arr.push({ requestId, values })
+              }
+            })
+            setRequestList(arr)
+          })
         })
       })
       .catch((error) => console.log(error))
@@ -98,41 +121,13 @@ const HomeScreen = () => {
       .catch((error) => console.log(error))
   }
 
-  const onAcceptrequest = () => {
-    const dbRef = database().ref(`trackerapp/trackingRequest/${number}`)
-
-    dbRef
-      .update({
-        requestPending: false,
-        requestRejected: false,
-      })
-      .then(() => {
-        setRequestPending(null)
-        setRequestRejected(null)
-      })
-      .catch((error) => console.log(error))
-  }
-
-  const onRejectRequest = () => {
-    const dbRef = database().ref(`trackerapp/trackingRequest/${number}`)
-
-    dbRef
-      .update({
-        requestPending: false,
-        requestRejected: true,
-      })
-      .then(() => {
-        setRequestPending(null)
-        setRequestRejected(null)
-      })
-      .catch((error) => console.log(error))
-  }
-
   const openMenu = () => setMenuVisible(true)
   const closeMenu = () => setMenuVisible(false)
 
+  let i = 0
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <AppBar
         onPress={openMenu}
         closeMenu={closeMenu}
@@ -145,7 +140,7 @@ const HomeScreen = () => {
 
       <MapComponent latitude={dbCoord.lat} longitude={dbCoord.long} />
 
-      <View
+      <SafeAreaView
         style={[styles.mainContainer, { backgroundColor: color.background }]}
       >
         <Button
@@ -158,40 +153,17 @@ const HomeScreen = () => {
         </Button>
 
         <View style={styles.divider}></View>
-
-        {requestPending === true && requestRejected === false && (
-          <>
-            <Title>New Tracking Requests</Title>
-            <View style={styles.listContainer}>
-              <List.Item
-                title={`${companyName} has requested to track you`}
-                description={() => (
-                  <View style={styles.listActionButtonContainer}>
-                    <Button
-                      style={{ margin: 3 }}
-                      mode='contained'
-                      icon='check'
-                      onPress={onAcceptrequest}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      style={{ margin: 3 }}
-                      mode='contained'
-                      icon='close'
-                      onPress={onRejectRequest}
-                    >
-                      Reject
-                    </Button>
-                  </View>
-                )}
-                left={(props) => <List.Icon {...props} icon='email' />}
-              />
-            </View>
-          </>
+        {requestList !== [] && (
+          <FlatList
+            data={requestList}
+            renderItem={({ item }) => (
+              <RequestComponent item={item} phoneNumber={number} />
+            )}
+            keyExtractor={() => i++}
+          />
         )}
-      </View>
-    </View>
+      </SafeAreaView>
+    </SafeAreaView>
   )
 }
 
@@ -213,13 +185,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: 'grey',
     marginVertical: 10,
-  },
-  listContainer: {},
-  listActionButtonContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    marginTop: 5,
-    zIndex: 2,
   },
 })
 

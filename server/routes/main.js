@@ -18,6 +18,7 @@ const Form_Model = require('../models/Form')
 const Training_Model = require('../models/Training')
 const FormResponse_Model = require('../models/FormResponses')
 const TrackerUser = require('../models/TrackerAppUserModel')
+const UserForm = require('../models/TrackerUserFormModel')
 // const { findById } = require("../models/Class");
 const emailId = require('../config/keys').Email
 const emailPassword = require('../config/keys').Password
@@ -698,6 +699,81 @@ router.post('/tracker/login', async (req, res) => {
     }
   } catch (error) {
     res.status(401).json(`Error: ${error.message}`)
+  }
+})
+
+// *************** Tracker User Form *************** //
+
+// @desc adding a user form
+// @route POST
+// @access private
+router.post('/tracker/userform', async (req, res) => {
+  try {
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      designation,
+      salary,
+      senderEmail,
+      requestId,
+    } = req.body
+
+    const data = await UserForm.create({
+      fullName,
+      email,
+      phoneNumber,
+      designation,
+      salary,
+      senderEmail,
+      requestId,
+    })
+
+    if (data) {
+      res.status(200).send(data)
+    }
+  } catch (error) {
+    res.status(500).send(`Error: ${error.message}`)
+  }
+})
+
+// @desc getting a user form
+// @route GET
+// @access private
+router.get('/tracker/userform/:email', async (req, res) => {
+  try {
+    const { email } = req.params
+
+    const data = await UserForm.find({ senderEmail: email })
+
+    if (data) {
+      res.status(200)
+      res.send(data)
+    } else {
+      res.status(404)
+      res.send('not found')
+    }
+  } catch (error) {
+    res.send(`Error: ${error.message}`)
+  }
+})
+
+// @desc deleting form
+// @route Request to Delete the content form
+// @access private
+router.delete('/tracker/userform/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const form = await UserForm.findById({ _id: id })
+    if (form) {
+      await UserForm.deleteOne({ _id: id })
+        .then(() => res.status(200).send('Form Deleted Successfully'))
+        .catch((error) => console.log(`Error: ${error.message}`))
+    } else {
+      throw new Error('Form not available')
+    }
+  } catch (error) {
+    res.send(`Error: ${error.message}`)
   }
 })
 

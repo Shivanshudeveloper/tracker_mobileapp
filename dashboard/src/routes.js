@@ -20,7 +20,10 @@ const routes = [
       { path: 'account', element: <Account /> },
       { path: 'customers', element: <CustomerList /> },
       { path: 'dashboard', element: <Dashboard /> },
-      { path: 'locationview', element: <Locationview /> },
+      {
+        path: 'locationview/:phoneNumber/:requestId',
+        element: <Locationview />,
+      },
       { path: 'products', element: <ProductList /> },
       { path: 'settings', element: <Settings /> },
       { path: '*', element: <Navigate to='/404' /> },
