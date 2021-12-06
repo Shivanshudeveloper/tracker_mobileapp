@@ -1,45 +1,41 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { styled } from '@material-ui/core/styles';
-import DashboardNavbar from './DashboardNavbar';
-import DashboardSidebar from './DashboardSidebar';
+import { useState } from 'react'
+import { Outlet } from 'react-router-dom'
+import { styled } from '@material-ui/core/styles'
+import DashboardNavbar from './DashboardNavbar'
+import DashboardSidebar from './DashboardSidebar'
 
-const DashboardLayoutRoot = styled('div')(
-  ({ theme }) => ({
-    backgroundColor: theme.palette.background.default,
-    display: 'flex',
-    height: '100%',
-    overflow: 'hidden',
-    width: '100%'
-  })
-);
+const DashboardLayoutRoot = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.background.default,
+  display: 'flex',
+  height: '100%',
+  overflow: 'hidden',
+  width: '100%',
+}))
 
-const DashboardLayoutWrapper = styled('div')(
-  ({ theme }) => ({
-    display: 'flex',
-    flex: '1 1 auto',
-    overflow: 'hidden',
-    paddingTop: 64,
-    [theme.breakpoints.up('lg')]: {
-      paddingLeft: 256
-    }
-  })
-);
+const DashboardLayoutWrapper = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flex: '1 1 auto',
+  overflow: 'hidden',
+  paddingTop: 64,
+  [theme.breakpoints.up('md')]: {
+    paddingLeft: 68,
+  },
+}))
 
 const DashboardLayoutContainer = styled('div')({
   display: 'flex',
   flex: '1 1 auto',
-  overflow: 'hidden'
-});
+  overflow: 'hidden',
+})
 
 const DashboardLayoutContent = styled('div')({
   flex: '1 1 auto',
   height: '100%',
-  overflow: 'auto'
-});
+  overflow: 'auto',
+})
 
 const DashboardLayout = () => {
-  const [isMobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isMobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
     <DashboardLayoutRoot>
@@ -56,7 +52,7 @@ const DashboardLayout = () => {
         </DashboardLayoutContainer>
       </DashboardLayoutWrapper>
     </DashboardLayoutRoot>
-  );
-};
+  )
+}
 
-export default DashboardLayout;
+export default DashboardLayout

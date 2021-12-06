@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Box, Container, Typography } from '@material-ui/core'
@@ -49,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const Locationview = () => {
+const Locationview = (props) => {
   const classes = useStyles()
   const [lat, setlat] = useState(28.568911)
   const [long, setlong] = useState(77.16256)
@@ -66,28 +65,15 @@ const Locationview = () => {
   const [userlocationdata, setuserlocationdata] = useState({})
   const [requestPending, setRequestPending] = useState(true)
   const [requestAccepted, setRequestAccepted] = useState(false)
-  const [formData, setFormdata] = useState(null)
 
-  const params = useParams()
-  const { requestId, phoneNumber } = params
-
-  // getting phone number
-  const forms = useSelector((state) => state.forms)
-  const { userForms } = forms
-
-  useEffect(() => {
-    if (userForms !== undefined && userForms !== null) {
-      const thisForm = userForms.filter((x) => x.requestId === requestId)
-      const data = thisForm[0]
-      setFormdata(data)
-    }
-  }, [userForms])
+  const { userForm } = props
+  const { requestId, phoneNumber } =
+    userForm !== undefined ? userForm : { requestId: '', phoneNumber: '' }
 
   const getLongLat = (lat, long) => {
     axios
       .get(`${API_SERVICE}/api/v1/main/getlatlong/${lat}/${long}`)
       .then((response) => {
-        // console.log(response.data)
         setuserlocationdata(response.data)
       })
       .catch((err) => console.log(err))
@@ -100,7 +86,7 @@ const Locationview = () => {
       // setalldata([data.work]);
       setViewport({
         width: '100%',
-        height: 500,
+        height: 800,
         latitude: data.lat,
         longitude: data.long,
         zoom: 15,
@@ -112,42 +98,42 @@ const Locationview = () => {
   }, [])
 
   useEffect(() => {
-    const requestRef = database.ref(
-      `trackerapp/trackingRequested/${phoneNumber}/${requestId}`
-    )
+    if (userForm !== undefined) {
+      const requestRef = database.ref(
+        `trackerapp/trackingRequested/${phoneNumber}/${requestId}`
+      )
 
-    requestRef.on('value', (snapshot) => {
-      if (snapshot !== null && snapshot.exists()) {
-        const data = snapshot.val()
-        if (data.requestPending === true) {
-          setRequestPending(true)
+      requestRef.on('value', (snapshot) => {
+        if (snapshot !== null && snapshot.exists()) {
+          const data = snapshot.val()
+          if (data.requestPending === true) {
+            setRequestPending(true)
+          }
         }
-      }
-    })
+      })
 
-    const acceptRef = database.ref(
-      `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
-    )
+      const acceptRef = database.ref(
+        `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
+      )
 
-    acceptRef.on('value', (snapshot) => {
-      if (snapshot !== null && snapshot.exists()) {
-        const data = snapshot.val()
-        if (data.requestAccepted === true) {
-          setRequestAccepted(true)
-          setRequestPending(false)
+      acceptRef.on('value', (snapshot) => {
+        if (snapshot !== null && snapshot.exists()) {
+          const data = snapshot.val()
+          if (data.requestAccepted === true) {
+            setRequestAccepted(true)
+            setRequestPending(false)
+          }
         }
-      }
-    })
+      })
 
-    acceptRef.get().then((res) => {
-      const data = res.val()
-      console.log(data)
-      setRequestAccepted(data.requestAccepted)
-      setRequestPending(!data.requestAccepted)
-    })
-  }, [])
-
-  console.log(formData)
+      acceptRef.get().then((res) => {
+        const data = res.val()
+        console.log(data)
+        setRequestAccepted(data.requestAccepted)
+        setRequestPending(!data.requestAccepted)
+      })
+    }
+  }, [userForm])
 
   return (
     <>
@@ -158,11 +144,10 @@ const Locationview = () => {
         sx={{
           backgroundColor: 'background.default',
           minHeight: '100%',
-          py: 3,
         }}
       >
-        <Container maxWidth={false}>
-          <CardHeader
+        <Container maxWidth={true}>
+          {/* <CardHeader
             avatar={
               <Avatar aria-label='recipe' className={classes.avatar}>
                 S
@@ -173,9 +158,9 @@ const Locationview = () => {
                 <MoreVertIcon />
               </IconButton>
             }
-            title='Shivanshu Gupta'
+            title=''
             subheader=''
-          />
+          /> */}
           {requestAccepted && requestPending === false && (
             <ReactMapGL
               {...viewport}
@@ -207,8 +192,8 @@ const Locationview = () => {
                   }}
                 >
                   <div>
-                    <h2>Shivanshu Location</h2>
-                    <p>Shivanshu is near the India Gate</p>
+                    <h2 style={{ textAlign: 'center' }}>{userForm.fullName}</h2>
+                    <p>{userlocationdata.formattedAddress}</p>
                   </div>
                 </Popup>
               ) : null}
@@ -227,7 +212,7 @@ const Locationview = () => {
             </Typography>
           )}
 
-          <TableContainer sx={{ mt: 2 }} component={Paper}>
+          {/* <TableContainer sx={{ mt: 2 }} component={Paper}>
             <Table className={classes.table} aria-label='simple table'>
               <TableHead>
                 <TableRow>
@@ -241,9 +226,9 @@ const Locationview = () => {
               {requestAccepted && (
                 <TableBody>
                   <TableRow key={1}>
-                    {formData !== null ? (
+                    {userForm !== [] && userForm !== undefined ? (
                       <TableCell component='th' scope='row'>
-                        {formData.fullName}
+                        {userForm.fullName}
                       </TableCell>
                     ) : (
                       <TableCell component='th' scope='row'></TableCell>
@@ -264,7 +249,7 @@ const Locationview = () => {
                 </TableBody>
               )}
             </Table>
-          </TableContainer>
+          </TableContainer> */}
         </Container>
       </Box>
     </>
