@@ -127,7 +127,8 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
-native_mobile_app/android/app/build/outputs/apk/debug/app-debug.apk
+native_mobile_app/android/app/build/
+native_mobile_app/android/build/
 
 # macOS
 .DS_Store

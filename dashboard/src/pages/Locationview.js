@@ -1,55 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet'
 import { Box, Container, Typography } from '@material-ui/core'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import { makeStyles } from '@material-ui/styles'
-import CardHeader from '@material-ui/core/CardHeader'
-import Avatar from '@material-ui/core/Avatar'
-import IconButton from '@material-ui/core/IconButton'
 import { red } from '@material-ui/core/colors'
-import MoreVertIcon from '@material-ui/icons/MoreVert'
 import { database } from '../Firebase/index'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableContainer from '@material-ui/core/TableContainer'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-import Paper from '@material-ui/core/Paper'
 import axios from 'axios'
-import date from 'date-and-time'
 
 import { API_SERVICE } from '../URI'
-import { spacing } from '@material-ui/system'
-
-const now = new Date()
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    maxWidth: 345,
-  },
-  media: {
-    height: 0,
-    paddingTop: '56.25%', // 16:9
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
-  },
-  avatar: {
-    backgroundColor: red[500],
-  },
-}))
 
 const Locationview = (props) => {
-  const classes = useStyles()
   const [lat, setlat] = useState(28.568911)
   const [long, setlong] = useState(77.16256)
 
@@ -67,7 +27,7 @@ const Locationview = (props) => {
   const [requestAccepted, setRequestAccepted] = useState(false)
 
   const { userForm } = props
-  const { requestId, phoneNumber } =
+  const { requestId, phoneNumber, email } =
     userForm !== undefined ? userForm : { requestId: '', phoneNumber: '' }
 
   const getLongLat = (lat, long) => {
@@ -77,6 +37,37 @@ const Locationview = (props) => {
         setuserlocationdata(response.data)
       })
       .catch((err) => console.log(err))
+  }
+
+  const addLocationToDB = async (latitude, longitude) => {
+    console.log('Iam an running')
+    let hotspot = ''
+    await axios
+      .get(`${API_SERVICE}/api/v1/main/getlatlong/${latitude}/${longitude}`)
+      .then((response) => {
+        const { data } = response
+        hotspot = data.formattedAddress
+      })
+      .catch((err) => console.log(err))
+
+    if (hotspot !== '') {
+      const config = {
+        headers: {
+          'Content-Types': 'application/json',
+        },
+      }
+
+      const body = {
+        email,
+        phoneNumber,
+        fullName: userForm.fullName,
+        hotspot,
+      }
+
+      await axios
+        .post(`${API_SERVICE}/api/v1/main/tracker/userLocation`, body, config)
+        .catch((error) => console.log(error))
+    }
   }
 
   useEffect(() => {
@@ -94,6 +85,7 @@ const Locationview = (props) => {
       setlat(data.lat)
       setlong(data.long)
       getLongLat(data.lat, data.long)
+      addLocationToDB(data.lat, data.long)
     })
   }, [])
 
@@ -147,20 +139,6 @@ const Locationview = (props) => {
         }}
       >
         <Container maxWidth={true}>
-          {/* <CardHeader
-            avatar={
-              <Avatar aria-label='recipe' className={classes.avatar}>
-                S
-              </Avatar>
-            }
-            action={
-              <IconButton aria-label='settings'>
-                <MoreVertIcon />
-              </IconButton>
-            }
-            title=''
-            subheader=''
-          /> */}
           {requestAccepted && requestPending === false && (
             <ReactMapGL
               {...viewport}
@@ -211,45 +189,6 @@ const Locationview = (props) => {
               Tracking request is rejected
             </Typography>
           )}
-
-          {/* <TableContainer sx={{ mt: 2 }} component={Paper}>
-            <Table className={classes.table} aria-label='simple table'>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Full Name</TableCell>
-                  <TableCell align='center'>Country</TableCell>
-                  <TableCell align='center'>Address</TableCell>
-                  <TableCell align='center'>Street Name</TableCell>
-                  <TableCell align='center'>Date</TableCell>
-                </TableRow>
-              </TableHead>
-              {requestAccepted && (
-                <TableBody>
-                  <TableRow key={1}>
-                    {userForm !== [] && userForm !== undefined ? (
-                      <TableCell component='th' scope='row'>
-                        {userForm.fullName}
-                      </TableCell>
-                    ) : (
-                      <TableCell component='th' scope='row'></TableCell>
-                    )}
-                    <TableCell align='center'>
-                      {userlocationdata.country}
-                    </TableCell>
-                    <TableCell align='center'>
-                      {userlocationdata.formattedAddress}
-                    </TableCell>
-                    <TableCell align='center'>
-                      {userlocationdata.neighbourhood}
-                    </TableCell>
-                    <TableCell align='center'>
-                      {date.format(now, 'ddd, MMM DD YYYY')}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              )}
-            </Table>
-          </TableContainer> */}
         </Container>
       </Box>
     </>

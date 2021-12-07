@@ -36,8 +36,9 @@ const LoginScreen = () => {
     if (userInfo !== undefined) {
       getVerificationCode()
     } else {
-      setMessage('This Phone number is not registered. Sign Up first')
-      setVisible(true)
+      getVerificationCode()
+      // setMessage('This Phone number is not registered. Sign Up first')
+      // setVisible(true)
     }
   }
 

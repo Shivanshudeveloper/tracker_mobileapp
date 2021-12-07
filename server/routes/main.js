@@ -19,6 +19,7 @@ const Training_Model = require('../models/Training')
 const FormResponse_Model = require('../models/FormResponses')
 const TrackerUser = require('../models/TrackerAppUserModel')
 const UserForm = require('../models/TrackerUserFormModel')
+const UserLocation = require('../models/TrackerUserLocation')
 // const { findById } = require("../models/Class");
 const emailId = require('../config/keys').Email
 const emailPassword = require('../config/keys').Password
@@ -774,6 +775,49 @@ router.delete('/tracker/userform/:id', async (req, res) => {
     }
   } catch (error) {
     res.send(`Error: ${error.message}`)
+  }
+})
+
+// *************** Tracker User Form *************** //
+
+// @desc adding a user location
+// @route POST
+// @access private
+router.post('/tracker/userlocation', async (req, res) => {
+  try {
+    const { email, hotspot, phoneNumber, fullName } = req.body
+
+    const data = await UserLocation.create({
+      email,
+      phoneNumber,
+      hotspot,
+      fullName,
+    })
+
+    if (data) {
+      res.status(200).send(data)
+    }
+  } catch (error) {
+    res.status(500).send(`Error: ${error.message}`)
+  }
+})
+
+// @desc getting a user location
+// @route POST
+// @access private
+router.get('/tracker/userlocation/:email', async (req, res) => {
+  try {
+    const { email } = req.params
+
+    const data = await UserLocation.find({ email: email }).sort({
+      createdAt: -1,
+    })
+
+    if (data) {
+      res.status(200).send(data)
+    }
+  } catch (error) {
+    res.status(500).send(`Error: ${error.message}`)
   }
 })
 

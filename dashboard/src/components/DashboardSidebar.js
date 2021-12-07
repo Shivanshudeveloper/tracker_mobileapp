@@ -157,6 +157,7 @@
 
 // export default DashboardSidebar
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { makeStyles } from '@material-ui/styles'
 import Drawer from '@material-ui/core/Drawer'
 import List from '@material-ui/core/List'
@@ -206,6 +207,8 @@ const useStyles = makeStyles((theme) => ({
 const DashboardSidebar = () => {
   const classes = useStyles()
 
+  const paths = ['', '', '', '', '/app/reports']
+
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -218,9 +221,11 @@ const DashboardSidebar = () => {
       </AppBar>
       <Drawer variant='permanent'>
         <div className={classes.toolbar}>
-          <IconButton>
-            <Home fontSize='large' />
-          </IconButton>
+          <Link to='/app/dashboard'>
+            <IconButton>
+              <Home fontSize='large' />
+            </IconButton>
+          </Link>
         </div>
         <div className={classes.listContainer}>
           <List>
@@ -231,11 +236,11 @@ const DashboardSidebar = () => {
               <NotificationsIcon fontSize='large' color='primary' />,
               <SignalCellularAltIcon fontSize='large' color='warning' />,
             ].map((text, index) => (
-              <ListItem button sx={{ pt: 1.5, pb: 1.5 }}>
-                {/* <IconButton sx={{ p: 0.5 }} key={text}> */}
-                {text}
-                {/* </IconButton> */}
-              </ListItem>
+              <Link to={paths[index]}>
+                <ListItem button sx={{ pt: 1.5, pb: 1.5 }}>
+                  {text}
+                </ListItem>
+              </Link>
             ))}
           </List>
         </div>
