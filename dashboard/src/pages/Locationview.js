@@ -10,9 +10,10 @@ import axios from 'axios'
 import { API_SERVICE } from '../URI'
 
 const Locationview = (props) => {
+  const { userForm } = props
+
   const [lat, setlat] = useState(28.568911)
   const [long, setlong] = useState(77.16256)
-
   const [viewport, setViewport] = useState({
     width: '100%',
     height: 500,
@@ -21,12 +22,13 @@ const Locationview = (props) => {
     zoom: 15,
   })
 
-  const [selectedPark, setSelectedPark] = useState(null)
+  const [selected, setSelected] = useState(false)
+  const [selectedLat, setSelectedLat] = useState(null)
+  const [selectedLong, setSelectedLong] = useState(null)
   const [userlocationdata, setuserlocationdata] = useState({})
   const [requestPending, setRequestPending] = useState(true)
   const [requestAccepted, setRequestAccepted] = useState(false)
 
-  const { userForm } = props
   const { requestId, phoneNumber, email } =
     userForm !== undefined ? userForm : { requestId: '', phoneNumber: '' }
 
@@ -151,7 +153,9 @@ const Locationview = (props) => {
                   className='marker-btn'
                   onClick={(e) => {
                     e.preventDefault()
-                    setSelectedPark('W')
+                    setSelected(true)
+                    setSelectedLat(lat)
+                    setSelectedLong(long)
                   }}
                 >
                   <img
@@ -160,13 +164,14 @@ const Locationview = (props) => {
                   />
                 </button>
               </Marker>
-
-              {selectedPark ? (
+              {selected ? (
                 <Popup
-                  latitude={lat}
-                  longitude={long}
+                  latitude={selectedLat}
+                  longitude={selectedLong}
                   onClose={() => {
-                    setSelectedPark(null)
+                    setSelected(false)
+                    setSelectedLat(28.5793)
+                    setSelectedLong(77.321)
                   }}
                 >
                   <div>
