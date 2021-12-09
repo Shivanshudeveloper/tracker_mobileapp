@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { Box, Container, Typography } from '@material-ui/core'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
-import { makeStyles } from '@material-ui/styles'
-import { red } from '@material-ui/core/colors'
-import { database } from '../Firebase/index'
+import Firebase, { firestore, database } from '../Firebase/index'
 import axios from 'axios'
 
 import { API_SERVICE } from '../URI'
 
 const Locationview = (props) => {
   const { userForm } = props
+  const { phoneNumber, email, senderId } = userForm
 
   const [lat, setlat] = useState(28.568911)
   const [long, setlong] = useState(77.16256)
@@ -28,9 +27,7 @@ const Locationview = (props) => {
   const [userlocationdata, setuserlocationdata] = useState({})
   const [requestPending, setRequestPending] = useState(true)
   const [requestAccepted, setRequestAccepted] = useState(false)
-
-  const { requestId, phoneNumber, email } =
-    userForm !== undefined ? userForm : { requestId: '', phoneNumber: '' }
+  const [requestRejected, setRequestRejected] = useState(false)
 
   const getLongLat = (lat, long) => {
     axios
@@ -42,7 +39,6 @@ const Locationview = (props) => {
   }
 
   const addLocationToDB = async (latitude, longitude) => {
-    console.log('Iam an running')
     let hotspot = ''
     await axios
       .get(`${API_SERVICE}/api/v1/main/getlatlong/${latitude}/${longitude}`)
@@ -92,42 +88,90 @@ const Locationview = (props) => {
   }, [])
 
   useEffect(() => {
-    if (userForm !== undefined) {
-      const requestRef = database.ref(
-        `trackerapp/trackingRequested/${phoneNumber}/${requestId}`
-      )
-
-      requestRef.on('value', (snapshot) => {
-        if (snapshot !== null && snapshot.exists()) {
-          const data = snapshot.val()
-          if (data.requestPending === true) {
-            setRequestPending(true)
+    if (userForm !== undefined && userForm !== null) {
+      const requestRef = firestore
+        .collection('trackingRequest')
+        .doc(phoneNumber)
+      requestRef.onSnapshot((snapshot) => {
+        if (snapshot.exists) {
+          const reqList = snapshot.data().requestList
+          const thisReq = reqList.filter((req) => req.senderId === senderId)[0]
+          if (thisReq !== undefined) {
+            if (thisReq.requestAccepted === true) {
+              setRequestAccepted(true)
+              setRequestPending(false)
+              addNotification(
+                `${userForm.fullName} has accepted your tracking request`,
+                'accepted'
+              )
+            } else if (thisReq.requestPending === true) {
+              setRequestPending(true)
+              setRequestAccepted(false)
+              setRequestRejected(false)
+              addNotification(
+                `Request has been sent to ${userForm.fullName}`,
+                'sent'
+              )
+            } else if (thisReq.requestRejected === true) {
+              setRequestRejected(true)
+              addNotification(
+                `${userForm.fullName} has decline your request`,
+                'rejected'
+              )
+            }
           }
         }
-      })
-
-      const acceptRef = database.ref(
-        `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
-      )
-
-      acceptRef.on('value', (snapshot) => {
-        if (snapshot !== null && snapshot.exists()) {
-          const data = snapshot.val()
-          if (data.requestAccepted === true) {
-            setRequestAccepted(true)
-            setRequestPending(false)
-          }
-        }
-      })
-
-      acceptRef.get().then((res) => {
-        const data = res.val()
-        console.log(data)
-        setRequestAccepted(data.requestAccepted)
-        setRequestPending(!data.requestAccepted)
       })
     }
   }, [userForm])
+
+  const addNotification = (message, status) => {
+    const notificationRef = firestore
+      .collection('trackingNotifications')
+      .doc(senderId)
+
+    let pending = false
+    let accept = false
+    let reject = false
+
+    if (status === 'accepted') {
+      accept = true
+    } else if (status === 'sent') {
+      pending = true
+    } else if (status === 'rejected') {
+      reject = true
+    }
+
+    notificationRef.get().then((doc) => {
+      if (doc.exists) {
+        notificationRef
+          .update({
+            notificationList: Firebase.firestore.FieldValue.arrayUnion({
+              name: userForm.fullName,
+              message,
+              phoneNumber,
+              requestPending: pending,
+              requestAccepted: accept,
+              requestRejected: reject,
+            }),
+          })
+          .catch((error) => console.log(error))
+      } else {
+        notificationRef
+          .set({
+            notificationList: Firebase.firestore.FieldValue.arrayUnion({
+              name: userForm.fullName,
+              message,
+              phoneNumber,
+              requestPending: pending,
+              requestAccepted: accept,
+              requestRejected: reject,
+            }),
+          })
+          .catch((error) => console.log(error))
+      }
+    })
+  }
 
   return (
     <>
@@ -183,13 +227,18 @@ const Locationview = (props) => {
             </ReactMapGL>
           )}
 
-          {requestPending && requestAccepted === false && (
-            <Typography sx={{ margin: 10, textAlign: 'center' }} component='h1'>
-              Tracking request is in pending
-            </Typography>
-          )}
+          {requestPending &&
+            requestAccepted === false &&
+            requestRejected === false && (
+              <Typography
+                sx={{ margin: 10, textAlign: 'center' }}
+                component='h1'
+              >
+                Tracking request is in pending
+              </Typography>
+            )}
 
-          {requestPending === false && requestAccepted === false && (
+          {requestRejected && (
             <Typography sx={{ margin: 10, textAlign: 'center' }} component='h1'>
               Tracking request is rejected
             </Typography>

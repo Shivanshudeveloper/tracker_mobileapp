@@ -26,7 +26,7 @@ const UserFormSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    requestId: {
+    senderId: {
       type: String,
       required: true,
     },

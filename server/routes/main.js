@@ -645,7 +645,7 @@ router.get('/getlatlong/:latitude/:longitude', (req, res) => {
 // @desc registering a new user
 // @route POST
 // @access public
-router.post('/tracker/register', async (req, res) => {
+router.post('/tracker/user/register', async (req, res) => {
   try {
     const { firstName, lastName, email, companyName, password, policy } =
       req.body
@@ -674,7 +674,7 @@ router.post('/tracker/register', async (req, res) => {
 // @desc login an existing user
 // @route GET
 // @access public
-router.post('/tracker/login', async (req, res) => {
+router.post('/tracker/user/login', async (req, res) => {
   try {
     const { email, password } = req.body
     const userExist = await TrackerUser.findOne({ email })
@@ -703,6 +703,46 @@ router.post('/tracker/login', async (req, res) => {
   }
 })
 
+router.put('/tracker/user/update', async (req, res) => {
+  try {
+    const { firstName, lastName, email, companyName } = req.body
+    const userExist = await TrackerUser.findOne({ email })
+
+    if (!userExist) {
+      res.json({ success: false, data: "user doesn't exist" })
+      return
+    }
+
+    const response = await TrackerUser.updateOne({
+      firstName,
+      lastName,
+      email,
+      companyName,
+    })
+
+    if (response.ok) {
+      const user = await TrackerUser.findOne({ email: email })
+      return res.status(200).json({
+        success: true,
+        data: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          companyName: user.companyName,
+        },
+      })
+    }
+
+    return res.json({
+      success: false,
+      message: 'Update failed, please try again',
+    })
+  } catch (error) {
+    res.status(500).json(`Error: ${error.message}`)
+  }
+})
+
 // *************** Tracker User Form *************** //
 
 // @desc adding a user form
@@ -717,7 +757,7 @@ router.post('/tracker/userform', async (req, res) => {
       designation,
       salary,
       senderEmail,
-      requestId,
+      senderId,
     } = req.body
 
     const data = await UserForm.create({
@@ -727,7 +767,7 @@ router.post('/tracker/userform', async (req, res) => {
       designation,
       salary,
       senderEmail,
-      requestId,
+      senderId,
     })
 
     if (data) {
@@ -778,7 +818,7 @@ router.delete('/tracker/userform/:id', async (req, res) => {
   }
 })
 
-// *************** Tracker User Form *************** //
+// *************** Tracker User Location *************** //
 
 // @desc adding a user location
 // @route POST

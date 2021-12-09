@@ -1,96 +1,95 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button, List } from 'react-native-paper'
-import database from '@react-native-firebase/database'
+import firestore from '@react-native-firebase/firestore'
 
 const RequestComponent = (props) => {
   const { item, phoneNumber } = props
-  const { requestId } = item
-  const { companyName } = item.values
-  const { requestPending } = item.values
+  console.log(item)
+  const { companyName } = item
 
-  const [requestAccepted, setRequestAccepted] = useState(false)
+  const onAcceptRequest = () => {
+    const requestRef = firestore()
+      .collection('trackingRequest')
+      .doc(phoneNumber)
 
-  useEffect(() => {
-    const acceptRef = database().ref(
-      `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
-    )
-    acceptRef.on('value', (snapshot) => {
-      if (snapshot !== null && snapshot.exists()) {
-        const data = snapshot.val()
-        setRequestAccepted(data.requestAccepted)
-      }
-    })
-  }, [])
-
-  const onAcceptrequest = () => {
-    const requestRef = database().ref(
-      `trackerapp/trackingRequested/${phoneNumber}/${requestId}`
-    )
-    const acceptRef = database().ref(
-      `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
-    )
     requestRef
       .update({
-        requestPending: false,
+        requestList: firestore.FieldValue.arrayRemove({
+          requestPending: true,
+          requestAccepted: false,
+          requestRejected: false,
+          companyName: item.companyName,
+          senderId: item.senderId,
+        }),
       })
-      .catch((error) => console.log(error))
-
-    acceptRef
-      .update({
-        requestAccepted: true,
+      .then(() => {
+        requestRef.update({
+          requestList: firestore.FieldValue.arrayUnion({
+            requestPending: false,
+            requestAccepted: true,
+            requestRejected: false,
+            companyName: item.companyName,
+            senderId: item.senderId,
+          }),
+        })
       })
-      .catch((error) => console.log(error))
   }
 
   const onRejectRequest = () => {
-    const requestRef = database().ref(
-      `trackerapp/trackingRequested/${phoneNumber}/${requestId}`
-    )
-    const acceptRef = database().ref(
-      `trackerapp/trackingAccepted/${phoneNumber}/${requestId}`
-    )
+    const requestRef = firestore()
+      .collection('trackingRequest')
+      .doc(phoneNumber)
+
     requestRef
       .update({
-        requestPending: false,
+        requestList: firestore.FieldValue.arrayRemove({
+          requestPending: true,
+          requestAccepted: false,
+          requestRejected: false,
+          companyName: item.companyName,
+          senderId: item.senderId,
+        }),
       })
-      .catch((error) => console.log(error))
-
-    acceptRef
-      .update({
-        requestAccepted: false,
+      .then(() => {
+        requestRef.update({
+          requestList: firestore.FieldValue.arrayUnion({
+            requestPending: false,
+            requestAccepted: false,
+            requestRejected: true,
+            companyName: item.companyName,
+            senderId: item.senderId,
+          }),
+        })
       })
-      .catch((error) => console.log(error))
   }
 
   return (
     <>
-      {!requestAccepted && requestPending && (
-        <List.Item
-          title={`${companyName} has requested to track you`}
-          description={() => (
-            <View style={styles.listActionButtonContainer}>
-              <Button
-                style={{ margin: 3 }}
-                mode='contained'
-                icon='check'
-                onPress={onAcceptrequest}
-              >
-                Accept
-              </Button>
-              <Button
-                style={{ margin: 3 }}
-                mode='contained'
-                icon='close'
-                onPress={onRejectRequest}
-              >
-                Reject
-              </Button>
-            </View>
-          )}
-          left={(props) => <List.Icon {...props} icon='email' />}
-        />
-      )}
+      <List.Item
+        title={`${companyName} has requested to track you`}
+        description={() => (
+          <View style={styles.listActionButtonContainer}>
+            <Button
+              style={{ margin: 3 }}
+              mode='contained'
+              icon='check'
+              onPress={onAcceptRequest}
+            >
+              Accept
+            </Button>
+            <Button
+              style={{ margin: 3 }}
+              mode='contained'
+              icon='close'
+              onPress={onRejectRequest}
+            >
+              Reject
+            </Button>
+          </View>
+        )}
+        left={(props) => <List.Icon {...props} icon='email' />}
+      />
     </>
   )
 }

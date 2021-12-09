@@ -32,7 +32,6 @@ const AllLocationView = (props) => {
     axios
       .get(`${API_SERVICE}/api/v1/main/getlatlong/${lat}/${long}`)
       .then((response) => {
-        console.log(response.data.formattedAddress)
         setuserlocationdata(response.data)
       })
       .catch((err) => console.log(err))

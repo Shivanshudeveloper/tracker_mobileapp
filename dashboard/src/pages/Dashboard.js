@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
@@ -13,10 +12,7 @@ import {
 } from '@material-ui/core'
 import Paper from '@material-ui/core/Paper'
 import IconButton from '@material-ui/core/IconButton'
-import Tooltip from '@material-ui/core/Tooltip'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import DeleteIcon from '@material-ui/icons/Delete'
-import EditIcon from '@material-ui/icons/Edit'
 
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
@@ -27,15 +23,16 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListItemAvatar from '@material-ui/core/ListItemAvatar'
 import Avatar from '@material-ui/core/Avatar'
-import ImageIcon from '@material-ui/icons/Image'
 import PeopleIcon from '@material-ui/icons/People'
 import Person from '@material-ui/icons/Person'
 import Button from '@material-ui/core/Button'
+import Snackbar from '@material-ui/core/Snackbar'
+import Alert from '@material-ui/core/Alert'
 import { makeStyles } from '@material-ui/styles'
 
 import Locationview from './Locationview'
 
-import { database } from '../Firebase/index'
+import Firebase, { firestore, database } from '../Firebase/index'
 
 import { Search as SearchIcon } from 'react-feather'
 import { addForm, getForm, delForm } from '../store/actions/UserFormAction'
@@ -62,6 +59,19 @@ const Dashboard = () => {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [designation, setDesignation] = useState('')
   const [salary, setSalary] = useState('')
+  const [snackOpen, setSnackOpen] = useState(false)
+  const [success, setSuccess] = useState(null)
+  const [error, setError] = useState(null)
+
+  const handleSnackClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return
+    }
+
+    setOpen(false)
+    setError(null)
+    setSuccess(null)
+  }
 
   const handleClickOpen = () => {
     setOpen(true)
@@ -86,53 +96,83 @@ const Dashboard = () => {
 
   const submitHandler = async () => {
     if (phoneNumber !== '' && phoneNumber.length === 10) {
-      const requestRef = database.ref(
-        `trackerapp/trackingRequested/${phoneNumber}`
-      )
-      const acceptRef = database.ref(
-        `trackerapp/trackingAccepted/${phoneNumber}`
-      )
-      const requestId = requestRef.push().key
-      await requestRef
-        .child(requestId)
-        .set({
-          companyName: userInfo.companyName,
-          requestPending: true,
-        })
-        .then(() => {
-          console.log(fullName, email, phoneNumber)
-          dispatch(
-            addForm(
-              fullName,
-              email,
-              phoneNumber,
-              designation,
-              salary,
-              userInfo.email,
-              requestId
-            )
-          )
-        })
-        .then(() => {
-          handleClose()
-          setFullName('')
-          setDesignation('')
-          setEmail('')
-          setPhoneNumber('')
-          setSalary('')
-        })
-        .then(() => alert('Tracking request sent'))
-        .catch((error) => console.log(error))
+      const requestRef = firestore
+        .collection('trackingRequest')
+        .doc(phoneNumber)
 
-      await acceptRef
-        .child(requestId)
-        .set({
-          requestAccepted: false,
-        })
-        .catch((error) => console.log(error))
-    } else {
-      alert('10 digit phone number is required')
+      addRequestToFirestore(requestRef)
     }
+  }
+
+  const addRequestToFirestore = (requestRef) => {
+    requestRef.get().then((doc) => {
+      if (doc.exists) {
+        requestRef
+          .update({
+            requestList: Firebase.firestore.FieldValue.arrayUnion({
+              requestPending: true,
+              requestAccepted: false,
+              requestRejected: false,
+              companyName: userInfo.companyName,
+              senderId: userInfo._id,
+            }),
+          })
+          .then(() => {
+            setSuccess(`Tracking Request has been sent to ${fullName}`)
+            setSnackOpen(true)
+          })
+          .then(() => {
+            dispatch(
+              addForm(
+                fullName,
+                email,
+                phoneNumber,
+                designation,
+                salary,
+                userInfo.email,
+                userInfo._id
+              )
+            )
+          })
+          .catch((err) => {
+            setError(err)
+            setSnackOpen(true)
+          })
+      } else {
+        const requestList = [
+          {
+            requestPending: true,
+            requestAccepted: false,
+            requestRejected: false,
+            companyName: userInfo.companyName,
+            senderId: userInfo._id,
+          },
+        ]
+        requestRef
+          .set({ requestList })
+          .then(() => {
+            setSuccess(`Tracking Request has been sent to ${fullName}`)
+            setSnackOpen(true)
+          })
+          .then(() => {
+            dispatch(
+              addForm(
+                fullName,
+                email,
+                phoneNumber,
+                designation,
+                salary,
+                userInfo.email,
+                userInfo._id
+              )
+            )
+          })
+          .catch((err) => {
+            setError(err)
+            setSnackOpen(true)
+          })
+      }
+    })
   }
 
   const handleUserDelete = (id, index) => {
@@ -143,8 +183,6 @@ const Dashboard = () => {
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index)
   }
-
-  console.log(selectedIndex)
 
   return (
     <Box className={classes.root}>
@@ -324,6 +362,38 @@ const Dashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      {success !== null && (
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={4000}
+          onClose={handleSnackClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert
+            onClose={handleSnackClose}
+            severity='success'
+            sx={{ width: '100%' }}
+          >
+            {success}
+          </Alert>
+        </Snackbar>
+      )}
+      {error !== null && (
+        <Snackbar
+          open={snackOpen}
+          autoHideDuration={4000}
+          onClose={handleSnackClose}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Alert
+            onClose={handleSnackClose}
+            severity='error'
+            sx={{ width: '100%' }}
+          >
+            {error}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   )
 }

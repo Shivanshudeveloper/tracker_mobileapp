@@ -71,7 +71,7 @@ const Login = () => {
         password,
       }
       const res = await axios.post(
-        `${API_SERVICE}/api/v1/main/tracker/login`,
+        `${API_SERVICE}/api/v1/main/tracker/user/login`,
         data,
         config
       )

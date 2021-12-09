@@ -13,7 +13,8 @@ import Colors from '../constants/Colors'
 import * as Location from 'expo-location'
 import BackgroundTimer from 'react-native-background-timer'
 import database from '@react-native-firebase/database'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import auth from '@react-native-firebase/auth'
+import firestore from '@react-native-firebase/firestore'
 
 import MapComponent from '../Components/MapComponents/MapComponent'
 import RequestComponent from '../Components/RequestComponent'
@@ -22,12 +23,14 @@ const HomeScreen = () => {
   const [menuVisible, setMenuVisible] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
   const [dbCoord, setDBCoord] = useState({ lat: 0, long: 0 })
-  const [number, setPhoneNumber] = useState(null)
   const [requestList, setRequestList] = useState([])
 
   const navigation = useNavigation()
   const colorScheme = useColorScheme()
   const color = Colors[colorScheme]
+  const { currentUser } = auth()
+  let { phoneNumber } = currentUser
+  phoneNumber = phoneNumber.slice(3)
 
   //asking for background location permission
   useEffect(async () => {
@@ -45,45 +48,20 @@ const HomeScreen = () => {
     manageBackgroundActivity()
   }, [])
 
-  useEffect(async () => {
-    await AsyncStorage.getItem('userInfo')
-      .then((res) => {
-        const { phoneNumber } = JSON.parse(res)
-        setPhoneNumber(phoneNumber)
-
-        const requestRef = database().ref(
-          `trackerapp/trackingRequested/${phoneNumber}`
+  useEffect(() => {
+    const requestRef = firestore()
+      .collection('trackingRequest')
+      .doc(phoneNumber)
+    requestRef.onSnapshot((snapshot) => {
+      if (snapshot.exists) {
+        let reqList = snapshot.get('requestList')
+        const pendingRequests = reqList.filter(
+          (item) => item.requestPending === true
         )
-        requestRef.on('child_added', (data) => {
-          requestRef.once('value', (snapshot) => {
-            const arr = []
-            snapshot.forEach((childSnapshot) => {
-              var requestId = childSnapshot.key
-              var values = childSnapshot.val()
-              if (values.requestPending === true) {
-                arr.push({ requestId, values })
-              }
-            })
-            setRequestList(arr)
-          })
-        })
-
-        requestRef.on('child_changed', (data) => {
-          requestRef.once('value', (snapshot) => {
-            const arr = []
-            snapshot.forEach((childSnapshot) => {
-              var requestId = childSnapshot.key
-              var values = childSnapshot.val()
-              // arr.push({ requestId, values })
-              if (values.requestPending === true) {
-                arr.push({ requestId, values })
-              }
-            })
-            setRequestList(arr)
-          })
-        })
-      })
-      .catch((error) => console.log(error))
+        console.log(pendingRequests)
+        setRequestList(pendingRequests)
+      }
+    })
   }, [])
 
   // function to get coordinate from db
@@ -157,7 +135,7 @@ const HomeScreen = () => {
           <FlatList
             data={requestList}
             renderItem={({ item }) => (
-              <RequestComponent item={item} phoneNumber={number} />
+              <RequestComponent item={item} phoneNumber={phoneNumber} />
             )}
             keyExtractor={() => i++}
           />

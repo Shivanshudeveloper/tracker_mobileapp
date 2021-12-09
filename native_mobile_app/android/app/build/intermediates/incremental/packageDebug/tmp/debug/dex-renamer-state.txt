@@ -1,4 +1,4 @@
-#Mon Dec 06 19:16:39 IST 2021
+#Thu Dec 09 00:48:59 IST 2021
 path.4=classes_1.dex
 path.3=classes_0.dex
 path.2=classes2.dex
@@ -6,15 +6,19 @@ path.1=classes.dex
 path.8=classes_13.dex
 path.7=classes_12.dex
 path.6=classes_11.dex
+renamed.34=classes35.dex
 path.5=classes_10.dex
+renamed.33=classes34.dex
 renamed.32=classes33.dex
 renamed.31=classes32.dex
 renamed.30=classes31.dex
 path.0=classes.dex
 path.30=classes_8.dex
 path.31=classes_9.dex
+path.34=classes_29.dex
 path.32=classes2.dex
 path.9=classes_14.dex
+path.33=classes3.dex
 renamed.29=classes30.dex
 renamed.28=classes29.dex
 renamed.27=classes28.dex
@@ -87,6 +91,8 @@ base.25=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\
 base.29=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\classes_7.dex
 base.31=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\classes_9.dex
 base.30=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\classes_8.dex
+base.34=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\classes_29.dex
+base.33=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes3.dex
 base.32=D\:\\Docsup\\tracker_mobileapp\\native_mobile_app\\android\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\classes2.dex
 renamed.9=classes10.dex
 renamed.8=classes9.dex

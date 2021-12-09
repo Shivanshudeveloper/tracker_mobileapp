@@ -3,7 +3,7 @@ import axios from 'axios'
 import { API_SERVICE } from '../../URI'
 
 export const addForm =
-  (fullName, email, phoneNumber, designation, salary, senderEmail, requestId) =>
+  (fullName, email, phoneNumber, designation, salary, senderEmail, senderId) =>
   async (dispatch, getState) => {
     try {
       const config = {
@@ -19,7 +19,7 @@ export const addForm =
         designation,
         salary,
         senderEmail,
-        requestId,
+        senderId,
       }
 
       const { data } = await axios.post(
