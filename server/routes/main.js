@@ -705,39 +705,34 @@ router.post('/tracker/user/login', async (req, res) => {
 
 router.put('/tracker/user/update', async (req, res) => {
   try {
-    const { firstName, lastName, email, companyName } = req.body
-    const userExist = await TrackerUser.findOne({ email })
+    const { id } = req.body
+    const user = await TrackerUser.findById({ _id: id })
 
-    if (!userExist) {
-      res.json({ success: false, data: "user doesn't exist" })
-      return
-    }
+    if (user) {
+      user.firstName = req.body.firstName || user.firstName
+      user.lastName = req.body.lastName || user.lastName
+      user.email = req.body.email || user.email
+      user.companyName = req.body.companyName || user.companyName
 
-    const response = await TrackerUser.updateOne({
-      firstName,
-      lastName,
-      email,
-      companyName,
-    })
+      if (req.body.password) {
+        user.password = req.body.password
+      }
 
-    if (response.ok) {
-      const user = await TrackerUser.findOne({ email: email })
+      const updatedUser = await user.save()
+
       return res.status(200).json({
         success: true,
         data: {
-          _id: user._id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          companyName: user.companyName,
+          _id: updatedUser._id,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+          companyName: updatedUser.companyName,
         },
       })
+    } else {
+      return res.json({ success: false, data: "user doesn't exist" })
     }
-
-    return res.json({
-      success: false,
-      message: 'Update failed, please try again',
-    })
   } catch (error) {
     res.status(500).json(`Error: ${error.message}`)
   }

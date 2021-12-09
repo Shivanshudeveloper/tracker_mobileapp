@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, Button, Box, Snackbar } from '@material-ui/core'
+import { TextField, Button, Box } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
 import axios from 'axios'
 import { API_SERVICE } from '../../URI'
@@ -34,6 +34,7 @@ const ProfileSetting = (props) => {
 
   const updateProfileHandler = async () => {
     try {
+      const id = userInfo._id
       const config = {
         headers: {
           'Content-Type': 'application/json',
@@ -44,6 +45,7 @@ const ProfileSetting = (props) => {
         lastName,
         email,
         companyName,
+        id,
       }
       const res = await axios.put(
         `${API_SERVICE}/api/v1/main/tracker/user/update`,
@@ -59,8 +61,8 @@ const ProfileSetting = (props) => {
         error(res.data.message)
         open(true)
       }
-    } catch (error) {
-      error(error)
+    } catch (err) {
+      error(err)
       open(true)
     }
   }

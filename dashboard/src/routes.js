@@ -13,6 +13,7 @@ import Settings from './pages/Settings'
 import Locationview from './pages/Locationview'
 import Report from './pages/Report'
 import Notification from './pages/Notification'
+import ManageMobileDevices from './pages/ManageMobileDevices'
 
 const routes = [
   {
@@ -22,6 +23,7 @@ const routes = [
       { path: 'account', element: <Account /> },
       { path: 'customers', element: <CustomerList /> },
       { path: 'dashboard', element: <Dashboard /> },
+      { path: 'manage-devices', element: <ManageMobileDevices /> },
       { path: 'notifications', element: <Notification /> },
       { path: 'reports', element: <Report /> },
       {

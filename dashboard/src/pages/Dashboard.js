@@ -32,7 +32,7 @@ import { makeStyles } from '@material-ui/styles'
 
 import Locationview from './Locationview'
 
-import Firebase, { firestore, database } from '../Firebase/index'
+import Firebase, { firestore } from '../Firebase/index'
 
 import { Search as SearchIcon } from 'react-feather'
 import { addForm, getForm, delForm } from '../store/actions/UserFormAction'

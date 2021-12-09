@@ -13,6 +13,7 @@ import {
 } from '@material-ui/core'
 import { ExpandMore } from '@material-ui/icons'
 import ProfileSetting from '../components/settings/ProfileSetting'
+import SecuritySeting from '../components/settings/SecuritySeting'
 
 const SettingsView = () => {
   const [open, setOpen] = useState(false)
@@ -59,11 +60,11 @@ const SettingsView = () => {
                 <Typography>Security</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-                  eget.
-                </Typography>
+                <SecuritySeting
+                  success={setSuccess}
+                  error={setError}
+                  open={setOpen}
+                />
               </AccordionDetails>
             </Accordion>
 

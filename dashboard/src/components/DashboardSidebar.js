@@ -49,7 +49,13 @@ const useStyles = makeStyles((theme) => ({
 const DashboardSidebar = () => {
   const classes = useStyles()
 
-  const paths = ['', '', '', '/app/notifications', '/app/reports']
+  const paths = [
+    '',
+    '/app/manage-devices',
+    '',
+    '/app/notifications',
+    '/app/reports',
+  ]
 
   return (
     <div className={classes.root}>
