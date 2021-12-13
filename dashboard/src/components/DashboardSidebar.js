@@ -50,7 +50,7 @@ const DashboardSidebar = () => {
   const classes = useStyles()
 
   const paths = [
-    '',
+    '/app/dashboard',
     '/app/manage-devices',
     '',
     '/app/notifications',
