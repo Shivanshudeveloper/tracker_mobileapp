@@ -71,7 +71,7 @@ const AllLocationView = (props) => {
         <Container maxWidth={true}>
           <ReactMapGL
             {...viewport}
-            mapboxApiAccessToken='sk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNreDVxN2IycDBoc3YycG56cHpyZ3pheGUifQ.ar9eBGxcdKwHrCyzg82BbQ'
+            mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
             mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
             onViewportChange={(nextViewport) => setViewport(nextViewport)}
           >
