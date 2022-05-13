@@ -1,12 +1,9 @@
 import { Navigate } from 'react-router-dom'
 import DashboardLayout from './components/DashboardLayout'
 import MainLayout from './components/MainLayout'
-import Account from './pages/Account'
-import CustomerList from './pages/CustomerList'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
-import ProductList from './pages/ProductList'
 import Register from './pages/Register'
 import Settings from './pages/Settings'
 
@@ -14,23 +11,22 @@ import Locationview from './pages/Locationview'
 import Report from './pages/Report'
 import Notification from './pages/Notification'
 import ManageMobileDevices from './pages/ManageMobileDevices'
+import ManageHotspots from './pages/ManageHotspots'
 
 const routes = [
   {
     path: 'app',
     element: <DashboardLayout />,
     children: [
-      { path: 'account', element: <Account /> },
-      { path: 'customers', element: <CustomerList /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'manage-devices', element: <ManageMobileDevices /> },
+      { path: 'manage-hotspots', element: <ManageHotspots /> },
       { path: 'notifications', element: <Notification /> },
       { path: 'reports', element: <Report /> },
       {
         path: 'locationview/:phoneNumber/:requestId',
         element: <Locationview />,
       },
-      { path: 'products', element: <ProductList /> },
       { path: 'settings', element: <Settings /> },
       { path: '*', element: <Navigate to='/404' /> },
     ],

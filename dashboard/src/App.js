@@ -11,13 +11,13 @@ const App = () => {
   const content = useRoutes(routes)
   const navigate = useNavigate()
 
-  const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+  const userData = JSON.parse(sessionStorage.getItem('userData'))
 
   useEffect(() => {
-    if (!userInfo) {
+    if (!userData) {
       navigate('/login')
     }
-  }, [userInfo])
+  }, [userData])
 
   return (
     <StyledEngineProvider injectFirst>

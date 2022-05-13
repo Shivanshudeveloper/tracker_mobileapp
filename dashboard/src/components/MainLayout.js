@@ -14,7 +14,6 @@ const MainLayoutWrapper = styled('div')({
   display: 'flex',
   flex: '1 1 auto',
   overflow: 'hidden',
-  paddingTop: 64,
 })
 
 const MainLayoutContainer = styled('div')({
@@ -31,7 +30,6 @@ const MainLayoutContent = styled('div')({
 
 const MainLayout = () => (
   <MainLayoutRoot>
-    <MainNavbar />
     <MainLayoutWrapper>
       <MainLayoutContainer>
         <MainLayoutContent>

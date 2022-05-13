@@ -13,8 +13,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import Typography from '@material-ui/core/Typography'
 import Link from '@material-ui/core/Link'
 import { makeStyles } from '@material-ui/styles'
-import axios from 'axios'
-import { API_SERVICE } from '../URI'
+import { auth, db } from '../Firebase'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
 
 const useStyles = makeStyles((theme) => ({
   image: {
@@ -64,42 +65,53 @@ const Login = () => {
   const [policy, setPolicy] = useState(false)
 
   const submitHandler = async () => {
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-      const data = {
-        firstName,
-        lastName,
-        email,
-        companyName,
-        password,
-        policy,
-      }
-      const res = await axios.post(
-        `${API_SERVICE}/api/v1/main/tracker/user/register`,
-        data,
-        config
-      )
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(async (userCredential) => {
+        const user = userCredential.user
+        const userData = {
+          uid: user.uid,
+          firstName,
+          lastName,
+          email: user.email,
+          profilePicture:
+            'https://th.bing.com/th/id/OIP.9B2RxsHDB_s7FZT0mljnhQHaHa?pid=ImgDet&rs=1',
+          companyName,
+          createdAt: serverTimestamp(),
+        }
 
-      if (res.data.success) {
-        sessionStorage.setItem('userInfo', JSON.stringify(res.data.data))
-        navigate('/app/dashboard', { replace: true })
-      } else {
-        alert(res.data.data)
-      }
-    } catch (error) {
-      alert(error)
-    }
+        const userRef = doc(db, 'trackerWebUser', user.uid)
+        await setDoc(userRef, userData)
+          .then(() => {
+            sessionStorage.setItem('userData', JSON.stringify(userData))
+            navigate('/app/dashboard', { replace: true })
+          })
+          .catch((error) => {
+            const errorCode = error.code
+            const errorMessage = error.message
+            alert(errorCode, errorMessage)
+          })
+      })
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        alert(errorCode, errorMessage)
+      })
   }
 
   return (
     <Grid sx={{ height: '100%' }} container component='main'>
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
-      <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+      <Grid
+        item
+        xs={12}
+        sm={8}
+        md={5}
+        component={Paper}
+        elevation={6}
+        square
+        sx={{ p: 2 }}
+      >
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
             <LockOutlinedIcon />

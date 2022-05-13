@@ -1,17 +1,52 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
 
-
 * {
   font-family: 'Roboto', sans-serif;
 }
 
 .marker-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .marker-btn img {
-    width: 40px;
-    height: 40px;
-  }
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.marker-btn img {
+  width: 40px;
+  height: 40px;
+}
+
+.MuiButton-contained,
+.MuiButton-contained:focus,
+.MuiButton-contained:hover {
+  background-color: #007bff;
+}
+
+.MuiButton-outlined {
+  color: #007bff;
+  border-color: #007bff;
+}
+
+.MuiLink-root {
+  color: #007bff;
+}
+
+.react-timerange-picker__wrapper {
+  border: 1px solid lightgray !important;
+  border-radius: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.react-timerange-picker__wrapper:hover {
+  border: 1px solid black !important;
+}
+
+.notification {
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.notification::-webkit-scrollbar {
+  display: none;
+}

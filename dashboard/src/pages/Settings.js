@@ -7,13 +7,15 @@ import {
   AccordionSummary,
   AccordionDetails,
   Grid,
-  Button,
   Snackbar,
   Alert,
 } from '@material-ui/core'
 import { ExpandMore } from '@material-ui/icons'
 import ProfileSetting from '../components/settings/ProfileSetting'
 import SecuritySeting from '../components/settings/SecuritySeting'
+import HotspotSetting from '../components/settings/HotspotSetting'
+import GroupSetting from '../components/settings/GroupSetting'
+import DeviceSetting from '../components/settings/DeviceSetting'
 
 const SettingsView = () => {
   const [open, setOpen] = useState(false)
@@ -38,9 +40,9 @@ const SettingsView = () => {
       <Grid container>
         <Grid item xs={10}>
           <Box sx={{ p: 2 }}>
-            <Accordion>
+            <Accordion sx={{ boxShadow: 5, p: 2 }}>
               <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography>Profile</Typography>
+                <Typography variant='h4'>Profile Setting</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <ProfileSetting
@@ -51,13 +53,13 @@ const SettingsView = () => {
               </AccordionDetails>
             </Accordion>
 
-            <Accordion>
+            <Accordion sx={{ boxShadow: 5, p: 2 }}>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls='panel2a-content'
                 id='panel2a-header'
               >
-                <Typography>Security</Typography>
+                <Typography variant='h4'>Security</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <SecuritySeting
@@ -68,55 +70,56 @@ const SettingsView = () => {
               </AccordionDetails>
             </Accordion>
 
-            <Accordion>
+            {/* <Accordion sx={{ boxShadow: 5, p: 2 }}>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls='panel3a-content'
                 id='panel3a-header'
               >
-                <Typography>Manage Mobile Devices</Typography>
+                <Typography variant='h4'>Manage Mobile Devices</Typography>
               </AccordionSummary>
+              <AccordionDetails>
+                <DeviceSetting
+                  success={setSuccess}
+                  error={setError}
+                  open={setOpen}
+                />
+              </AccordionDetails>
             </Accordion>
 
-            <Accordion>
+            <Accordion sx={{ boxShadow: 5, p: 2 }}>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls='panel3a-content'
                 id='panel3a-header'
               >
-                <Typography>Manage Hotspots</Typography>
+                <Typography variant='h4'>Manage Hotspots</Typography>
               </AccordionSummary>
+              <AccordionDetails>
+                <HotspotSetting
+                  success={setSuccess}
+                  error={setError}
+                  open={setOpen}
+                />
+              </AccordionDetails>
             </Accordion>
 
-            <Accordion>
+            <Accordion sx={{ boxShadow: 5, p: 2 }}>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 aria-controls='panel3a-content'
                 id='panel3a-header'
               >
-                <Typography>Manage Groups</Typography>
+                <Typography variant='h4'>Manage Groups</Typography>
               </AccordionSummary>
-            </Accordion>
-          </Box>
-        </Grid>
-        <Grid item xs={2}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              padding: 2,
-            }}
-          >
-            <Button variant='contained' sx={{ pt: 1, pb: 1, pl: 3, pr: 3 }}>
-              Edit
-            </Button>
-            <Button
-              variant='contained'
-              sx={{ pt: 1, pb: 1, pl: 3, pr: 3, ml: 2 }}
-            >
-              Save
-            </Button>
+              <AccordionDetails>
+                <GroupSetting
+                  success={setSuccess}
+                  error={setError}
+                  open={setOpen}
+                />
+              </AccordionDetails>
+            </Accordion> */}
           </Box>
         </Grid>
       </Grid>

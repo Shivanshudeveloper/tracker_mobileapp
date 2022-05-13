@@ -50,53 +50,69 @@ const DashboardSidebar = () => {
   const classes = useStyles()
 
   const paths = [
+    '/app/dashboard',
     '',
     '/app/manage-devices',
-    '',
-    '/app/notifications',
+    '/app/manage-hotspots',
+    // '/app/notifications',
     '/app/reports',
+  ]
+
+  const names = [
+    'Overview',
+    'Locations',
+    'Devices',
+    'Hotspots',
+    // 'Notifications',
+    'Reports',
   ]
 
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar position='fixed' className={classes.appBar}>
-        <Toolbar>
-          <Typography variant='h3' sx={{ ml: 2 }} noWrap>
-            DASHBOARD
-          </Typography>
+      {/* <AppBar position='fixed' className={classes.appBar}>
+        <Toolbar sx={{ backgroundColor: '#007bff' }}>
+          <Typography variant='h3' sx={{ ml: 2 }} noWrap></Typography>
         </Toolbar>
-      </AppBar>
+      </AppBar> */}
       <Drawer variant='permanent'>
-        <div className={classes.toolbar}>
-          <Link to='/app/dashboard'>
-            <IconButton>
-              <Home fontSize='large' />
-            </IconButton>
-          </Link>
-        </div>
         <div className={classes.listContainer}>
           <List>
             {[
-              <LocationOnIcon fontSize='large' color='error' />,
-              <PhoneAndroidIcon fontSize='large' color='info' />,
+              <Home fontSize='large' sx={{ color: 'purple' }} />,
+              <LocationOnIcon fontSize='large' sx={{ color: 'red' }} />,
+              <PhoneAndroidIcon fontSize='large' sx={{ color: '#007bff' }} />,
               <WifiTetheringIcon fontSize='large' color='success' />,
-              <NotificationsIcon fontSize='large' color='primary' />,
+              // <NotificationsIcon fontSize='large' color='primary' />,
               <SignalCellularAltIcon fontSize='large' color='warning' />,
             ].map((text, index) => (
               <Link to={paths[index]}>
-                <ListItem button sx={{ pt: 1.5, pb: 1.5 }}>
+                <ListItem
+                  button
+                  sx={{
+                    pt: 1.5,
+                    pb: 1.5,
+                    px: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
                   {text}
+                  <Typography color='black' sx={{ fontSize: 12 }}>
+                    {names[index]}
+                  </Typography>
                 </ListItem>
               </Link>
             ))}
           </List>
         </div>
-        <Link to='/app/settings'>
-          <IconButton sx={{ mb: 2 }}>
-            <Settings fontSize='large' />
-          </IconButton>
-        </Link>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Link to='/app/settings'>
+            <IconButton sx={{ mb: 2 }}>
+              <Settings fontSize='large' />
+            </IconButton>
+          </Link>
+        </div>
       </Drawer>
     </div>
   )

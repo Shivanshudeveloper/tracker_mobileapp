@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
-import { TextField, Button, Box } from '@material-ui/core'
+import { TextField, Button, Box, CircularProgress } from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import axios from 'axios'
-import { API_SERVICE } from '../../URI'
+import { auth } from '../../Firebase/index'
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from 'firebase/auth'
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -15,38 +19,54 @@ const SecuritySeting = (props) => {
   const { open, success, error } = props
 
   const classes = useStyles()
-  const [password, setPassword] = useState('')
-  const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
 
-  const updateProfileHandler = async () => {
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const userData = sessionStorage.getItem('userData')
+    ? JSON.parse(sessionStorage.getItem('userData'))
+    : null
+
+  const update = async () => {
     try {
-      const id = userInfo._id
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-      const data = {
-        password,
-        id,
-      }
-      const res = await axios.put(
-        `${API_SERVICE}/api/v1/main/tracker/user/update`,
-        data,
-        config
+      setIsUpdating(true)
+      const user = auth.currentUser
+
+      const credential = EmailAuthProvider.credential(
+        userData.email,
+        currentPassword
       )
 
-      if (res.data.success) {
-        success('Password updated successfully')
-        open(true)
-        setPassword('')
-      } else {
-        error(res.data.message)
-        open(true)
-      }
+      reauthenticateWithCredential(user, credential)
+        .then(() => {
+          updatePassword(user, newPassword)
+            .then(() => {
+              success('Password updated successfully')
+              open(true)
+              setNewPassword('')
+              setCurrentPassword('')
+              setIsUpdating(false)
+            })
+            .catch((err) => {
+              const errorCode = err.code
+              const errorMessage = err.message
+              error(`${errorCode} ${errorMessage}`)
+              open(true)
+              setIsUpdating(false)
+            })
+        })
+        .catch((err) => {
+          const errorCode = err.code
+          const errorMessage = err.message
+          error(`${errorCode} ${errorMessage}`)
+          open(true)
+          setIsUpdating(false)
+        })
     } catch (err) {
       error(err)
       open(true)
+      setIsUpdating(false)
     }
   }
 
@@ -58,14 +78,33 @@ const SecuritySeting = (props) => {
           margin='normal'
           fullWidth
           id='password'
-          label='Password'
+          label='Current Password'
           name='password'
           autoComplete='name'
           autoFocus
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
         />
-        <Button variant='contained' onClick={() => updateProfileHandler()}>
+        <TextField
+          variant='outlined'
+          margin='normal'
+          fullWidth
+          id='password'
+          label='New Password'
+          name='password'
+          autoComplete='name'
+          autoFocus
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+        <Button
+          sx={{ py: 1.2, px: 4, fontSize: 15, mt: 2 }}
+          variant='contained'
+          onClick={() => update()}
+          startIcon={
+            isUpdating && <CircularProgress size={20} color='inherit' />
+          }
+        >
           Update Password
         </Button>
       </form>

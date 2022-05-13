@@ -13,8 +13,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import Typography from '@material-ui/core/Typography'
 import Link from '@material-ui/core/Link'
 import { makeStyles } from '@material-ui/styles'
-import axios from 'axios'
-import { API_SERVICE } from '../URI'
+import { auth, db } from '../Firebase'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { doc, getDoc } from 'firebase/firestore'
 
 const useStyles = makeStyles((theme) => ({
   image: {
@@ -60,31 +61,25 @@ const Login = () => {
   const [password, setPassword] = useState('')
 
   const submitHandler = async () => {
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-      const data = {
-        email,
-        password,
-      }
-      const res = await axios.post(
-        `${API_SERVICE}/api/v1/main/tracker/user/login`,
-        data,
-        config
-      )
+    signInWithEmailAndPassword(auth, email, password)
+      .then(async (userCredential) => {
+        const user = userCredential.user
+        console.log(user)
+        const docRef = doc(db, 'trackerWebUser', user.uid)
+        const docSnap = await getDoc(docRef)
 
-      if (res.data.success) {
-        sessionStorage.setItem('userInfo', JSON.stringify(res.data.data))
-        navigate('/app/dashboard', { replace: true })
-      } else {
-        alert(res.data.data)
-      }
-    } catch (error) {
-      alert(error)
-    }
+        if (docSnap.exists()) {
+          sessionStorage.setItem('userData', JSON.stringify(docSnap.data()))
+          navigate('/app/dashboard', { replace: true })
+        } else {
+          console.log('No such document!')
+        }
+      })
+      .catch((error) => {
+        const errorCode = error.code
+        const errorMessage = error.message
+        alert(errorCode, errorMessage)
+      })
   }
 
   return (

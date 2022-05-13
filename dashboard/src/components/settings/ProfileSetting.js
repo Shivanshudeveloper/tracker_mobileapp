@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, Button, Box } from '@material-ui/core'
+import {
+  TextField,
+  Button,
+  Box,
+  Avatar,
+  IconButton,
+  CircularProgress,
+} from '@material-ui/core'
 import { makeStyles } from '@material-ui/styles'
-import axios from 'axios'
-import { API_SERVICE } from '../../URI'
+import CreateIcon from '@material-ui/icons/Create'
+import { storage, db } from '../../Firebase/index'
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { updateDoc, doc } from 'firebase/firestore'
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -16,54 +25,117 @@ const ProfileSetting = (props) => {
 
   const classes = useStyles()
 
-  const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [companyName, setCompanyName] = useState('')
 
-  const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+  const [profilePhoto, setProfilePhoto] = useState('')
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [selectedFile, setSelectedFile] = useState(null)
+
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const userData = sessionStorage.getItem('userData')
+    ? JSON.parse(sessionStorage.getItem('userData'))
+    : null
 
   useEffect(() => {
-    if (userInfo !== null && userInfo !== undefined) {
-      setEmail(userInfo.email)
-      setFirstName(userInfo.firstName)
-      setCompanyName(userInfo.companyName)
-      setLastName(userInfo.lastName)
+    if (userData !== null) {
+      setProfilePhoto(userData.profilePhoto)
+      setFirstName(userData.firstName)
+      setCompanyName(userData.companyName)
+      setLastName(userData.lastName)
     }
   }, [])
 
   const updateProfileHandler = async () => {
     try {
-      const id = userInfo._id
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-      const data = {
-        firstName,
-        lastName,
-        email,
-        companyName,
-        id,
-      }
-      const res = await axios.put(
-        `${API_SERVICE}/api/v1/main/tracker/user/update`,
-        data,
-        config
-      )
-
-      if (res.data.success) {
-        sessionStorage.setItem('userInfo', JSON.stringify(res.data.data))
-        success('Profile updated successfully')
-        open(true)
-      } else {
-        error(res.data.message)
-        open(true)
-      }
+      setIsUpdating(true)
+      await uploaProfilPhoto()
+        .then(async (photo) => {
+          const userRef = doc(db, 'trackerWebUser', userData.uid)
+          await updateDoc(userRef, {
+            firstName,
+            lastName,
+            companyName,
+            profilePhoto: photo,
+          }).then(() => {
+            const data = {
+              firstName,
+              lastName,
+              companyName,
+              profilePhoto: photo,
+              uid: userData.uid,
+              createdAt: userData.createdAt,
+              email: userData.email,
+            }
+            sessionStorage.setItem('userData', JSON.stringify(data))
+            success('Profile updated successfully')
+            open(true)
+            setSelectedFile(null)
+            setPreviewUrl(null)
+            setProfilePhoto(photo)
+            setIsUpdating(false)
+          })
+        })
+        .catch((error) => {
+          error(error.message)
+          open(true)
+          setIsUpdating(false)
+        })
     } catch (err) {
-      error(err)
+      error(err.message)
       open(true)
+      setIsUpdating(false)
+    }
+  }
+
+  const uploaProfilPhoto = async () => {
+    return new Promise((resolve) => {
+      if (previewUrl === null) {
+        resolve(userData.profilePhoto)
+      }
+
+      const storageRef = ref(
+        storage,
+        `gpsTrackerWebApp/profile/${userData.uid}`
+      )
+      const uploadTask = uploadBytesResumable(storageRef, selectedFile)
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          console.log('Upload is ' + progress + '% done')
+          switch (snapshot.state) {
+            case 'paused':
+              console.log('Upload is paused')
+              break
+            case 'running':
+              console.log('Upload is running')
+              break
+          }
+        },
+        (error) => {
+          console.log(error)
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
+            resolve(downloadUrl)
+          })
+        }
+      )
+    })
+  }
+
+  const fileSelectHandler = (e) => {
+    const selected = e.target.files[0]
+    if (selected) {
+      setSelectedFile(selected)
+
+      let src = URL.createObjectURL(selected)
+      setPreviewUrl(src)
     }
   }
 
@@ -98,24 +170,47 @@ const ProfileSetting = (props) => {
           margin='normal'
           fullWidth
           id='email'
-          label='Email Address'
-          name='email'
-          autoComplete='email'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          variant='outlined'
-          margin='normal'
-          fullWidth
-          id='email'
           label='Company Name'
           name='companyName'
           autoComplete='text'
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
         />
-        <Button variant='contained' onClick={() => updateProfileHandler()}>
+
+        <Box
+          sx={{
+            display: 'flex',
+            width: 150,
+            height: 150,
+            alignItems: 'center',
+            mt: 2,
+          }}
+        >
+          <Avatar
+            src={previewUrl === null ? profilePhoto : previewUrl}
+            alt='profiile photo'
+            sx={{ my: 1.5, width: 150, height: 150 }}
+          />
+
+          <IconButton component='label' sx={{ ml: 3, width: 50, height: 50 }}>
+            <CreateIcon />
+            <input
+              type='file'
+              hidden
+              onChange={fileSelectHandler}
+              accept='image/*'
+            />
+          </IconButton>
+        </Box>
+
+        <Button
+          variant='contained'
+          onClick={() => updateProfileHandler()}
+          sx={{ py: 1.2, px: 4, fontSize: 15, mt: 4, mb: 1 }}
+          startIcon={
+            isUpdating && <CircularProgress size={20} color='inherit' />
+          }
+        >
           Update Profile
         </Button>
       </form>

@@ -18,7 +18,7 @@ const DashboardLayoutWrapper = styled('div')(({ theme }) => ({
   overflow: 'hidden',
   paddingTop: 64,
   [theme.breakpoints.up('md')]: {
-    paddingLeft: 68,
+    paddingLeft: 80,
   },
 }))
 

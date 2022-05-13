@@ -633,6 +633,7 @@ router.get('/getlatlong/:latitude/:longitude', (req, res) => {
   geoCoder
     .reverse({ lat: Number(latitude), lon: Number(longitude) })
     .then((res2) => {
+      console.log('Fetched Location')
       res.status(201).json(res2[0])
     })
     .catch((err) => {
