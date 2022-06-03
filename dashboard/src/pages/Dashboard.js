@@ -7,30 +7,30 @@ import {
   SvgIcon,
   Typography,
   Grid,
+  MenuItem,
+  Menu,
   Stack,
-  ListItemSecondaryAction,
-  Toolbar,
-} from '@material-ui/core'
-import Paper from '@material-ui/core/Paper'
-import IconButton from '@material-ui/core/IconButton'
-import DeleteIcon from '@material-ui/icons/Delete'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListItemAvatar from '@material-ui/core/ListItemAvatar'
-import Avatar from '@material-ui/core/Avatar'
-import PeopleIcon from '@material-ui/icons/People'
-import Person from '@material-ui/icons/Person'
-import Button from '@material-ui/core/Button'
-import Snackbar from '@material-ui/core/Snackbar'
-import Alert from '@material-ui/core/Alert'
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
+
+import Paper from '@mui/material/Paper'
+import IconButton from '@mui/material/IconButton'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemText from '@mui/material/ListItemText'
+import ListItemAvatar from '@mui/material/ListItemAvatar'
+import Avatar from '@mui/material/Avatar'
+import PeopleIcon from '@mui/icons-material/People'
+import Button from '@mui/material/Button'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 import { Search as SearchIcon } from 'react-feather'
-import { makeStyles } from '@material-ui/styles'
 import Locationview from './Locationview'
 import AllLocationView from './AllLocationView'
 import { db, auth } from '../Firebase/index'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { signOut } from 'firebase/auth'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,6 +55,17 @@ const Dashboard = () => {
   const [snackOpen, setSnackOpen] = useState(false)
   const [success, setSuccess] = useState(null)
   const [error, setError] = useState(null)
+
+  const [filter, setFilter] = useState(null)
+  const [anchorEl, setAnchorEl] = useState(null)
+  const menuOpen = Boolean(anchorEl)
+
+  const handleFilterClick = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+  const handleFilterClose = () => {
+    setAnchorEl(null)
+  }
 
   const navigate = useNavigate()
 
@@ -107,6 +118,17 @@ const Dashboard = () => {
     setSearchResult(filterArr)
   }, [search])
 
+  useEffect(() => {
+    if (filter === 'all') {
+      setSearchResult([])
+      return
+    }
+
+    const temp = trackingUsersList
+    const filterArr = temp.filter((x) => x.trackingStatus === filter)
+    setSearchResult(filterArr)
+  }, [filter])
+
   const getAllUsersLocation = async (phoneNumberArr) => {
     const UsersRef = collection(db, 'trackerAndroidUser')
     const q = query(UsersRef, where('phoneNumber', 'in', phoneNumberArr))
@@ -124,10 +146,6 @@ const Dashboard = () => {
     return () => unsub()
   }
 
-  const handleUserDelete = (id) => {
-    console.log(id)
-  }
-
   const handleListItemClick = (_, index) => {
     setSelectedIndex(index)
   }
@@ -139,11 +157,32 @@ const Dashboard = () => {
       .catch((error) => console.log(error))
   }
 
+  const changeFilter = (val) => {
+    setFilter(val)
+    handleFilterClose()
+  }
+
+  const getInitials = (name) => {
+    const arr = name.split(' ')
+    const initials =
+      arr[0].split('')[0].toUpperCase() + arr[1].split('')[0].toUpperCase()
+
+    return initials
+  }
+
   return (
     <Box className={classes.root}>
       <Grid container sx={{ height: 'inherit' }}>
-        <Grid item xs={2.4} sx={{ height: '100%' }}>
-          <Paper sx={{ height: '100%' }} className={classes.paper}>
+        <Grid
+          item
+          xs={2.4}
+          sx={{
+            height: '100%',
+            overflowY: 'scroll',
+          }}
+          className='gridItem'
+        >
+          <Paper sx={{ minHeight: '100%' }} className={classes.paper}>
             <Box sx={{ maxWidth: 500 }}>
               <TextField
                 fullWidth
@@ -155,11 +194,60 @@ const Dashboard = () => {
                       </SvgIcon>
                     </InputAdornment>
                   ),
+                  endAdornment: (
+                    <IconButton onClick={handleFilterClick}>
+                      <SvgIcon fontSize='small' color='action'>
+                        <FilterAltIcon />
+                      </SvgIcon>
+                    </IconButton>
+                  ),
                 }}
                 placeholder='Search user'
                 variant='outlined'
                 onChange={(e) => setSearch(e.target.value)}
               />
+              <Menu
+                anchorEl={anchorEl}
+                open={menuOpen}
+                onClose={handleFilterClose}
+              >
+                <MenuItem
+                  sx={{ py: 1.2, px: 2.5 }}
+                  onClick={() => {
+                    changeFilter('all')
+                    setSelectedIndex(-1)
+                  }}
+                >
+                  All Requests
+                </MenuItem>
+                <MenuItem
+                  sx={{ py: 1.2, px: 2.5 }}
+                  onClick={() => {
+                    changeFilter('accepted')
+                    setSelectedIndex(-1)
+                  }}
+                >
+                  Accepted Requests
+                </MenuItem>
+                <MenuItem
+                  sx={{ py: 1.2, px: 2.5 }}
+                  onClick={() => {
+                    changeFilter('rejected')
+                    setSelectedIndex(-1)
+                  }}
+                >
+                  Rejected Requests
+                </MenuItem>
+                <MenuItem
+                  sx={{ py: 1.2, px: 2.5 }}
+                  onClick={() => {
+                    changeFilter('pending')
+                    setSelectedIndex(-1)
+                  }}
+                >
+                  Pending Requests
+                </MenuItem>
+              </Menu>
             </Box>
             <List component='nav'>
               <ListItem
@@ -176,12 +264,13 @@ const Dashboard = () => {
                 onClick={() => setSelectedIndex(-1)}
               >
                 <ListItemAvatar>
-                  <Avatar>
+                  <Avatar sx={{ backgroundColor: 'orange' }}>
                     <PeopleIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary='Overview All Devices' />
               </ListItem>
+
               {searchResult.length === 0 &&
                 trackingUsersList !== undefined &&
                 trackingUsersList !== null &&
@@ -189,27 +278,30 @@ const Dashboard = () => {
                   <ListItem
                     key={index}
                     button
-                    sx={{ mt: 0.5, mb: 0.5, backgroundColor: '#F5F5F5' }}
+                    disabled={item.trackingStatus === 'pending'}
+                    sx={{
+                      mt: 0.5,
+                      mb: 0.5,
+                      py: 2,
+                      backgroundColor: '#F5F5F5',
+                      borderLeft:
+                        item.trackingStatus === 'accepted'
+                          ? '6px solid green'
+                          : item.trackingStatus === 'rejected'
+                          ? '6px solid red'
+                          : '6px solid orange',
+                    }}
                     selected={selectedIndex === index}
                     onClick={(event) => handleListItemClick(event, index)}
                   >
                     <ListItemAvatar>
-                      <Avatar>
-                        <Person />
+                      <Avatar sx={{ backgroundColor: 'orange' }}>
+                        <Typography fontSize={16} letterSpacing={1}>
+                          {getInitials(item.fullName)}
+                        </Typography>
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={item.fullName} secondary='Active' />
-                    {/* <ListItemSecondaryAction>
-                      {selectedIndex === index && (
-                        <IconButton
-                          edge='end'
-                          color='error'
-                          onClick={() => handleUserDelete(item.phoneNumber)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      )}
-                    </ListItemSecondaryAction> */}
+                    <ListItemText primary={item.fullName} />
                   </ListItem>
                 ))}
 
@@ -219,27 +311,30 @@ const Dashboard = () => {
                   <ListItem
                     key={index}
                     button
-                    sx={{ mt: 0.5, mb: 0.5, backgroundColor: '#F5F5F5' }}
+                    disabled={item.trackingStatus === 'pending'}
+                    sx={{
+                      mt: 0.5,
+                      mb: 0.5,
+                      py: 2,
+                      backgroundColor: '#F5F5F5',
+                      borderLeft:
+                        item.trackingStatus === 'accepted'
+                          ? '6px solid green'
+                          : item.trackingStatus === 'rejected'
+                          ? '6px solid red'
+                          : '6px solid orange',
+                    }}
                     selected={selectedIndex === index}
                     onClick={(event) => handleListItemClick(event, index)}
                   >
                     <ListItemAvatar>
-                      <Avatar>
-                        <Person />
+                      <Avatar sx={{ backgroundColor: 'orange' }}>
+                        <Typography fontSize={16} letterSpacing={1}>
+                          {getInitials(item.fullName)}
+                        </Typography>
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={item.fullName} secondary='Active' />
-                    <ListItemSecondaryAction>
-                      {selectedIndex === index && (
-                        <IconButton
-                          edge='end'
-                          color='error'
-                          onClick={() => handleUserDelete(item.phoneNumber)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      )}
-                    </ListItemSecondaryAction>
+                    <ListItemText primary={item.fullName} />
                   </ListItem>
                 ))}
             </List>

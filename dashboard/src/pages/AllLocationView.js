@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
-import { Avatar, Box, Container } from '@material-ui/core'
+import { Avatar, Box, Container, Typography } from '@mui/material'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import axios from 'axios'
+import LocationTimeline from '../components/dashboard/LocationTimeline'
 
 import { API_SERVICE } from '../URI'
 
@@ -18,25 +19,46 @@ const AllLocationView = (props) => {
   const [long, setlong] = useState(77.3)
   const [imgUri, setImgUri] = useState('')
   const [load, setLoad] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
 
   const [viewport, setViewport] = useState({
     width: '100%',
     height: 800,
     latitude: lat,
     longitude: long,
-    zoom: 15,
+    zoom: 11,
   })
 
   useEffect(async () => {
     setLoad(true)
     axios
-      .get(`${API_SERVICE}/api/v1/main/getlatlong/${lat}/${long}`)
+      .get(
+        `${API_SERVICE}/api/v1/main/getlatlong/${selectedLat}/${selectedLong}`
+      )
       .then((response) => {
         setuserlocationdata(response.data)
         setLoad(false)
       })
       .catch((err) => console.log(err))
-  }, [lat, long])
+  }, [selectedLat, selectedLong])
+
+  const handleShowDetails = () => {
+    if (showDetails) {
+      setShowDetails(false)
+      setViewport({ ...viewport, width: '100%' })
+    } else {
+      setShowDetails(true)
+      setViewport({ ...viewport, width: '100%' })
+    }
+  }
+
+  const getInitials = (name) => {
+    const arr = name.split(' ')
+    const initials =
+      arr[0].split('')[0].toUpperCase() + arr[1].split('')[0].toUpperCase()
+
+    return initials
+  }
 
   return (
     <>
@@ -47,6 +69,7 @@ const AllLocationView = (props) => {
         sx={{
           backgroundColor: 'background.default',
           minHeight: '100%',
+          display: 'flex',
         }}
       >
         <Container maxWidth={true}>
@@ -64,7 +87,7 @@ const AllLocationView = (props) => {
               >
                 <button
                   className='marker-btn'
-                  onClick={(e) => {
+                  onMouseEnter={(e) => {
                     e.preventDefault()
                     setSelected(true)
                     setSelectedLat(user.liveLocation.latitude)
@@ -74,11 +97,13 @@ const AllLocationView = (props) => {
 
                     setSelectedLocation(index)
                   }}
+                  onMouseLeave={(e) => {
+                    e.preventDefault()
+                    setSelected(false)
+                  }}
+                  onClick={handleShowDetails}
                 >
-                  <Avatar
-                    src={user.profilePicture}
-                    sx={{ backgroundColor: 'orange' }}
-                  />
+                  <Avatar sx={{ backgroundColor: 'orange' }}></Avatar>
                 </button>
               </Marker>
             ))}
@@ -106,9 +131,16 @@ const AllLocationView = (props) => {
             ) : null}
           </ReactMapGL>
         </Container>
+        {showDetails && (
+          <Box
+            sx={{ width: 400, display: 'flex', justifyContent: 'flex-start' }}
+          >
+            <LocationTimeline />
+          </Box>
+        )}
       </Box>
     </>
   )
 }
 
-export default AllLocationView
+export default React.memo(AllLocationView)

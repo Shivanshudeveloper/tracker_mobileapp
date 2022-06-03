@@ -22,7 +22,7 @@ import {
   Checkbox,
   OutlinedInput,
   Divider,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { db } from '../Firebase/index'
 import {
@@ -409,19 +409,16 @@ const Report = () => {
         </Button>
       </Box>
 
-      <TableContainer
-        component={Paper}
-        sx={{ my: 4, borderRadius: 5, boxShadow: 4 }}
-      >
+      <TableContainer component={Paper} sx={{ my: 4, boxShadow: 6 }}>
         <Table>
-          <TableHead sx={{ backgroundColor: '#ededed' }}>
+          <TableHead>
             <TableRow>
-              <TableCell>Device Name</TableCell>
+              <TableCell className='table-head'>Device Name</TableCell>
 
               {filter && selectedHotspots.length !== 0 ? (
                 <>
                   {selectedHotspots.map((x, i) => (
-                    <TableCell key={i} align='center'>
+                    <TableCell className='table-head' key={i} align='center'>
                       {x.hotspotName}
                     </TableCell>
                   ))}
@@ -429,7 +426,7 @@ const Report = () => {
               ) : (
                 <>
                   {hotspotNames.map((x, i) => (
-                    <TableCell key={i} align='center'>
+                    <TableCell className='table-head' key={i} align='center'>
                       {x.hotspotName}
                     </TableCell>
                   ))}

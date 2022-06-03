@@ -1,19 +1,19 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { makeStyles } from '@material-ui/styles'
-import Drawer from '@material-ui/core/Drawer'
-import List from '@material-ui/core/List'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import Divider from '@material-ui/core/Divider'
-import IconButton from '@material-ui/core/IconButton'
-import ListItem from '@material-ui/core/ListItem'
-import LocationOnIcon from '@material-ui/icons/LocationOn'
-import PhoneAndroidIcon from '@material-ui/icons/PhoneAndroid'
-import WifiTetheringIcon from '@material-ui/icons/WifiTethering'
-import NotificationsIcon from '@material-ui/icons/Notifications'
-import SignalCellularAltIcon from '@material-ui/icons/SignalCellularAlt'
-import { Settings, Home } from '@material-ui/icons'
-import { AppBar, Toolbar, Typography } from '@material-ui/core'
+import { makeStyles } from '@mui/styles'
+import Drawer from '@mui/material/Drawer'
+import List from '@mui/material/List'
+import CssBaseline from '@mui/material/CssBaseline'
+import Divider from '@mui/material/Divider'
+import IconButton from '@mui/material/IconButton'
+import ListItem from '@mui/material/ListItem'
+import LocationOnIcon from '@mui/icons-material/LocationOn'
+import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid'
+import GroupsIcon from '@mui/icons-material/Groups'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded'
+import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt'
+import { Settings, Home } from '@mui/icons-material'
+import { AppBar, Toolbar, Typography } from '@mui/material'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -51,20 +51,20 @@ const DashboardSidebar = () => {
 
   const paths = [
     '/app/dashboard',
-    '',
-    '/app/manage-devices',
     '/app/manage-hotspots',
-    // '/app/notifications',
+    '/app/manage-devices',
     '/app/reports',
+    '/app/manage-groups',
+    '/app/manage-admins',
   ]
 
   const names = [
     'Overview',
-    'Locations',
-    'Devices',
     'Hotspots',
-    // 'Notifications',
+    'Devices',
     'Reports',
+    'Groups',
+    'Admins',
   ]
 
   return (
@@ -79,12 +79,15 @@ const DashboardSidebar = () => {
         <div className={classes.listContainer}>
           <List>
             {[
-              <Home fontSize='large' sx={{ color: 'purple' }} />,
+              <Home fontSize='large' sx={{ color: '#6600cc' }} />,
               <LocationOnIcon fontSize='large' sx={{ color: 'red' }} />,
               <PhoneAndroidIcon fontSize='large' sx={{ color: '#007bff' }} />,
-              <WifiTetheringIcon fontSize='large' color='success' />,
-              // <NotificationsIcon fontSize='large' color='primary' />,
               <SignalCellularAltIcon fontSize='large' color='warning' />,
+              <GroupsIcon fontSize='large' color='success' />,
+              <AdminPanelSettingsIcon
+                fontSize='large'
+                sx={{ color: '#cc33ff' }}
+              />,
             ].map((text, index) => (
               <Link to={paths[index]}>
                 <ListItem
@@ -106,13 +109,13 @@ const DashboardSidebar = () => {
             ))}
           </List>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
           <Link to='/app/settings'>
             <IconButton sx={{ mb: 2 }}>
               <Settings fontSize='large' />
             </IconButton>
           </Link>
-        </div>
+        </div> */}
       </Drawer>
     </div>
   )

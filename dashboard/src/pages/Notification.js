@@ -14,8 +14,8 @@ import {
   Select,
   MenuItem,
   Divider,
-} from '@material-ui/core'
-import { Image } from '@material-ui/icons'
+} from '@mui/material'
+import { Image } from '@mui/icons-material'
 //import { firestore } from '../Firebase/index'
 import { db } from '../Firebase/index'
 import { onSnapshot, doc, query, orderBy } from 'firebase/firestore'

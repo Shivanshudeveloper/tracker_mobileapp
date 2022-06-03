@@ -1,31 +1,26 @@
 import { useState, useEffect } from 'react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link, Link as RouterLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import {
   AppBar,
   Avatar,
-  Badge,
   Box,
   Divider,
-  Hidden,
   IconButton,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Menu,
-  MenuItem,
   Popover,
   Toolbar,
-  Typography,
-} from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
-import NotificationsIcon from '@material-ui/icons/Notifications'
-import Account from '@material-ui/icons/AccountCircle'
+} from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import NotificationsIcon from '@mui/icons-material/Notifications'
+import Account from '@mui/icons-material/AccountCircle'
 import { db } from '../Firebase/index'
 import { onSnapshot, doc, query, orderBy } from 'firebase/firestore'
 import moment from 'moment'
-import { Image } from '@material-ui/icons'
+import { Image } from '@mui/icons-material'
 
 const DashboardNavbar = ({ onMobileNavOpen, ...rest }) => {
   const [notifications, setNotifications] = useState([])
@@ -143,26 +138,11 @@ const DashboardNavbar = ({ onMobileNavOpen, ...rest }) => {
           </List>
         </Popover>
 
-        <Box>
+        <Link to='/app/profile'>
           <IconButton onClick={handleMenu}>
             <Account sx={{ color: 'white' }} />
           </IconButton>
-          {/* <Menu
-            id='menu-appbar'
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          ></Menu> */}
-        </Box>
+        </Link>
       </Toolbar>
     </AppBar>
   )

@@ -1,19 +1,19 @@
-import { createTheme } from '@material-ui/core';
+import { createTheme } from '@mui/material'
 
 const theme = createTheme({
   palette: {
     background: {
       default: '#f4f6f8',
-      paper: '#ffffff'
+      paper: '#ffffff',
     },
     primary: {
       contrastText: '#ffffff',
-      main: '#5664d2'
+      main: '#5664d2',
     },
     text: {
       primary: '#172b4d',
-      secondary: '#6b778c'
-    }
+      secondary: '#6b778c',
+    },
   },
   shadows: [
     'none',
@@ -40,43 +40,43 @@ const theme = createTheme({
     '0 0 1px 0 rgba(0,0,0,0.31), 0 18px 30px -8px rgba(0,0,0,0.25)',
     '0 0 1px 0 rgba(0,0,0,0.31), 0 20px 32px -8px rgba(0,0,0,0.25)',
     '0 0 1px 0 rgba(0,0,0,0.31), 0 22px 34px -8px rgba(0,0,0,0.25)',
-    '0 0 1px 0 rgba(0,0,0,0.31), 0 24px 36px -8px rgba(0,0,0,0.25)'
+    '0 0 1px 0 rgba(0,0,0,0.31), 0 24px 36px -8px rgba(0,0,0,0.25)',
   ],
   typography: {
     h1: {
       fontWeight: 500,
       fontSize: 35,
-      letterSpacing: '-0.24px'
+      letterSpacing: '-0.24px',
     },
     h2: {
       fontWeight: 500,
       fontSize: 29,
-      letterSpacing: '-0.24px'
+      letterSpacing: '-0.24px',
     },
     h3: {
       fontWeight: 500,
       fontSize: 24,
-      letterSpacing: '-0.06px'
+      letterSpacing: '-0.06px',
     },
     h4: {
       fontWeight: 500,
       fontSize: 20,
-      letterSpacing: '-0.06px'
+      letterSpacing: '-0.06px',
     },
     h5: {
       fontWeight: 500,
       fontSize: 16,
-      letterSpacing: '-0.05px'
+      letterSpacing: '-0.05px',
     },
     h6: {
       fontWeight: 500,
       fontSize: 14,
-      letterSpacing: '-0.05px'
+      letterSpacing: '-0.05px',
     },
     overline: {
-      fontWeight: 500
-    }
-  }
-});
+      fontWeight: 500,
+    },
+  },
+})
 
-export default theme;
+export default theme

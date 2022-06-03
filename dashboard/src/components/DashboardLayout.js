@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { styled } from '@material-ui/core/styles'
+import { styled } from '@mui/material'
 import DashboardNavbar from './DashboardNavbar'
 import DashboardSidebar from './DashboardSidebar'
 
@@ -18,7 +18,7 @@ const DashboardLayoutWrapper = styled('div')(({ theme }) => ({
   overflow: 'hidden',
   paddingTop: 64,
   [theme.breakpoints.up('md')]: {
-    paddingLeft: 80,
+    paddingLeft: 68,
   },
 }))
 

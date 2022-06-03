@@ -50,3 +50,15 @@
 .notification::-webkit-scrollbar {
   display: none;
 }
+
+.gridItem::-webkit-scrollbar {
+  display: none;
+}
+
+.css-ha3bif-MuiTimelineItem-root:before {
+  flex: 0;
+}
+
+.table-head {
+  font-weight: 600 !important;
+}

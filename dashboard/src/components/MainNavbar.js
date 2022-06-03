@@ -1,5 +1,5 @@
 import { Link as RouterLink } from 'react-router-dom'
-import { AppBar, Toolbar } from '@material-ui/core'
+import { AppBar, Toolbar } from '@mui/material'
 
 const MainNavbar = (props) => (
   <AppBar elevation={0} {...props}>

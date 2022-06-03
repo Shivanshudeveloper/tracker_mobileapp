@@ -6,9 +6,10 @@ import {
   Avatar,
   IconButton,
   CircularProgress,
-} from '@material-ui/core'
-import { makeStyles } from '@material-ui/styles'
-import CreateIcon from '@material-ui/icons/Create'
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
+
+import CreateIcon from '@mui/icons-material/Create'
 import { storage, db } from '../../Firebase/index'
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 import { updateDoc, doc } from 'firebase/firestore'

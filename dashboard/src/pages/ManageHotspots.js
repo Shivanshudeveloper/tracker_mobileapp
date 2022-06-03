@@ -23,8 +23,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-} from '@material-ui/core'
-import { Create, Search } from '@material-ui/icons'
+} from '@mui/material'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import EditHotspotDialogForm from '../components/hotspot/EditHotspotDialogForm'
 import {
@@ -42,7 +41,7 @@ import Geocoder from 'react-map-gl-geocoder'
 import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
 import axios from 'axios'
 import { API_SERVICE } from '../URI'
-import HotspotSetting from '../components/settings/HotspotSetting'
+import HotspotTable from '../components/hotspot/HotspotTable'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -62,7 +61,6 @@ const ManageHotspots = () => {
   const [groups, setGroups] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [location, setLocation] = useState('')
-  const [searchResult, setSearchResult] = useState([])
   const [trackingGroups, setTrackingGroups] = useState([])
   const [trackingHotspots, setTrackingHotspots] = useState([])
   const [lat, setlat] = useState(28.6077159025)
@@ -82,6 +80,14 @@ const ManageHotspots = () => {
   const [snackOpen, setSnackOpen] = useState(false)
   const [success, setSuccess] = useState(null)
   const [error, setError] = useState(null)
+  // map states
+  const [allViewport, setAllViewport] = useState({
+    width: '100%',
+    height: 800,
+    latitude: 28.52,
+    longitude: 77.402,
+    zoom: 10,
+  })
 
   const userData = sessionStorage.getItem('userData')
     ? JSON.parse(sessionStorage.getItem('userData'))
@@ -213,19 +219,6 @@ const ManageHotspots = () => {
     setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
   }
 
-  const search = (e) => {
-    const val = e.target.value
-    setSearchQuery(val)
-
-    const temp = trackingHotspots
-
-    const res = temp.filter((item) =>
-      item.hotspotName.toLowerCase().includes(val.toLowerCase())
-    )
-
-    setSearchResult(res)
-  }
-
   const toggleEditHotspotDialog = (item) => {
     if (dialogOpen) {
       setDialogOpen(false)
@@ -235,156 +228,67 @@ const ManageHotspots = () => {
     }
   }
 
+  console.log(trackingHotspots)
+
   return (
     <Box sx={{ width: '100%', p: 4 }}>
       <h2>Manage Hotspots</h2>
-      <Box
-        sx={{
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          flexDirection: 'row',
-          gap: 2,
-        }}
-      >
-        <Button
-          variant='contained'
-          sx={{
-            py: 1.2,
-          }}
-          onClick={() => setAddHotspotDialog(true)}
-        >
-          Add New Hotspot
-        </Button>
-      </Box>
-      {/* <Grid container spacing={2}>
 
-        <Grid item md={7}>
-          <Paper
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Box
             sx={{
-              mt: 5,
-              p: 5,
-              width: '80%',
-              mb: 5,
-              borderRadius: 5,
-              boxShadow: 5,
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              flexDirection: 'row',
+              gap: 2,
             }}
-          ></Paper>
+          >
+            <Button
+              variant='contained'
+              sx={{
+                py: 1.2,
+              }}
+              onClick={() => setAddHotspotDialog(true)}
+            >
+              Add New Hotspot
+            </Button>
+          </Box>
+
+          <Box sx={{ my: 5 }}>
+            <HotspotTable
+              success={setSuccess}
+              error={setError}
+              open={setSnackOpen}
+              toggleEditHotspotDialog={toggleEditHotspotDialog}
+            />
+          </Box>
         </Grid>
-
-
-        <Grid item md={5}>
-          <Paper sx={{ mt: 5, p: 5, borderRadius: 5, boxShadow: 5 }}>
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography
-                variant='h3'
-                component='h3'
-                alignSelf='center'
-                sx={{ mb: 2 }}
+        <Grid item xs={12} md={6}>
+          <ReactMapGL
+            {...allViewport}
+            mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
+            mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+            onViewportChange={(nextViewport) => setAllViewport(nextViewport)}
+          >
+            {trackingHotspots.map((hotspot) => (
+              <Marker
+                key={hotspot.id}
+                latitude={hotspot.location.lat}
+                longitude={hotspot.location.long}
               >
-                Added Hostspots
-              </Typography>
-            </Stack>
-            <Box sx={{ my: 1, py: 1.2 }}>
-              <TextField
-                fullWidth
-                id='phoneNumber'
-                name='phoneNumber'
-                placeholder='Search Hotspots'
-                onChange={(e) => search(e)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position='start'>
-                      <Search />
-                    </InputAdornment>
-                  ),
-                }}
-                value={searchQuery}
-              />
-            </Box>
-            <Box sx={{ my: 1 }}>
-              {searchQuery.length !== 0 &&
-                searchResult.map((item, index) => (
-                  <Box key={item.id}>
-                    <Divider />
-                    <ListItem
-                      secondaryAction={
-                        <IconButton
-                          edge='end'
-                          aria-label='edit'
-                          color='primary'
-                          onClick={() => toggleEditHotspotDialog(item)}
-                        >
-                          <Create />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemText
-                        primary={item.hotspotName}
-                        secondary={
-                          <div
-                            style={{ display: 'flex', flexDirection: 'row' }}
-                          >
-                            {item.groups.map((x) => (
-                              <p style={{ marginRight: '10px' }}>
-                                {x.groupName} ,
-                              </p>
-                            ))}
-                          </div>
-                        }
-                      />
-                    </ListItem>
-                  </Box>
-                ))}
-
-              {searchQuery.length === 0 &&
-                trackingHotspots.map((item, index) => (
-                  <Box key={item.id}>
-                    <Divider />
-                    <ListItem
-                      secondaryAction={
-                        <IconButton
-                          edge='end'
-                          aria-label='edit'
-                          color='primary'
-                          onClick={() => toggleEditHotspotDialog(item)}
-                        >
-                          <Create />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemText
-                        primary={item.hotspotName}
-                        secondary={
-                          <div
-                            style={{ display: 'flex', flexDirection: 'row' }}
-                          >
-                            {item.groups.map((x, index) => (
-                              <p style={{ marginRight: '10px' }}>
-                                {x.groupName}
-                                <span>
-                                  {index + 1 === item.groups.length ? '' : ','}
-                                </span>
-                              </p>
-                            ))}
-                          </div>
-                        }
-                      />
-                    </ListItem>
-                  </Box>
-                ))}
-            </Box>
-          </Paper>
+                <button className='marker-btn'>
+                  <img
+                    alt='Image'
+                    src='https://www.nbp.co.uk/Content/Images/uploaded/contact-branch-details.png'
+                  />
+                </button>
+              </Marker>
+            ))}
+          </ReactMapGL>
         </Grid>
-      </Grid> */}
-      <Box sx={{ my: 5 }}>
-        <HotspotSetting
-          success={setSuccess}
-          error={setError}
-          open={setSnackOpen}
-          toggleEditHotspotDialog={toggleEditHotspotDialog}
-        />
-      </Box>
+      </Grid>
 
       <Dialog
         open={addHotspotDialog}
