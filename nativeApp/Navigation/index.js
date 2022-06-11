@@ -16,7 +16,6 @@ import LocationHistoryScreen from '../Screens/LocationHistoryScreen'
 import SettingScreen from '../Screens/SettingScreen'
 import LoginScreen from '../Screens/LoginScreen'
 import VerifyOtpScreen from '../Screens/VerifyOtpScreen'
-import CompleteProfileScreen from '../Screens/CompleteProfileScreen'
 import TrackerListScreen from '../Screens/TrackerListScreen'
 
 import { auth } from '../firebase'
@@ -75,11 +74,6 @@ const RootNavigator = () => {
       <Stack.Screen
         name='TrackerList'
         component={TrackerListScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name='CompleteProfile'
-        component={CompleteProfileScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

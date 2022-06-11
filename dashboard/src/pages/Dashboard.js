@@ -358,19 +358,21 @@ const Dashboard = () => {
           </Stack>
           <Box>
             {selectedIndex === -1 && (
-              <AllLocationView userList={userLocations} />
+              <AllLocationView
+                userList={userLocations}
+                senderId={userData.uid}
+              />
             )}
-
             {selectedIndex >= 0 && searchResult.length === 0 && (
               <Locationview
-                userList={trackingUsersList[selectedIndex]}
+                user={trackingUsersList[selectedIndex]}
                 index={selectedIndex}
               />
             )}
 
             {selectedIndex >= 0 && searchResult.length !== 0 && (
               <Locationview
-                userList={searchResult[selectedIndex]}
+                user={searchResult[selectedIndex]}
                 index={selectedIndex}
               />
             )}

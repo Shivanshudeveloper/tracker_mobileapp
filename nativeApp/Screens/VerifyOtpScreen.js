@@ -94,11 +94,8 @@ const VerifyOtpScreen = (props) => {
         AsyncStorage.setItem('userData', JSON.stringify(docSnap.data()))
         navigation.navigate('MainStack')
       } else {
-        console.log('Here')
         const data = {
-          name: '',
           phoneNumber,
-          profilePicture: '',
           liveLocation: {
             latitude: 0,
             longitude: 0,

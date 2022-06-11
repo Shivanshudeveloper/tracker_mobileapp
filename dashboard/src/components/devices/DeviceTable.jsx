@@ -29,7 +29,6 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDoc,
   onSnapshot,
   query,
   setDoc,
@@ -42,21 +41,6 @@ const DeviceSetting = (props) => {
   const { success, error, open, toggleEditDeviceDialog } = props
 
   const [deviceData, setDeviceData] = useState([])
-  const [schedule, setSchedule] = useState({})
-  const [startDay, setStartDay] = useState('Sunday')
-  const [endDay, setEndDay] = useState('Saturday')
-  const [time, setTime] = useState(['10:00', '11:00'])
-  const [trackingStatus, setTrackingStatus] = useState([])
-
-  const week = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ]
 
   const userData = sessionStorage.getItem('userData')
     ? JSON.parse(sessionStorage.getItem('userData'))
@@ -73,82 +57,26 @@ const DeviceSetting = (props) => {
           devices.push({ data: snap.data(), id: snap.id })
         })
         setDeviceData(devices)
-        // const statusArr = []
-        // devices.forEach(async (device) => {
-        //   await getStatus(device)
-        //     .then((data) => {
-        //       statusArr.push(data)
-        //     })
-        //     .then(() => {
-        //       setTrackingStatus([...statusArr])
-        //     })
-        // })
       })
 
       return () => unsub()
     }
   }, [])
 
-  useEffect(() => {
-    const ref = doc(db, 'trackingSchedule', userData.uid)
-    const unsub = onSnapshot(ref, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data()
-        setSchedule(data)
-        setStartDay(data.startDay)
-        setEndDay(data.endDay)
-        setTime([data.time.startTime, data.time.endTime])
-      }
-    })
-
-    return () => unsub()
-  }, [])
-
-  // const getStatus = (device) => {
-  //   return new Promise(async (resolve) => {
-  //     const ref = doc(db, 'trackingRequest', device.data.phoneNumber)
-  //     const snap = await getDoc(ref)
-  //     if (snap.exists()) {
-  //       const list = snap.data().requestList
-  //       const data = list.filter((x) => x.senderId === userData.uid)
-  //       if (data.length !== 0) {
-  //         const status = data[0].requestStatus
-  //         resolve({ status, phoneNumber: device.data.phoneNumber })
-  //       } else {
-  //         resolve({ status: '---', phoneNumber: device.data.phoneNumber })
-  //       }
-  //     } else {
-  //       resolve({ status: '---', phoneNumber: device.data.phoneNumber })
+  // useEffect(() => {
+  //   const ref = doc(db, 'trackingSchedule', userData.uid)
+  //   const unsub = onSnapshot(ref, (snapshot) => {
+  //     if (snapshot.exists()) {
+  //       const data = snapshot.data()
+  //       setSchedule(data)
+  //       setStartDay(data.startDay)
+  //       setEndDay(data.endDay)
+  //       setTime([data.time.startTime, data.time.endTime])
   //     }
   //   })
-  // }
 
-  const saveSchedule = () => {
-    console.log(startDay, endDay, time)
-    const ref = doc(db, 'trackingSchedule', userData.uid)
-
-    setDoc(
-      ref,
-      {
-        startDay,
-        endDay,
-        time: {
-          startTime: time[0],
-          endTime: time[1],
-        },
-      },
-      { merge: true }
-    )
-      .then(() => {
-        success('Scheduled Saved Successfully')
-        open(true)
-        props.setScheduleDialog(false)
-      })
-      .catch((err) => {
-        error(err.message)
-        open(true)
-      })
-  }
+  //   return () => unsub()
+  // }, [])
 
   const deleteDevice = async (item, deviceId) => {
     const requestRef = doc(db, 'trackingRequest', item.phoneNumber)
@@ -176,123 +104,17 @@ const DeviceSetting = (props) => {
       .catch((err) => console.log(err.message))
   }
 
-  // const fetchStatus = (phoneNumber) => {
-  //   let res = ''
-
-  //   const arr = trackingStatus.filter((x) => x.phoneNumber === phoneNumber)
-
-  //   if (arr[0] !== undefined) {
-  //     res = arr[0].status
-  //   } else {
-  //     res = '---'
-  //   }
-
-  //   return res
-  // }
-
-  console.log(deviceData)
-
   return (
     <Box>
-      <Dialog
-        open={props.scheduleDialog}
-        onClose={() => props.setScheduleDialog(false)}
-      >
-        <DialogTitle sx={{ fontSize: 22 }}>
-          Change Tracking Schedule
-        </DialogTitle>
-        <DialogContent sx={{ width: 500, mt: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <FormControl variant='outlined' sx={{ m: 1, width: 210 }}>
-              <InputLabel id='Start Day'>Start Day</InputLabel>
-              <Select
-                labelId='Start Day'
-                value={startDay}
-                onChange={(e) => setStartDay(e.target.value)}
-                label='Start Day'
-              >
-                {week.map((day, i) => (
-                  <MenuItem key={i} value={day} sx={{ p: 1.2 }}>
-                    {day}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl variant='outlined' sx={{ m: 1, width: 210 }}>
-              <InputLabel id='End Day'>End Day</InputLabel>
-              <Select
-                labelId='Emd Day'
-                value={endDay}
-                onChange={(e) => setEndDay(e.target.value)}
-                label='End Day'
-              >
-                {week.slice(week.indexOf(startDay)).map((day, i) => (
-                  <MenuItem key={i} value={day} sx={{ p: 1.2 }}>
-                    {day}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-
-          <Box
-            sx={{
-              height: '58px',
-              display: 'flex',
-              ml: 1,
-              mr: 1,
-              mb: 2,
-            }}
-          >
-            <TimeRangePicker
-              disableClock={true}
-              onChange={setTime}
-              value={time}
-              rangeDivider='-- to --'
-            />
-          </Box>
-
-          <Button
-            onClick={saveSchedule}
-            variant='contained'
-            sx={{ py: 1.3, px: 5, fontSize: 16, ml: 1 }}
-          >
-            Save
-          </Button>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => props.setScheduleDialog(false)}>Cancel</Button>
-          {/* <Button onClick={() => createGroup()}>Save</Button> */}
-        </DialogActions>
-      </Dialog>
-
-      {/* <Box
-        sx={{
-          mb: 3,
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          flexWrap: 'wrap',
-        }}
-      >
-        <Box
-          sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-        >
-          
-        </Box>
-      </Box> */}
       <TableContainer component={Paper} sx={{ boxShadow: 6 }}>
-        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
-              <TableCell align='center'>Mobile Number</TableCell>
-              <TableCell align='center'>Groups Added</TableCell>
-              <TableCell align='center'>Tracking Schedule</TableCell>
-              <TableCell align='center'>Tracking Status</TableCell>
-              <TableCell align='center'>Action</TableCell>
+              <TableCell align="center">Mobile Number</TableCell>
+              <TableCell align="center">Groups Added</TableCell>
+              <TableCell align="center">Tracking Status</TableCell>
+              <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -302,48 +124,41 @@ const DeviceSetting = (props) => {
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell>{data.fullName}</TableCell>
-                <TableCell align='center'>{data.phoneNumber}</TableCell>
-                <TableCell align='center'>
+                <TableCell align="center">+91 {data.phoneNumber}</TableCell>
+                <TableCell align="center">
                   {data.deviceGroups.length === 0 && <>---</>}
                   {data.deviceGroups.map((x, i) => (
                     <div key={i}>
-                      <Typography variant='p' component='p'>
+                      <Typography variant="p" component="p">
                         {x.groupName}
                         {i !== data.deviceGroups.length - 1 && <>{' , '}</>}
                       </Typography>
                     </div>
                   ))}
                 </TableCell>
-                {Object.entries(schedule).length !== 0 ? (
-                  <TableCell align='center'>
-                    {`${schedule.startDay} to ${schedule.endDay} , ${schedule.time.startTime} to ${schedule.time.endTime}`}
-                  </TableCell>
-                ) : (
-                  <TableCell align='center'>---</TableCell>
-                )}
 
-                <TableCell align='center'>
+                <TableCell align="center">
                   {data.trackingStatus === 'accepted' && (
-                    <Chip label='Accepted' color='success' />
+                    <Chip label="Accepted" color="success" />
                   )}
                   {data.trackingStatus === 'rejected' && (
-                    <Chip label='Rejected' color='error' />
+                    <Chip label="Rejected" color="error" />
                   )}
                   {data.trackingStatus === 'pending' && (
-                    <Chip label='Pending' color='warning' />
+                    <Chip label="Pending" color="warning" />
                   )}
                 </TableCell>
-                <TableCell align='center' sx={{ p: 0 }}>
+                <TableCell align="center" sx={{ p: 0 }}>
                   <IconButton
-                    edge='end'
-                    aria-label='edit'
-                    color='primary'
+                    edge="end"
+                    aria-label="edit"
+                    color="primary"
                     onClick={() => toggleEditDeviceDialog(data)}
                   >
                     <Create />
                   </IconButton>
                   <IconButton
-                    color='error'
+                    color="error"
                     onClick={() => deleteDevice(data, id)}
                   >
                     <DeleteIcon />
@@ -358,4 +173,4 @@ const DeviceSetting = (props) => {
   )
 }
 
-export default DeviceSetting
+export default React.memo(DeviceSetting)

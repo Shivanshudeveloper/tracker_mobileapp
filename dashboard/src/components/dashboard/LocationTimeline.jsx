@@ -6,16 +6,15 @@ import {
   TimelineContent,
   TimelineDot,
   TimelineItem,
-  TimelineOppositeContent,
   TimelineSeparator,
 } from '@mui/lab'
+import moment from 'moment'
 
-const LocationTimeline = () => {
-  const arr = [1, 2, 3, 4, 5]
+const LocationTimeline = (props) => {
   return (
     <Box>
       <Timeline sx={{ px: 0, mr: 4 }}>
-        {arr.map(() => (
+        {props.locations.map((location) => (
           <TimelineItem>
             <TimelineSeparator>
               <TimelineDot variant="outlined" color="error" />
@@ -23,11 +22,11 @@ const LocationTimeline = () => {
             </TimelineSeparator>
             <TimelineContent>
               <Box sx={{ pb: 1.3 }}>
-                <Typography component="h6">
-                  Mayur Vihar Phase 1, New Delhi 110091
-                </Typography>
+                <Typography component="h6">{location.address}</Typography>
                 <Typography component="p" sx={{ fontSize: 12 }}>
-                  2 June 2022, 9.30 pm
+                  {moment(location.createdAt.seconds * 1000).format(
+                    'DD MMMM YYYY - hh:mm a',
+                  )}
                 </Typography>
               </Box>
             </TimelineContent>
@@ -38,4 +37,4 @@ const LocationTimeline = () => {
   )
 }
 
-export default LocationTimeline
+export default React.memo(LocationTimeline)

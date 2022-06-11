@@ -63,6 +63,7 @@ const EditDeviceDialog = (props) => {
   useEffect(() => {
     const arr = []
     selectedGroups.forEach((x) => {
+      console.log(x)
       const d = trackingGroups.filter((item) => item.id === x)[0]
       const data = {
         groupName: d.groupName,
@@ -109,29 +110,26 @@ const EditDeviceDialog = (props) => {
       })
   }
 
-  console.log(selectedDevice)
-  console.log('New', newDeviceGroup)
-
   return (
     <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
       <DialogTitle sx={{ fontSize: 22 }}>Edit Device</DialogTitle>
       <DialogContent sx={{ width: 500 }}>
         <TextField
           autoFocus
-          margin='dense'
-          id='name'
-          label='Full Name'
-          type='text'
+          margin="dense"
+          id="name"
+          label="Full Name"
+          type="text"
           fullWidth
-          variant='outlined'
+          variant="outlined"
           value={newFullName}
           onChange={(e) => setNewFullName(e.target.value)}
         />
-        <FormControl margin='normal' fullWidth variant='outlined'>
-          <InputLabel id='device-group'>Select Group</InputLabel>
+        <FormControl margin="normal" fullWidth variant="outlined">
+          <InputLabel id="device-group">Select Group</InputLabel>
           <Select
-            labelId='device-group'
-            label='Select Group'
+            labelId="device-group"
+            label="Select Group"
             value={selectedGroups}
             onChange={handleChange}
             multiple

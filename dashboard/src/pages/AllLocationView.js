@@ -4,22 +4,33 @@ import { Avatar, Box, Container, Typography } from '@mui/material'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import axios from 'axios'
 import LocationTimeline from '../components/dashboard/LocationTimeline'
+import { db } from '../Firebase/index'
+import {
+  collection,
+  doc,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore'
 
 import { API_SERVICE } from '../URI'
 
 const AllLocationView = (props) => {
-  const { userList } = props
+  const { userList, senderId } = props
 
   const [selected, setSelected] = useState(false)
   const [selectedLat, setSelectedLat] = useState(null)
   const [selectedLong, setSelectedLong] = useState(null)
   const [selectedLocation, setSelectedLocation] = useState(0)
+  const [selectedDevice, setSelectedDevice] = useState('')
   const [userlocationdata, setuserlocationdata] = useState({})
   const [lat, setlat] = useState(28.598)
   const [long, setlong] = useState(77.3)
-  const [imgUri, setImgUri] = useState('')
   const [load, setLoad] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
+  const [locations, setLocations] = useState([])
 
   const [viewport, setViewport] = useState({
     width: '100%',
@@ -42,13 +53,39 @@ const AllLocationView = (props) => {
       .catch((err) => console.log(err))
   }, [selectedLat, selectedLong])
 
-  const handleShowDetails = () => {
+  useEffect(() => {
+    if (selectedDevice.length === 0) {
+      return
+    }
+    const ref = collection(db, 'trackingLocations', selectedDevice, 'locations')
+    const q = query(
+      ref,
+      where('trackerId', '==', senderId),
+      orderBy('createdAt', 'desc'),
+      limit(100)
+    )
+
+    const unsub = onSnapshot(q, (snaps) => {
+      const arr = []
+      snaps.forEach((snap) => {
+        const data = snap.data()
+        arr.push(data)
+      })
+
+      setLocations(arr)
+    })
+
+    return () => unsub()
+  }, [selectedDevice])
+
+  const handleShowDetails = (user) => {
     if (showDetails) {
       setShowDetails(false)
       setViewport({ ...viewport, width: '100%' })
     } else {
       setShowDetails(true)
       setViewport({ ...viewport, width: '100%' })
+      setSelectedDevice(user.phoneNumber)
     }
   }
 
@@ -101,7 +138,7 @@ const AllLocationView = (props) => {
                     e.preventDefault()
                     setSelected(false)
                   }}
-                  onClick={handleShowDetails}
+                  onClick={() => handleShowDetails(user)}
                 >
                   <Avatar sx={{ backgroundColor: 'orange' }}></Avatar>
                 </button>
@@ -135,7 +172,7 @@ const AllLocationView = (props) => {
           <Box
             sx={{ width: 400, display: 'flex', justifyContent: 'flex-start' }}
           >
-            <LocationTimeline />
+            <LocationTimeline locations={locations} />
           </Box>
         )}
       </Box>

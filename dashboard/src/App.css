@@ -62,3 +62,17 @@
 .table-head {
   font-weight: 600 !important;
 }
+
+.css-nh0gx2-MuiTableCell-root {
+  border-width: 0 !important;
+  padding: 16px 16px !important;
+}
+
+.css-810veu-MuiContainer-root {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+}
+
+.css-ha3bif-MuiTimelineItem-root:before {
+  padding-left: 3px !important;
+}

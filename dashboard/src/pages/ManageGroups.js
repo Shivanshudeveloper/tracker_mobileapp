@@ -2,9 +2,12 @@ import React, { useState } from 'react'
 import { Alert, Box, Button, Snackbar, Stack } from '@mui/material'
 import CreateGroupDialog from '../components/groups/CreateGroupDialog'
 import GroupTable from '../components/groups/GroupTable'
+import EditGroupDialog from '../components/groups/EditGroupDialog'
 
 const ManageGroups = () => {
-  const [open, setOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedGroup, setSelectedGroup] = useState({})
   const [snackOpen, setSnackOpen] = useState(false)
   const [success, setSuccess] = useState(null)
   const [error, setError] = useState(null)
@@ -27,24 +30,30 @@ const ManageGroups = () => {
     <Box sx={{ p: 4 }}>
       <h2>Manage Groups</h2>
 
-      <Stack direction='row' justifyContent='flex-end'>
+      <Stack direction='row' justifyContent='flex-end' rowGap={2} columnGap={2}>
         <Button
           variant='contained'
           sx={{ py: 1.2 }}
-          onClick={() => setOpen(true)}
+          onClick={() => setCreateOpen(true)}
         >
           Create New Group
         </Button>
       </Stack>
 
       <Box sx={{ my: 5 }}>
-        <GroupTable success={setSuccess} error={setError} open={setSnackOpen} />
+        <GroupTable
+          success={setSuccess}
+          error={setError}
+          open={setSnackOpen}
+          setSelectedGroup={setSelectedGroup}
+          setEditOpen={setEditOpen}
+        />
       </Box>
 
       <Box>
         <CreateGroupDialog
-          open={open}
-          setOpen={setOpen}
+          open={createOpen}
+          setOpen={setCreateOpen}
           createdBy={{
             id: userData.uid,
             fullName: `${userData.firstName} ${userData.lastName}`,
@@ -52,6 +61,21 @@ const ManageGroups = () => {
           setError={setError}
           setSnackOpen={setSnackOpen}
           setSuccess={setSuccess}
+        />
+      </Box>
+
+      <Box>
+        <EditGroupDialog
+          open={editOpen}
+          setOpen={setEditOpen}
+          selectedGroup={selectedGroup}
+          setError={setError}
+          setSnackOpen={setSnackOpen}
+          setSuccess={setSuccess}
+          createdBy={{
+            id: userData.uid,
+            fullName: `${userData.firstName} ${userData.lastName}`,
+          }}
         />
       </Box>
 

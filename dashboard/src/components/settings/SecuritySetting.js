@@ -8,17 +8,9 @@ import {
   EmailAuthProvider,
 } from 'firebase/auth'
 
-const useStyles = makeStyles((theme) => ({
-  form: {
-    width: '100%',
-    marginTop: theme.spacing(1),
-  },
-}))
-
 const SecuritySetting = (props) => {
   const { open, success, error } = props
 
-  const classes = useStyles()
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
 
@@ -72,7 +64,7 @@ const SecuritySetting = (props) => {
 
   return (
     <Box>
-      <form className={classes.form} noValidate>
+      <form noValidate>
         <TextField
           variant='outlined'
           margin='normal'

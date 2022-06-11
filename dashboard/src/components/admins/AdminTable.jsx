@@ -3,7 +3,6 @@ import {
   Box,
   IconButton,
   Paper,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -13,31 +12,37 @@ import {
   Typography,
 } from '@mui/material'
 import { Delete, Create } from '@mui/icons-material'
+import { arrayRemove, deleteDoc, doc, updateDoc } from 'firebase/firestore'
+import { db } from '../../Firebase/index'
+import moment from 'moment'
 
 const AdminTable = (props) => {
-  function createData(name, calories, fat, carbs, protein) {
-    return { name, calories, fat, carbs, protein }
-  }
+  const deleteAdmin = async (admin) => {
+    const ref = doc(db, 'trackerAdmin', admin.id)
+    await deleteDoc(ref)
+      .then(() => {
+        const groups = admin.groups
 
-  const rows = [
-    createData('Gaurav Ojha', 159984989, 1111111111, 'gaurav@email.com', 4.0),
-    createData('Mehul Kain', 237848494, 9999999999, 'mehul@email.com', 4.3),
-    createData(
-      'Shubham Rawat',
-      2624834889,
-      1616161616,
-      'shubham@email.com',
-      6.0,
-    ),
-    createData(
-      'Muskan Qureshi',
-      305489844,
-      3333333333,
-      'muskan@email.com',
-      4.3,
-    ),
-    createData('Rohit Pawar', 3568383948, 1611611611, 'rohit@email.com', 3.9),
-  ]
+        if (groups !== undefined) {
+          for (let group of groups) {
+            updateDoc(doc(db, 'trackingGroups', group.id), {
+              admins: arrayRemove({
+                fullName: admin.fullName,
+                id: admin.id,
+              }),
+            }).catch((err) => {
+              console.log(err.message)
+            })
+          }
+        }
+      })
+      .then(() => {
+        console.log('Admin Deleted')
+      })
+      .catch((err) => {
+        console.log(err.message)
+      })
+  }
 
   return (
     <Box>
@@ -50,13 +55,16 @@ const AdminTable = (props) => {
                 Admin Id
               </TableCell>
               <TableCell className="table-head" align="center">
-                Phone Number
-              </TableCell>
-              <TableCell className="table-head" align="center">
                 Email
               </TableCell>
               <TableCell className="table-head" align="center">
                 Groups
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">
+                Created At
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">
+                Modified At
               </TableCell>
               <TableCell className="table-head" align="center">
                 Action
@@ -73,9 +81,11 @@ const AdminTable = (props) => {
                   {row.fullName}
                 </TableCell>
                 <TableCell align="center">{row.id}</TableCell>
-                <TableCell align="center">+91 {row.phoneNumber}</TableCell>
                 <TableCell align="center">{row.email}</TableCell>
-                <TableCell align="center">
+                <TableCell
+                  align="center"
+                  sx={{ display: 'flex', justifyContent: 'center' }}
+                >
                   {row.groups.length === 0 && <>---</>}
                   {row.groups.map((x, i) => (
                     <div key={i}>
@@ -86,11 +96,26 @@ const AdminTable = (props) => {
                     </div>
                   ))}
                 </TableCell>
+
+                <TableCell align="center" component="th" scope="row">
+                  {moment(row.createdAt.seconds * 1000).format('DD MMM YYYY')}
+                </TableCell>
+
+                <TableCell align="center" component="th" scope="row">
+                  {moment(row.modifiedAt.seconds * 1000).format('DD MMMM YYYY')}
+                </TableCell>
+
                 <TableCell align="center" sx={{ p: 0 }}>
-                  <IconButton color="success">
+                  <IconButton
+                    color="success"
+                    onClick={() => {
+                      props.setSelectedAdmin(row)
+                      props.setShowEditDialog(true)
+                    }}
+                  >
                     <Create />
                   </IconButton>
-                  <IconButton color="error">
+                  <IconButton color="error" onClick={() => deleteAdmin(row)}>
                     <Delete />
                   </IconButton>
                 </TableCell>

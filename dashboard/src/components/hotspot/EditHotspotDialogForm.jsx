@@ -96,7 +96,7 @@ const EditHotspotDialogForm = (props) => {
 
   const handleViewportChange = useCallback(
     (newViewport) => setViewport(newViewport),
-    []
+    [],
   )
 
   const handleGeocoderViewportChange = useCallback((newViewport) => {
@@ -144,7 +144,11 @@ const EditHotspotDialogForm = (props) => {
             hotspot: arrayRemove({
               hotspotName: selectedHotspot.hotspotName,
               id: selectedHotspot.id,
-              zipCode: selectedHotspot.location.zipCode,
+              location: {
+                lat: Number(selectedHotspot.location.lat.toPrecision(6)),
+                long: Number(selectedHotspot.location.long.toPrecision(6)),
+                zipCode: selectedHotspot.location.zipCode,
+              },
             }),
           }).catch((error) => console.log(error))
         })
@@ -155,14 +159,22 @@ const EditHotspotDialogForm = (props) => {
             hotspot: arrayRemove({
               hotspotName: selectedHotspot.hotspotName,
               id: selectedHotspot.id,
-              zipCode: selectedHotspot.location.zipCode,
+              location: {
+                lat: Number(selectedHotspot.location.lat.toPrecision(6)),
+                long: Number(selectedHotspot.location.long.toPrecision(6)),
+                zipCode: selectedHotspot.location.zipCode,
+              },
             }),
           }).catch((error) => console.log(error))
           updateDoc(groupRef, {
             hotspot: arrayUnion({
               hotspotName,
               id: selectedHotspot.id,
-              zipCode,
+              location: {
+                lat: Number(lat.toPrecision(6)),
+                long: Number(long.toPrecision(6)),
+                zipCode: selectedHotspot.location.zipCode,
+              },
             }),
           }).catch((error) => console.log(error))
         })
@@ -184,22 +196,22 @@ const EditHotspotDialogForm = (props) => {
       <DialogContent sx={{ width: '1200' }}>
         <form noValidate style={{ marginBottom: '20px' }}>
           <TextField
-            variant='outlined'
-            margin='normal'
+            variant="outlined"
+            margin="normal"
             fullWidth
-            id='hotspotName'
-            label='Hotspot Name'
-            name='hotspotName'
+            id="hotspotName"
+            label="Hotspot Name"
+            name="hotspotName"
             autoFocus
             value={hotspotName}
             onChange={(e) => setHotspotName(e.target.value)}
           />
 
-          <FormControl margin='normal' fullWidth variant='outlined'>
-            <InputLabel id='device-group'>Select Group</InputLabel>
+          <FormControl margin="normal" fullWidth variant="outlined">
+            <InputLabel id="device-group">Select Group</InputLabel>
             <Select
-              labelId='device-group'
-              label='Select Group'
+              labelId="device-group"
+              label="Select Group"
               value={selectedGroups}
               onChange={handleChange}
               multiple
@@ -216,12 +228,12 @@ const EditHotspotDialogForm = (props) => {
           </FormControl>
 
           <TextField
-            variant='outlined'
-            margin='normal'
+            variant="outlined"
+            margin="normal"
             fullWidth
-            id='location'
-            label='Set Location'
-            name='location'
+            id="location"
+            label="Set Location"
+            name="location"
             value={location}
             onChange={(e) => {}}
           />
@@ -229,8 +241,8 @@ const EditHotspotDialogForm = (props) => {
         <ReactMapGL
           {...viewport}
           ref={mapRef}
-          mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-          mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+          mapboxApiAccessToken="pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw"
+          mapStyle="mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63"
           onViewportChange={(nextViewport) => setViewport(nextViewport)}
           onClick={async (e) => {
             setlat(e.lngLat[1])
@@ -242,17 +254,17 @@ const EditHotspotDialogForm = (props) => {
           <Geocoder
             mapRef={mapRef}
             onViewportChange={handleGeocoderViewportChange}
-            mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-            position='top-left'
+            mapboxApiAccessToken="pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw"
+            position="top-left"
             marker={true}
-            countries='IN'
+            countries="IN"
             reverseGeocode={true}
           />
-          <Marker key='1' latitude={lat} longitude={long}>
-            <button className='marker-btn'>
+          <Marker key="1" latitude={lat} longitude={long}>
+            <button className="marker-btn">
               <img
-                alt='Image'
-                src='https://www.nbp.co.uk/Content/Images/uploaded/contact-branch-details.png'
+                alt="Image"
+                src="https://www.nbp.co.uk/Content/Images/uploaded/contact-branch-details.png"
               />
             </button>
           </Marker>

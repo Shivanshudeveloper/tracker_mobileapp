@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   Dimensions,
   LogBox,
+  BackHandler,
+  Alert,
 } from 'react-native'
 import { Button, Title } from 'react-native-paper'
 import AppBar from '../Components/AppBarComponent'
@@ -18,15 +20,15 @@ import {
   collection,
   doc,
   onSnapshot,
-  updateDoc,
   query,
   where,
   getDoc,
-  getDocs,
   setDoc,
   arrayUnion,
-  FieldPath,
-  documentId,
+  addDoc,
+  Timestamp,
+  orderBy,
+  limit,
 } from 'firebase/firestore'
 import RequestComponent from '../Components/RequestComponent'
 import MapView, { Marker } from 'react-native-maps'
@@ -45,19 +47,22 @@ const WEEK = [
 
 const HomeScreen = () => {
   const [menuVisible, setMenuVisible] = useState(false)
-  const [lon, setLon] = useState(28.3672487)
-  const [lat, setLat] = useState(77.5413416)
+  const [lon, setLon] = useState(77.3021)
+  const [lat, setLat] = useState(28.5971)
   const [granted, setGranted] = useState(false)
   const [requestList, setRequestList] = useState([])
-  const [groupList, setGroupList] = useState([])
-  const [trackerList, setTrackerList] = useState([])
   const [hotspotList, setHotspotList] = useState([])
   const [region, setRegion] = useState({
     latitude: lat,
-    latitudeDelta: lon,
-    longitude: 77.30297047808766,
-    longitudeDelta: 0.013364441692829132,
+    latitudeDelta: 0.010404038532286108,
+    longitude: lon,
+    longitudeDelta: 0.01820448786020279,
   })
+
+  const [lastAddres, setLastAddress] = useState('')
+  const [lastLat, setLastLat] = useState(0)
+  const [lastLong, setLastLong] = useState(0)
+  const [lastDate, setLasDate] = useState(0)
 
   LogBox.ignoreLogs(['Setting a timer', 'AsyncStorage has been extracted'])
 
@@ -81,9 +86,12 @@ const HomeScreen = () => {
         accuracy: Location.Accuracy.High,
       })
         .then((res) => {
-          setLat(res.coords.latitude)
-          setLon(res.coords.longitude)
-          setCoordinateInDB(res.coords.latitude, res.coords.longitude)
+          const latitude = Number(res.coords.latitude.toPrecision(6))
+          const longitude = Number(res.coords.longitude.toPrecision(6))
+
+          setLat(latitude)
+          setLon(longitude)
+          setCoordinateInDB(latitude, longitude)
         })
         .catch((error) => console.log(error))
     }, 60000)
@@ -94,45 +102,31 @@ const HomeScreen = () => {
   // getting location permission and coordinates from DB
   useEffect(() => {
     const _getLocationPermission = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync()
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied')
-        return
-      } else {
-        await Location.getCurrentPositionAsync({})
-        await getCoordinateFromDB()
-        await getGroupsAndHotspots()
+      await Location.requestForegroundPermissionsAsync()
+        .then(async ({ status }) => {
+          if (status === 'granted') {
+            await Location.requestBackgroundPermissionsAsync()
+              .then(({ bgStatus }) => {
+                if (bgStatus !== 'granted') {
+                  Alert('Permission to Background Access location was denied')
+                  BackHandler.exitApp()
+                }
+              })
+              .catch((error) => console.log(error))
 
-        setGranted(true)
-      }
+            await Location.getCurrentPositionAsync({})
+            await getCoordinateFromDB()
+            await getGroupsAndHotspots()
+
+            setGranted(true)
+          } else {
+            Alert('Permission to Foreground Access location was denied')
+            BackHandler.exitApp()
+          }
+        })
+        .catch((error) => console.log(error))
     }
     _getLocationPermission()
-  }, [])
-
-  // getting tracker and schedules
-  useEffect(() => {
-    const trackerRef = doc(db, 'trackers', phoneNumber)
-    onSnapshot(trackerRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const list = snapshot.data().trackerList
-
-        const scheduleRef = collection(db, 'trackingSchedule')
-        const q = query(scheduleRef, where(documentId(), 'in', list))
-
-        onSnapshot(q, (documents) => {
-          const arr = []
-          documents.forEach((document) => {
-            if (document.exists()) {
-              arr.push({ id: document.id, schedule: document.data() })
-            }
-          })
-
-          setTrackerList(arr)
-        })
-      } else {
-        console.log('Here')
-      }
-    })
   }, [])
 
   // listening for tracking requests
@@ -149,7 +143,47 @@ const HomeScreen = () => {
     })
   }, [])
 
-  // getting zipcode and checking with hotspots
+  useEffect(() => {
+    const ref = collection(db, 'trackingLocations', phoneNumber, 'locations')
+
+    const q = query(ref, orderBy('createdAt', 'desc'), limit(1))
+    const unsub = onSnapshot(q, (snaps) => {
+      const arr = []
+      snaps.forEach((snap) => {
+        arr.push(snap.data())
+      })
+      if (arr.length === 1) {
+        const data = arr[0]
+        setLastLong(data.longitude)
+        setLastLat(data.latitude)
+        setLastAddress(data.address)
+        setLasDate(
+          moment(new Date(data.createdAt.seconds * 1000)).format('DD-MM-YYYY')
+        )
+      }
+    })
+
+    return () => unsub()
+  }, [])
+
+  const checkLatAndLong = (latitude, longitude) => {
+    console.log('here', lastLat, lastLong)
+
+    if (lastLat === 0 && lastLong === 0) {
+      return true
+    } else if (
+      latitude >= lastLat - 0.0005 &&
+      latitude <= lastLat + 0.0005 &&
+      longitude > lastLong - 0.0005 &&
+      longitude <= lastLong + 0.0005
+    ) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  // getting zipcode and checking with hotspots using reverse geocoding
   useEffect(() => {
     if (!granted) {
       return
@@ -161,100 +195,143 @@ const HomeScreen = () => {
     })
       .then(async (response) => {
         const currZipCode = response[0].postalCode
-        const arr = hotspotList.filter((item) => item.zipCode === currZipCode)
+        const address = `${response[0].name}, ${response[0].district}, ${response[0].subregion}, ${response[0].region}-${currZipCode}, ${response[0].country}`
+        const hotspotArr = hotspotList.filter(
+          (item) => item.location.zipCode === currZipCode
+        )
 
-        console.log('Array ::', arr)
+        hotspotArr.forEach(async (hotspot) => {
+          const hotspotId = hotspot.id
+          const trackerId = hotspot.createdBy
+          const schedule = hotspot.schedule
 
-        trackerList.forEach((tracker) => {
-          arr.forEach(async (hotspot) => {
-            if (hotspot.createdBy === tracker.id) {
-              const id = hotspot.id
-              const attendanceRef = doc(db, 'trackingAttendance', phoneNumber)
-              const schedule = tracker.schedule
+          const startDay = WEEK.indexOf(schedule.startDay)
+          const endDay = WEEK.indexOf(schedule.endDay)
 
-              const startDay = WEEK.indexOf(schedule.startDay)
-              const endDay = WEEK.indexOf(schedule.endDay)
+          const { time } = schedule
 
-              const { time } = schedule
+          const rawDate = new Date()
+          const date = moment(new Date(rawDate)).format('DD-MM-YYYY')
+          const month = new Date(rawDate).getMonth() + 1
+          const year = new Date(rawDate).getFullYear()
 
-              const rawDate = new Date()
-              const date = moment(new Date(rawDate)).format('DD-MM-YYYY')
-              const month = new Date(rawDate).getMonth() + 1
-              const year = new Date(rawDate).getFullYear()
+          var format = 'hh:mm:ss'
+          const currentDay = moment(rawDate).day()
+          const currentTime = moment()
+          const startTime = moment(time.startTime, format)
+          const endTime = moment(time.endTime, format)
 
-              var format = 'hh:mm:ss'
-              const currentDay = moment(rawDate).day()
-              const currentTime = moment()
-              const startTime = moment(time.startTime, format)
-              const endTime = moment(time.endTime, format)
+          const attendanceRef = doc(
+            db,
+            'trackingAttendance',
+            phoneNumber,
+            trackerId,
+            hotspotId
+          )
+          console.log(date, lastDate, lastDate !== date)
+          if (
+            currentTime.isBetween(startTime, endTime) &&
+            currentDay >= startDay &&
+            currentDay <= endDay &&
+            lastDate !== date
+          ) {
+            setDoc(
+              attendanceRef,
+              {
+                phoneNumber: phoneNumber,
+                hotspotName: hotspot.hotspotName,
+                hotspotId: hotspotId,
+                date: date,
+                year: year,
+                month: month,
+                createdAt: Timestamp.now(),
+              },
+              { merge: true }
+            ).catch((error) => {
+              console.log(error)
+            })
 
-              console.log(currentDay, startDay, endDay)
+            console.log(address, lastAddres, lastDate)
 
-              if (
-                currentTime.isBetween(startTime, endTime) &&
-                currentDay >= startDay &&
-                currentDay <= endDay
-              ) {
-                setDoc(
-                  attendanceRef,
-                  {
-                    phoneNumber: phoneNumber,
-                    [tracker.id]: {
-                      [id]: {
-                        [year]: {
-                          [month]: arrayUnion(date),
-                        },
-                        totalCount: arrayUnion(date),
-                      },
-                    },
-                  },
-                  { merge: true }
-                )
-                  .then(() => {
-                    console.log('Attendance Marked')
-                  })
-                  .catch((error) => {
-                    console.log(error)
-                  })
-              } else {
-                console.log('Not')
-              }
+            if (
+              (address !== lastAddres && checkLatAndLong(lat, lon)) ||
+              lastDate !== date
+            ) {
+              setLastAddress(address)
+              setLastLat(lat)
+              setLastLong(lon)
+              setLasDate(date)
+              const ref = collection(
+                db,
+                'trackingLocations',
+                phoneNumber,
+                'locations'
+              )
+              addDoc(ref, {
+                address,
+                group: hotspot.groupName,
+                hotspot: hotspot.hotspotName,
+                trackerId,
+                month,
+                year,
+                zipCode: currZipCode,
+                latitude: lat,
+                longitude: lon,
+                createdAt: Timestamp.now(),
+              })
+                .then(() => console.log('location added'))
+                .catch((err) => console.log(err))
             }
-          })
+          } else {
+            console.log('Not Marked')
+          }
         })
       })
       .catch((error) => console.log(error))
   }, [lat, lon])
 
+  const getHotspot = async (group) => {
+    return new Promise(async (resolve) => {
+      const docRef = doc(db, 'trackingGroups', group.id)
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        const groupData = docSnap.data()
+        const hotspot = groupData.hotspot
+        hotspot.map((x) => {
+          x['groupName'] = groupData.groupName
+          x['createdBy'] = groupData.createdBy
+          x['schedule'] = groupData.schedule
+        })
+
+        resolve(hotspot)
+      } else {
+        console.log('No such document exist')
+      }
+    })
+  }
+
   const getGroupsAndHotspots = async () => {
     const userRef = collection(db, 'trackingUsers')
     const q = query(userRef, where('phoneNumber', '==', phoneNumber))
-    const querySnapshot = await getDocs(q)
-    querySnapshot.forEach((document) => {
-      const data = document.data()
-      const groups = data.deviceGroups
 
-      setGroupList(groups)
-      AsyncStorage.setItem('groups', JSON.stringify(groups))
+    const unsub = onSnapshot(q, (querySnapshot) => {
+      querySnapshot.forEach(async (document) => {
+        const data = document.data()
+        const groups = data.deviceGroups
+        AsyncStorage.setItem('groups', JSON.stringify(groups))
 
-      const hotspots = []
-      groups.forEach(async (item) => {
-        const docRef = doc(db, 'trackingGroups', item.id)
-        const docSnap = await getDoc(docRef)
-        if (docSnap.exists()) {
-          const groupData = docSnap.data()
-          const hotspot = groupData.hotspot
-          hotspot.map((x) => {
-            x['createdBy'] = groupData.createdBy
-          })
-          hotspots.push(...hotspot)
-        } else {
-          console.log('No such document exist')
+        const hotspots = []
+
+        for (let group of groups) {
+          const data = await getHotspot(group)
+          hotspots.push(...data)
         }
-      })
 
-      setHotspotList(hotspots)
+        setHotspotList(hotspots)
+      })
     })
+
+    return () => unsub()
   }
 
   //function to get coordinate from db
@@ -264,23 +341,23 @@ const HomeScreen = () => {
       if (document.exists()) {
         const data = document.data()
         const coord = data.liveLocation
-        setLat(coord.latitude)
-        setLon(coord.longitude)
+        setLat(Number(coord.latitude))
+        setLon(Number(coord.longitude))
       }
     })
   }
 
   // setting coordinate in DB
   const setCoordinateInDB = async (latitude, longitude) => {
-    console.log(latitude, longitude)
+    console.log('coord ::', latitude, longitude)
     const userRef = doc(db, 'trackerAndroidUser', phoneNumber)
 
     setDoc(
       userRef,
       {
         liveLocation: {
-          latitude,
-          longitude,
+          latitude: latitude,
+          longitude: longitude,
         },
       },
       { merge: true }
@@ -292,8 +369,8 @@ const HomeScreen = () => {
   const openMenu = () => setMenuVisible(true)
   const closeMenu = () => setMenuVisible(false)
 
-  const onRegionChange = (region) => {
-    setRegion({ region })
+  const onRegionChange = (reg) => {
+    setRegion({ reg })
   }
 
   return (
@@ -301,7 +378,6 @@ const HomeScreen = () => {
       <AppBar
         onPress={openMenu}
         closeMenu={closeMenu}
-        title='User Name'
         menuVisible={menuVisible}
       />
       <View style={{ padding: 10, backgroundColor: color.background }}>

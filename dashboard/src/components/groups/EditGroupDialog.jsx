@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  ListItemText,
+  TextField,
   Checkbox,
+  ListItemText,
+  MenuItem,
 } from '@mui/material'
 import {
   addDoc,
@@ -22,6 +22,7 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  arrayRemove,
   Timestamp,
 } from 'firebase/firestore'
 import { db } from '../../Firebase'
@@ -38,15 +39,15 @@ const MenuProps = {
   },
 }
 
-const CreateGroupDialog = (props) => {
+const EditGroupDialog = (props) => {
   const [groupName, setGroupName] = useState('')
   const [adminList, setAdminList] = useState([])
   const [selectedAdmins, setSelectedAdmins] = useState([])
   const [admins, setAdmins] = useState([])
 
-  const [startDay, setStartDay] = useState('')
-  const [endDay, setEndDay] = useState('')
-  const [time, setTime] = useState(['', ''])
+  const [startDay, setStartDay] = useState('Sunday')
+  const [endDay, setEndDay] = useState('Saturday')
+  const [time, setTime] = useState(['10:00', '11:00'])
 
   useEffect(() => {
     const ref = collection(db, 'trackerAdmin')
@@ -64,63 +65,21 @@ const CreateGroupDialog = (props) => {
     return () => unsub()
   }, [])
 
-  const createGroup = async () => {
-    if (groupName.length < 3) {
-      props.setError('Group Name length must be atleast 3')
-      props.setSnackOpen(true)
-      return
-    } else if (admins.length === 0) {
-      props.setError('Select atleast one admin')
-      props.setSnackOpen(true)
-      return
+  useEffect(() => {
+    if (Object.keys(props.selectedGroup).length !== 0) {
+      setGroupName(props.selectedGroup.groupName)
+      setAdmins(props.selectedGroup.admins)
+      setStartDay(props.selectedGroup.schedule.startDay)
+      setEndDay(props.selectedGroup.schedule.endDay)
+      setTime([
+        props.selectedGroup.schedule.time.startTime,
+        props.selectedGroup.schedule.time.endTime,
+      ])
+
+      const arr = props.selectedGroup.admins.map((x) => x.id)
+      setSelectedAdmins(arr)
     }
-
-    const groupRef = collection(db, 'trackingGroups')
-    addDoc(groupRef, {
-      groupName: groupName,
-      createdBy: props.createdBy.id,
-      members: [],
-      hotspot: [],
-      admins: admins,
-      schedule: {
-        startDay,
-        endDay,
-        time: {
-          startTime: time[0],
-          endTime: time[1],
-        },
-      },
-      createdAt: Timestamp.now(),
-      modifiedAt: Timestamp.now(),
-    })
-      .then((res) => {
-        const data = { groupName: groupName, id: res.id }
-        selectedAdmins.forEach(async (id) => {
-          const ref = doc(db, 'trackerAdmin', id)
-          await updateDoc(ref, {
-            groups: arrayUnion(data),
-          }).catch((err) => {
-            props.setError(err.message)
-            props.setSnackOpen(true)
-          })
-        })
-      })
-      .then(() => {
-        setSelectedAdmins([])
-        props.setSuccess('Group Created')
-        props.setSnackOpen(true)
-      })
-      .catch((err) => {
-        props.setError(err.message)
-        props.setSnackOpen(true)
-      })
-
-    props.setOpen(false)
-    setGroupName('')
-    setStartDay('')
-    setEndDay('')
-    setTime(['', ''])
-  }
+  }, [props.selectedGroup])
 
   useEffect(() => {
     const arr = []
@@ -144,9 +103,77 @@ const CreateGroupDialog = (props) => {
     setSelectedAdmins(typeof value === 'string' ? value.split(',') : value)
   }
 
+  const updateGroup = async () => {
+    if (groupName.length < 3) {
+      props.setError('Group Name length must be atleast 3')
+      props.setSnackOpen(true)
+      return
+    } else if (admins.length === 0) {
+      props.setError('Select atleast one admin')
+      props.setSnackOpen(true)
+      return
+    }
+
+    const groupRef = doc(db, 'trackingGroups', props.selectedGroup.id)
+    await updateDoc(groupRef, {
+      groupName: groupName,
+      admins: admins,
+      schedule: {
+        startDay,
+        endDay,
+        time: {
+          startTime: time[0],
+          endTime: time[1],
+        },
+      },
+      modifiedAt: Timestamp.now(),
+    })
+      .then(() => {
+        const oldAdmins = props.selectedGroup.admins
+
+        oldAdmins.forEach(async ({ id }) => {
+          const adminRef = doc(db, 'trackerAdmin', id)
+          await updateDoc(adminRef, {
+            groups: arrayRemove({
+              groupName: props.selectedGroup.groupName,
+              id: props.selectedGroup.id,
+            }),
+          }).catch((error) => console.log(error))
+        })
+
+        selectedAdmins.forEach(async (id) => {
+          const ref = doc(db, 'trackerAdmin', id)
+          await updateDoc(ref, {
+            groups: arrayUnion({
+              groupName,
+              id: props.selectedGroup.id,
+            }),
+          }).catch((err) => {
+            props.setError(err.message)
+            props.setSnackOpen(true)
+          })
+        })
+      })
+      .then(() => {
+        setSelectedAdmins([])
+        props.setSuccess('Group Updated')
+        props.setSnackOpen(true)
+      })
+      .catch((err) => {
+        props.setError(err.message)
+        props.setSnackOpen(true)
+      })
+
+    props.setOpen(false)
+    setGroupName('')
+    setStartDay('Sunday')
+    setEndDay('Sunday')
+    setTime(['10:00', '11:00'])
+  }
+
   return (
     <Dialog open={props.open} onClose={() => props.setOpen(false)}>
-      <DialogTitle sx={{ fontSize: 22 }}>Add New Group</DialogTitle>
+      <DialogTitle sx={{ fontSize: 22 }}>Edit Group Details</DialogTitle>
       <DialogContent sx={{ width: 500 }}>
         <TextField
           autoFocus
@@ -191,10 +218,10 @@ const CreateGroupDialog = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => props.setOpen(false)}>Cancel</Button>
-        <Button onClick={() => createGroup()}>Create</Button>
+        <Button onClick={() => updateGroup()}>Update</Button>
       </DialogActions>
     </Dialog>
   )
 }
 
-export default React.memo(CreateGroupDialog)
+export default React.memo(EditGroupDialog)

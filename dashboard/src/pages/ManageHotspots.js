@@ -59,7 +59,6 @@ const ManageHotspots = () => {
   const [hotspotName, setHotspotName] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
   const [groups, setGroups] = useState([])
-  const [searchQuery, setSearchQuery] = useState('')
   const [location, setLocation] = useState('')
   const [trackingGroups, setTrackingGroups] = useState([])
   const [trackingHotspots, setTrackingHotspots] = useState([])
@@ -171,14 +170,20 @@ const ManageHotspots = () => {
   }
 
   const saveHotspot = () => {
+    if (hotspotName.length < 5) {
+      setError('Hotspot name must be atleast 5 characters')
+      setSnackOpen(true)
+      return
+    }
+
     const hostspotRef = collection(db, 'trackingHotspots')
     addDoc(hostspotRef, {
       hotspotName,
       createdBy: userData.uid,
       groups: groups,
       location: {
-        lat,
-        long,
+        lat: Number(lat.toPrecision(6)),
+        long: Number(long.toPrecision(6)),
         zipCode,
       },
     })
@@ -190,7 +195,11 @@ const ManageHotspots = () => {
             hotspot: arrayUnion({
               hotspotName,
               id: document.id,
-              zipCode,
+              location: {
+                lat: Number(lat.toPrecision(6)),
+                long: Number(long.toPrecision(6)),
+                zipCode,
+              },
             }),
           })
             .then(() => console.log('Group Updated'))
@@ -206,7 +215,6 @@ const ManageHotspots = () => {
         setSnackOpen(true)
       })
       .catch((error) => {
-        console.log(error)
         setError(error.message)
         setSnackOpen(true)
       })
@@ -227,8 +235,6 @@ const ManageHotspots = () => {
       setDialogOpen(true)
     }
   }
-
-  console.log(trackingHotspots)
 
   return (
     <Box sx={{ width: '100%', p: 4 }}>
@@ -277,6 +283,9 @@ const ManageHotspots = () => {
                 key={hotspot.id}
                 latitude={hotspot.location.lat}
                 longitude={hotspot.location.long}
+                onClick={() =>
+                  alert(`${hotspot.location.lat} ${hotspot.location.long}`)
+                }
               >
                 <button className='marker-btn'>
                   <img

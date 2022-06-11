@@ -4,15 +4,13 @@ import { makeStyles } from '@mui/styles'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import CssBaseline from '@mui/material/CssBaseline'
-import Divider from '@mui/material/Divider'
-import IconButton from '@mui/material/IconButton'
 import ListItem from '@mui/material/ListItem'
-import LocationOnIcon from '@mui/icons-material/LocationOn'
-import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid'
-import GroupsIcon from '@mui/icons-material/Groups'
+import LocationOnIcon from '@mui/icons-material/LocationOnOutlined'
+import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroidOutlined'
+import GroupsIcon from '@mui/icons-material/GroupsOutlined'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded'
-import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt'
-import { Settings, Home } from '@mui/icons-material'
+import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAltOutlined'
+import { Settings, HomeOutlined } from '@mui/icons-material'
 import { AppBar, Toolbar, Typography } from '@mui/material'
 
 const useStyles = makeStyles((theme) => ({
@@ -49,6 +47,8 @@ const useStyles = makeStyles((theme) => ({
 const DashboardSidebar = () => {
   const classes = useStyles()
 
+  const [selectedIndex, setSelectedIndex] = React.useState(0)
+
   const paths = [
     '/app/dashboard',
     '/app/manage-hotspots',
@@ -66,24 +66,22 @@ const DashboardSidebar = () => {
     'Groups',
     'Admins',
   ]
-
+  //
   return (
     <div className={classes.root}>
       <CssBaseline />
-      {/* <AppBar position='fixed' className={classes.appBar}>
-        <Toolbar sx={{ backgroundColor: '#007bff' }}>
-          <Typography variant='h3' sx={{ ml: 2 }} noWrap></Typography>
-        </Toolbar>
-      </AppBar> */}
       <Drawer variant='permanent'>
         <div className={classes.listContainer}>
           <List>
             {[
-              <Home fontSize='large' sx={{ color: '#6600cc' }} />,
+              <HomeOutlined fontSize='large' sx={{ color: '#6600cc' }} />,
               <LocationOnIcon fontSize='large' sx={{ color: 'red' }} />,
               <PhoneAndroidIcon fontSize='large' sx={{ color: '#007bff' }} />,
-              <SignalCellularAltIcon fontSize='large' color='warning' />,
-              <GroupsIcon fontSize='large' color='success' />,
+              <SignalCellularAltIcon
+                fontSize='large'
+                sx={{ color: 'orange' }}
+              />,
+              <GroupsIcon fontSize='large' sx={{ color: 'green' }} />,
               <AdminPanelSettingsIcon
                 fontSize='large'
                 sx={{ color: '#cc33ff' }}
@@ -91,17 +89,25 @@ const DashboardSidebar = () => {
             ].map((text, index) => (
               <Link to={paths[index]}>
                 <ListItem
-                  button
                   sx={{
                     pt: 1.5,
                     pb: 1.5,
                     px: 1,
                     display: 'flex',
                     flexDirection: 'column',
+                    borderBottomColor: '#007bff',
+                    borderBottomWidth: 10,
                   }}
+                  onClick={() => setSelectedIndex(index)}
                 >
-                  {text}
-                  <Typography color='black' sx={{ fontSize: 12 }}>
+                  <div>{text}</div>
+
+                  <Typography
+                    color='black'
+                    sx={{
+                      fontSize: 12,
+                    }}
+                  >
                     {names[index]}
                   </Typography>
                 </ListItem>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Button, List } from 'react-native-paper'
+import { Avatar, Button, List } from 'react-native-paper'
 import { db } from '../../firebase'
 import {
   arrayRemove,
@@ -9,6 +9,11 @@ import {
   updateDoc,
   Timestamp,
   setDoc,
+  collection,
+  query,
+  where,
+  getDoc,
+  getDocs,
 } from 'firebase/firestore'
 
 const RequestComponent = (props) => {
@@ -22,7 +27,7 @@ const RequestComponent = (props) => {
       requestList: arrayRemove({
         requestStatus: 'pending',
         companyName: item.companyName,
-        senderId: item.senderId,
+        sender: item.sender,
       }),
     })
       .then(() => {
@@ -30,12 +35,12 @@ const RequestComponent = (props) => {
           requestList: arrayUnion({
             requestStatus: 'accepted',
             companyName: item.companyName,
-            senderId: item.senderId,
+            sender: item.sender,
           }),
         })
       })
       .then(() => {
-        const ref = doc(db, 'trackingWebNotification', item.senderId)
+        const ref = doc(db, 'trackingWebNotification', item.sender.id)
 
         setDoc(
           ref,
@@ -51,12 +56,30 @@ const RequestComponent = (props) => {
           { merge: true },
         ).catch((err) => console.log(err))
       })
+      .then(async () => {
+        const ref = collection(db, 'trackingUsers')
+        const q = query(
+          ref,
+          where('phoneNumber', '==', phoneNumber),
+          where('senderId', '==', item.sender.id),
+        )
+
+        const documents = await getDocs(q)
+
+        documents.forEach((document) => {
+          if (document.exists) {
+            updateDoc(doc(db, 'trackingUsers', document.id), {
+              trackingStatus: 'accepted',
+            }).catch((err) => console.log(err))
+          }
+        })
+      })
       .then(() => {
         const ref = doc(db, 'trackers', phoneNumber)
         setDoc(
           ref,
           {
-            trackerList: arrayUnion(item.senderId),
+            trackerList: arrayUnion(item.sender.id),
           },
           {
             merge: true,
@@ -73,7 +96,7 @@ const RequestComponent = (props) => {
       requestList: arrayRemove({
         requestStatus: 'pending',
         companyName: item.companyName,
-        senderId: item.senderId,
+        sender: item.sender,
       }),
     })
       .then(() => {
@@ -81,12 +104,12 @@ const RequestComponent = (props) => {
           requestList: arrayUnion({
             requestStatus: 'rejected',
             companyName: item.companyName,
-            senderId: item.senderId,
+            sender: item.sender,
           }),
         })
       })
       .then(() => {
-        const ref = doc(db, 'trackingWebNotification', item.senderId)
+        const ref = doc(db, 'trackingWebNotification', item.sender.id)
 
         setDoc(
           ref,
@@ -102,12 +125,30 @@ const RequestComponent = (props) => {
           { merge: true },
         ).catch((err) => console.log(err))
       })
+      .then(async () => {
+        const ref = collection(db, 'trackingUsers')
+        const q = query(
+          ref,
+          where('phoneNumber', '==', phoneNumber),
+          where('senderId', '==', item.sender.id),
+        )
+
+        const documents = await getDocs(q)
+
+        documents.forEach((document) => {
+          if (document.exists) {
+            updateDoc(doc(db, 'trackingUsers', document.id), {
+              trackingStatus: 'rejected',
+            }).catch((err) => console.log(err))
+          }
+        })
+      })
       .then(() => {
         const ref = doc(db, 'trackers', phoneNumber)
         setDoc(
           ref,
           {
-            trackerList: arrayRemove(item.senderId),
+            trackerList: arrayRemove(item.sender.id),
           },
           {
             merge: true,
@@ -141,7 +182,13 @@ const RequestComponent = (props) => {
             </Button>
           </View>
         )}
-        left={(props) => <List.Icon {...props} icon="email" />}
+        left={(props) => (
+          <Avatar.Image
+            {...props}
+            size={50}
+            source={{ uri: item.sender.profilePhoto }}
+          />
+        )}
       />
     </>
   )

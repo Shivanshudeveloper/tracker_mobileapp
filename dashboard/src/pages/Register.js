@@ -15,7 +15,7 @@ import Link from '@mui/material/Link'
 import { makeStyles } from '@mui/styles'
 import { auth, db } from '../Firebase'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore'
 
 const useStyles = makeStyles((theme) => ({
   image: {
@@ -80,6 +80,7 @@ const Login = () => {
         }
 
         const userRef = doc(db, 'trackerWebUser', user.uid)
+
         await setDoc(userRef, userData)
           .then(() => {
             sessionStorage.setItem('userData', JSON.stringify(userData))

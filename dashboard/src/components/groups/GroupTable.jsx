@@ -12,6 +12,7 @@ import {
   IconButton,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
+import Create from '@mui/icons-material/Create'
 import { db } from '../../Firebase/index'
 import {
   arrayRemove,
@@ -24,6 +25,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import moment from 'moment'
 
 const GroupTable = (props) => {
   const { open, success, error } = props
@@ -119,8 +121,6 @@ const GroupTable = (props) => {
       .catch((err) => console.log(err))
   }
 
-  console.log(groups)
-
   return (
     <Box>
       <TableContainer component={Paper}>
@@ -132,7 +132,16 @@ const GroupTable = (props) => {
                 Admins
               </TableCell>
               <TableCell sx={{ fontWeight: 600 }} align="center">
+                Schedule
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">
                 Hotspot/s Added
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">
+                Created At
+              </TableCell>
+              <TableCell sx={{ fontWeight: 600 }} align="center">
+                Modified At
               </TableCell>
               <TableCell sx={{ fontWeight: 600 }} align="center">
                 Action
@@ -148,17 +157,29 @@ const GroupTable = (props) => {
                 <TableCell component="th" scope="row">
                   {row.groupName}
                 </TableCell>
-                <TableCell component="th" scope="row" align="center">
+                <TableCell
+                  align="center"
+                  sx={{ display: 'flex', justifyContent: 'center' }}
+                >
                   {row.admins.length === 0 && <>---</>}
                   {row.admins.map((x, i) => (
                     <div key={i}>
                       <Typography variant="p" component="p">
                         {x.fullName}
+                        {i !== row.admins.length - 1 && <>{','}</>}
                       </Typography>
-                      {i !== row.hotspot.length - 1 && <pre>{' , '}</pre>}
                     </div>
                   ))}
                 </TableCell>
+
+                {Object.entries(row.schedule).length !== 0 ? (
+                  <TableCell align="center">
+                    {`${row.schedule.startDay} to ${row.schedule.endDay} , ${row.schedule.time.startTime} to ${row.schedule.time.endTime}`}
+                  </TableCell>
+                ) : (
+                  <TableCell align="center">---</TableCell>
+                )}
+
                 <TableCell
                   align="center"
                   sx={{ display: 'flex', justifyContent: 'center' }}
@@ -168,12 +189,30 @@ const GroupTable = (props) => {
                     <div key={i}>
                       <Typography variant="p" component="p">
                         {x.hotspotName}
+                        {i !== row.hotspot.length - 1 && <>{' , '}</>}
                       </Typography>
-                      {i !== row.hotspot.length - 1 && <pre>{' , '}</pre>}
                     </div>
                   ))}
                 </TableCell>
+
+                <TableCell align="center" component="th" scope="row">
+                  {moment(row.createdAt.seconds * 1000).format('DD MMMM YYYY')}
+                </TableCell>
+
+                <TableCell align="center" component="th" scope="row">
+                  {moment(row.modifiedAt.seconds * 1000).format('DD MMMM YYYY')}
+                </TableCell>
+
                 <TableCell align="center" sx={{ p: 0 }}>
+                  <IconButton
+                    color="success"
+                    onClick={() => {
+                      props.setSelectedGroup(row)
+                      props.setEditOpen(true)
+                    }}
+                  >
+                    <Create />
+                  </IconButton>
                   <IconButton color="error" onClick={() => deleteGroup(row)}>
                     <DeleteIcon />
                   </IconButton>

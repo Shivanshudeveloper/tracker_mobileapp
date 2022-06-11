@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -8,12 +7,23 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material'
-import { addDoc, collection, Timestamp } from 'firebase/firestore'
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  Timestamp,
+  updateDoc,
+} from 'firebase/firestore'
 import { db } from '../../Firebase'
 
-const CreateAdminDialog = (props) => {
+const EditAdminDialog = (props) => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+
+  useEffect(() => {
+    setFullName(props.selectedAdmin.fullName)
+    setEmail(props.selectedAdmin.email)
+  }, [props.selectedAdmin])
 
   const isValidEmail = (enteredEmail) => {
     const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -35,19 +45,39 @@ const CreateAdminDialog = (props) => {
     return true
   }
 
-  const createAdmin = async () => {
+  //   console.log(props.selectedAdmin)
+
+  const updateAdmin = async () => {
     if (verifyData()) {
-      const ref = collection(db, 'trackerAdmin')
-      await addDoc(ref, {
+      const ref = doc(db, 'trackerAdmin', props.selectedAdmin.id)
+      await updateDoc(ref, {
         fullName,
         email,
-        groups: [],
-        createdBy: props.createdBy,
-        createdAt: Timestamp.now(),
         modifiedAt: Timestamp.now(),
       })
         .then(() => {
-          props.success('Admin Added')
+          props.selectedAdmin.groups.forEach(async ({ id }) => {
+            const ref = doc(db, 'trackingGroups', id)
+            await updateDoc(ref, {
+              admins: arrayRemove({
+                fullName: props.selectedAdmin.fullName,
+                id: props.selectedAdmin.id,
+              }),
+            }).catch((error) => console.log(error))
+          })
+
+          props.selectedAdmin.groups.forEach(async ({ id }) => {
+            const ref = doc(db, 'trackingGroups', id)
+            await updateDoc(ref, {
+              admins: arrayUnion({
+                fullName: fullName,
+                id: props.selectedAdmin.id,
+              }),
+            }).catch((error) => console.log(error))
+          })
+        })
+        .then(() => {
+          props.success('Admin Updated')
           props.setSnackOpen(true)
           setFullName('')
           setEmail('')
@@ -59,7 +89,7 @@ const CreateAdminDialog = (props) => {
 
   return (
     <Dialog open={props.open} onClose={() => props.setOpen(false)}>
-      <DialogTitle sx={{ fontSize: 16 }}>Create New Admin</DialogTitle>
+      <DialogTitle sx={{ fontSize: 18 }}>Edit Admin Details</DialogTitle>
       <DialogContent sx={{ width: 500 }}>
         <TextField
           fullWidth
@@ -85,10 +115,10 @@ const CreateAdminDialog = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => props.setOpen(false)}>Cancel</Button>
-        <Button onClick={() => createAdmin()}>Create</Button>
+        <Button onClick={() => updateAdmin()}>Update</Button>
       </DialogActions>
     </Dialog>
   )
 }
 
-export default React.memo(CreateAdminDialog)
+export default React.memo(EditAdminDialog)

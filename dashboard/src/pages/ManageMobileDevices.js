@@ -15,6 +15,8 @@ import {
   DialogContent,
   DialogActions,
   Checkbox,
+  Accordion,
+  ṁ,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
@@ -167,7 +169,10 @@ const ManageMobileDevices = () => {
               requestList: arrayUnion({
                 requestStatus: 'pending',
                 companyName: userData.companyName,
-                senderId: userData.uid,
+                sender: {
+                  id: userData.uid,
+                  profilePhoto: userData.profilePhoto,
+                },
               }),
             },
             { merge: true }
@@ -179,6 +184,7 @@ const ManageMobileDevices = () => {
               setSelectedGroups([])
               setGroups([])
               setFullName('')
+              setAddDeviceDialog(false)
             })
             .catch((err) => {
               console.log(err)
@@ -207,7 +213,10 @@ const ManageMobileDevices = () => {
               notificationList: arrayUnion({
                 message: `${userData.companyName} has send you a tracking request`,
                 status: 'pending',
-                senderId: userData.uid,
+                sender: {
+                  id: userData.uid,
+                  profilePhoto: userData.profilePhoto,
+                },
                 createdAt: Timestamp.now(),
               }),
             },
@@ -239,15 +248,6 @@ const ManageMobileDevices = () => {
           gap: 2,
         }}
       >
-        <Button
-          variant='contained'
-          sx={{
-            py: 1.2,
-          }}
-          onClick={() => setScheduleDialog(true)}
-        >
-          Change Schedule
-        </Button>
         <Button
           variant='contained'
           sx={{

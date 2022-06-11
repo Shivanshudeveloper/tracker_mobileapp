@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
-import { Subheading, Title, List, Divider } from 'react-native-paper'
+import { Subheading, Title, List, Divider, Avatar } from 'react-native-paper'
 import { Picker } from '@react-native-picker/picker'
 import AppBar from '../Components/AppBarComponent'
 
@@ -80,29 +80,20 @@ const NotificationScreen = () => {
         <TouchableWithoutFeedback onPress={() => console.log('pressed')}>
           <Subheading style={styles.markAllText}>Mark all as Read</Subheading>
         </TouchableWithoutFeedback>
-        {/* <View style={styles.filterContainer}>
-          <Title style={styles.filterTitleText}>Filter by:</Title>
-          <View style={styles.pickerContainer}>
-            <Picker
-              style={styles.filterPicker}
-              selectedValue={filter}
-              mode='dropdown'
-              onValueChange={(itemValue, itemIndex) => setFilter(itemValue)}
-            >
-              <Picker.Item label='C++' value='cpp' />
-              <Picker.Item label='Java' value='java' />
-              <Picker.Item label='JavaScript' value='js' />
-              <Picker.Item label='Python' value='py' />
-            </Picker>
-          </View>
-        </View> */}
         <View style={styles.notificationContainer}>
           {notificationList.map((item, i) => (
             <View key={i}>
               <List.Item
+                style={{ marginVertical: 5 }}
                 title={item.message}
                 description={`${getTime(item.createdAt.seconds)} ago`}
-                left={(props) => <List.Icon {...props} icon='email' />}
+                left={(props) => (
+                  <Avatar.Image
+                    {...props}
+                    size={50}
+                    source={{ uri: item.sender.profilePhoto }}
+                  />
+                )}
               />
               <Divider />
             </View>

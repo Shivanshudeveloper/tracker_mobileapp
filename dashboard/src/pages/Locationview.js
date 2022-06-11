@@ -5,14 +5,20 @@ import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import axios from 'axios'
 import { API_SERVICE } from '../URI'
 import { db } from '../Firebase/index'
-import { doc, onSnapshot } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore'
 import LocationTimeline from '../components/dashboard/LocationTimeline'
 
 const Locationview = (props) => {
-  const { userList } = props
-  const { phoneNumber, senderId } = userList
-
-  console.log(userList)
+  const { user } = props
+  const { phoneNumber, senderId } = user
 
   const [lat, setlat] = useState(0)
   const [long, setlong] = useState(0)
@@ -32,6 +38,7 @@ const Locationview = (props) => {
   const [imgUri, setImgUri] = useState('')
   const [load, setLoad] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
+  const [locations, setLocations] = useState([])
 
   useEffect(async () => {
     setLoad(true)
@@ -73,13 +80,13 @@ const Locationview = (props) => {
   }, [phoneNumber])
 
   useEffect(() => {
-    if (userList !== undefined && userList !== null) {
+    if (user !== undefined && user !== null) {
       const requestRef = doc(db, 'trackingRequest', phoneNumber)
 
       return onSnapshot(requestRef, (doc) => {
         if (doc.exists()) {
           const reqList = doc.data().requestList
-          const thisReq = reqList.filter((req) => req.senderId === senderId)[0]
+          const thisReq = reqList.filter((req) => req.sender.id === senderId)[0]
 
           if (thisReq !== undefined) {
             if (thisReq.requestStatus === 'accepted') {
@@ -93,7 +100,29 @@ const Locationview = (props) => {
         }
       })
     }
-  }, [userList])
+  }, [user])
+
+  useEffect(() => {
+    const ref = collection(db, 'trackingLocations', phoneNumber, 'locations')
+    const q = query(
+      ref,
+      where('trackerId', '==', senderId),
+      orderBy('createdAt', 'desc'),
+      limit(100)
+    )
+
+    const unsub = onSnapshot(q, (snaps) => {
+      const arr = []
+      snaps.forEach((snap) => {
+        const data = snap.data()
+        arr.push(data)
+      })
+
+      setLocations(arr)
+    })
+
+    return () => unsub()
+  }, [user])
 
   const handleShowDetails = () => {
     if (showDetails) {
@@ -117,7 +146,7 @@ const Locationview = (props) => {
           display: 'flex',
         }}
       >
-        <Container maxWidth={true}>
+        <Container maxWidth={true} sx={{ px: 0 }}>
           {requestStatus === 'accepted' && (
             <ReactMapGL
               {...viewport}
@@ -151,7 +180,7 @@ const Locationview = (props) => {
               {selected ? (
                 <Popup latitude={selectedLat} longitude={selectedLong}>
                   <div>
-                    <h2 style={{ textAlign: 'center' }}>{userList.fullName}</h2>
+                    <h2 style={{ textAlign: 'center' }}>{user.fullName}</h2>
                     {load ? (
                       <p>Fetching Location ...</p>
                     ) : (
@@ -228,9 +257,7 @@ const Locationview = (props) => {
                 {selected ? (
                   <Popup latitude={selectedLat} longitude={selectedLong}>
                     <div>
-                      <h2 style={{ textAlign: 'center' }}>
-                        {userList.fullName}
-                      </h2>
+                      <h2 style={{ textAlign: 'center' }}>{user.fullName}</h2>
                       {load ? (
                         <p>Fetching Location ...</p>
                       ) : (
@@ -247,7 +274,7 @@ const Locationview = (props) => {
           <Box
             sx={{ width: 400, display: 'flex', justifyContent: 'flex-start' }}
           >
-            <LocationTimeline />
+            <LocationTimeline locations={locations} />
           </Box>
         )}
       </Box>

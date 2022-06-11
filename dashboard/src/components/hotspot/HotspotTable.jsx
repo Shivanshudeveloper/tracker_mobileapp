@@ -79,13 +79,13 @@ const HotspotSetting = (props) => {
   return (
     <Box>
       <TableContainer component={Paper} sx={{ boxShadow: 6 }}>
-        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>Hotspot Name</TableCell>
-              <TableCell align='center'>Address (Zip Code)</TableCell>
-              <TableCell align='center'>Groups Added</TableCell>
-              <TableCell align='center'>Action</TableCell>
+              <TableCell align="center">Address (Zip Code)</TableCell>
+              <TableCell align="center">Groups Added</TableCell>
+              <TableCell align="center">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -94,34 +94,35 @@ const HotspotSetting = (props) => {
                 key={row.id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell component='th' scope='row'>
+                <TableCell component="th" scope="row">
                   {row.hotspotName}
                 </TableCell>
-                <TableCell align='center'>{row.location.zipCode}</TableCell>
+                <TableCell align="center">{row.location.zipCode}</TableCell>
                 <TableCell
-                  align='center'
+                  align="center"
                   sx={{ display: 'flex', justifyContent: 'center' }}
                 >
                   {row.groups.length === 0 && <>---</>}
                   {row.groups.map((x, i) => (
                     <div key={i}>
-                      <Typography variant='p' component='p'>
+                      <Typography variant="p" component="p">
                         {x.groupName}
                         {i !== row.groups.length - 1 && <>{' ,'}</>}
                       </Typography>
                     </div>
                   ))}
                 </TableCell>
-                <TableCell align='center' sx={{ p: 0 }}>
+                <TableCell align="center" sx={{ p: 0 }}>
                   <IconButton
-                    edge='end'
-                    aria-label='edit'
-                    color='primary'
+                    edge="end"
+                    aria-label="edit"
+                    color="primary"
                     onClick={() => toggleEditHotspotDialog(row)}
+                    sx={{ mr: 0.2 }}
                   >
                     <Create />
                   </IconButton>
-                  <IconButton color='error' onClick={() => deleteHotspot(row)}>
+                  <IconButton color="error" onClick={() => deleteHotspot(row)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
