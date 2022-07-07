@@ -24,9 +24,7 @@ const LocationTimeline = (props) => {
               <Box sx={{ pb: 1.3 }}>
                 <Typography component="h6">{location.address}</Typography>
                 <Typography component="p" sx={{ fontSize: 12 }}>
-                  {moment(location.createdAt.seconds * 1000).format(
-                    'DD MMMM YYYY - hh:mm a',
-                  )}
+                  {moment(location.createdAt).format('DD MMMM YYYY - hh:mm a')}
                 </Typography>
               </Box>
             </TimelineContent>

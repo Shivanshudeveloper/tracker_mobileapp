@@ -32,9 +32,9 @@ const GroupFilter = (props) => {
         MenuProps={MenuProps}
       >
         {props.groupNames.map((group, i) => (
-          <MenuItem key={i} value={group.groupName}>
+          <MenuItem key={group._id} value={group._id}>
             <Checkbox
-              checked={props.selectedGroupNames.indexOf(group.groupName) > -1}
+              checked={props.selectedGroupNames.indexOf(group._id) > -1}
             />
             <ListItemText primary={group.groupName} />
           </MenuItem>

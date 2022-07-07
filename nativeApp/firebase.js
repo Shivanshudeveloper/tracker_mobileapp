@@ -9,14 +9,14 @@ import { getStorage } from 'firebase/storage'
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: 'AIzaSyDGpc3IFaTYM-3CQnF6YHdapasZBcpZrEo',
-  authDomain: 'evencloud-26d32.firebaseapp.com',
-  databaseURL: 'https://evencloud-26d32.firebaseio.com',
-  projectId: 'evencloud-26d32',
-  storageBucket: 'evencloud-26d32.appspot.com',
-  messagingSenderId: '599725599274',
-  appId: '1:599725599274:web:0a3c20e350260df4a1f153',
-  measurementId: 'G-PXGR5P46SP',
+    apiKey: 'AIzaSyCB3eqMf02L6kH_F7MAuwXUQVd1dFZfVFQ',
+    authDomain: 'mobiletracking-cd8f2.firebaseapp.com',
+    databaseURL: 'https://mobiletracking-cd8f2.firebaseio.com',
+    projectId: 'mobiletracking-cd8f2',
+    storageBucket: 'mobiletracking-cd8f2.appspot.com',
+    messagingSenderId: '448981545000',
+    appId: '1:448981545000:web:14011a88c4a6079456051d',
+    measurementId: 'G-M9EEMS9J5G',
 }
 
 // Initialize Firebase

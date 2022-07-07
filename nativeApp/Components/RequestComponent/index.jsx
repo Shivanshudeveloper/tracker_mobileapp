@@ -14,146 +14,85 @@ import {
   where,
   getDoc,
   getDocs,
+  addDoc,
 } from 'firebase/firestore'
+import axios from 'axios'
+import { API_SERVICE } from '../../URI'
 
 const RequestComponent = (props) => {
   const { item, phoneNumber } = props
   const { companyName } = item
 
+  const updateUser = async (status) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+
+    const body = {
+      trackingStatus: status,
+      phoneNumber: phoneNumber,
+      createdBy: item.sender.id,
+    }
+
+    await axios
+      .put(`${API_SERVICE}/update/device`, body, config)
+      .catch((error) => console.log(error))
+  }
+
+  const sendNotification = async (status) => {
+    const ref = collection(
+      db,
+      'trackingWebNotification',
+      item.sender.id,
+      'notifications',
+    )
+
+    await addDoc(ref, {
+      message: `${item.recieverFullName} - ${phoneNumber} has ${status} your tracking Request`,
+      name: item.recieverFullName,
+      phoneNumber: phoneNumber,
+      requestStatus: status,
+      createdAt: Timestamp.now(),
+      seen: false,
+    }).catch((err) => console.log(err))
+  }
+
   const onAcceptRequest = () => {
-    const requestRef = doc(db, 'trackingRequest', phoneNumber)
+    const requestRef = doc(
+      db,
+      'trackingRequest',
+      phoneNumber,
+      'requests',
+      item.id,
+    )
 
     updateDoc(requestRef, {
-      requestList: arrayRemove({
-        requestStatus: 'pending',
-        companyName: item.companyName,
-        sender: item.sender,
-      }),
+      requestStatus: 'accepted',
     })
-      .then(() => {
-        updateDoc(requestRef, {
-          requestList: arrayUnion({
-            requestStatus: 'accepted',
-            companyName: item.companyName,
-            sender: item.sender,
-          }),
-        })
-      })
-      .then(() => {
-        const ref = doc(db, 'trackingWebNotification', item.sender.id)
-
-        setDoc(
-          ref,
-          {
-            notificationList: arrayUnion({
-              message: `${phoneNumber} has accepted your tracking Request`,
-              name: '',
-              phoneNumber: phoneNumber,
-              requestStatus: 'accepted',
-              createdAt: Timestamp.now(),
-            }),
-          },
-          { merge: true },
-        ).catch((err) => console.log(err))
-      })
       .then(async () => {
-        const ref = collection(db, 'trackingUsers')
-        const q = query(
-          ref,
-          where('phoneNumber', '==', phoneNumber),
-          where('senderId', '==', item.sender.id),
-        )
-
-        const documents = await getDocs(q)
-
-        documents.forEach((document) => {
-          if (document.exists) {
-            updateDoc(doc(db, 'trackingUsers', document.id), {
-              trackingStatus: 'accepted',
-            }).catch((err) => console.log(err))
-          }
-        })
-      })
-      .then(() => {
-        const ref = doc(db, 'trackers', phoneNumber)
-        setDoc(
-          ref,
-          {
-            trackerList: arrayUnion(item.sender.id),
-          },
-          {
-            merge: true,
-          },
-        ).catch((err) => console.log(err))
+        await updateUser('accepted')
+        await sendNotification('accepted')
       })
       .catch((error) => console.log(error))
   }
 
   const onRejectRequest = () => {
-    const requestRef = doc(db, 'trackingRequest', phoneNumber)
+    const requestRef = doc(
+      db,
+      'trackingRequest',
+      phoneNumber,
+      'requests',
+      item.id,
+    )
 
     updateDoc(requestRef, {
-      requestList: arrayRemove({
-        requestStatus: 'pending',
-        companyName: item.companyName,
-        sender: item.sender,
-      }),
+      requestStatus: 'rejected',
     })
-      .then(() => {
-        updateDoc(requestRef, {
-          requestList: arrayUnion({
-            requestStatus: 'rejected',
-            companyName: item.companyName,
-            sender: item.sender,
-          }),
-        })
-      })
-      .then(() => {
-        const ref = doc(db, 'trackingWebNotification', item.sender.id)
-
-        setDoc(
-          ref,
-          {
-            notificationList: arrayUnion({
-              message: `${phoneNumber} has rejected your tracking Request`,
-              name: '',
-              phoneNumber: phoneNumber,
-              requestStatus: 'rejected',
-              createdAt: Timestamp.now(),
-            }),
-          },
-          { merge: true },
-        ).catch((err) => console.log(err))
-      })
       .then(async () => {
-        const ref = collection(db, 'trackingUsers')
-        const q = query(
-          ref,
-          where('phoneNumber', '==', phoneNumber),
-          where('senderId', '==', item.sender.id),
-        )
-
-        const documents = await getDocs(q)
-
-        documents.forEach((document) => {
-          if (document.exists) {
-            updateDoc(doc(db, 'trackingUsers', document.id), {
-              trackingStatus: 'rejected',
-            }).catch((err) => console.log(err))
-          }
-        })
-      })
-      .then(() => {
-        const ref = doc(db, 'trackers', phoneNumber)
-        setDoc(
-          ref,
-          {
-            trackerList: arrayRemove(item.sender.id),
-          },
-          {
-            merge: true,
-          },
-        ).catch((err) => console.log(err))
+        await updateUser('rejected')
+        await sendNotification('rejected')
       })
       .catch((error) => console.log(error))
   }
@@ -203,4 +142,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default RequestComponent
+export default React.memo(RequestComponent)

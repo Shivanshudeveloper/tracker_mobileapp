@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Dialog,
   DialogTitle,
@@ -13,19 +14,8 @@ import {
   ListItemText,
   Checkbox,
 } from '@mui/material'
-import {
-  addDoc,
-  collection,
-  onSnapshot,
-  query,
-  where,
-  doc,
-  updateDoc,
-  arrayUnion,
-  Timestamp,
-} from 'firebase/firestore'
-import { db } from '../../Firebase'
 import ScheduleForm from './ScheduleForm'
+import { createGroup } from '../../store/actions/group'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -40,48 +30,41 @@ const MenuProps = {
 
 const CreateGroupDialog = (props) => {
   const [groupName, setGroupName] = useState('')
-  const [adminList, setAdminList] = useState([])
+  //const [adminList, setAdminList] = useState([])
   const [selectedAdmins, setSelectedAdmins] = useState([])
-  const [admins, setAdmins] = useState([])
+  //const [admins, setAdmins] = useState([])
 
   const [startDay, setStartDay] = useState('')
   const [endDay, setEndDay] = useState('')
   const [time, setTime] = useState(['', ''])
 
-  useEffect(() => {
-    const ref = collection(db, 'trackerAdmin')
-    const q = query(ref, where('createdBy', '==', props.createdBy.id))
+  const dispatch = useDispatch()
+  const admins = useSelector((state) => state.admins)
+  const adminList = admins.adminList
 
-    const unsub = onSnapshot(q, (snapshot) => {
-      const adminArr = []
-      snapshot.forEach((snap) => {
-        adminArr.push({ fullName: snap.data().fullName, id: snap.id })
-      })
-
-      setAdminList(adminArr)
-    })
-
-    return () => unsub()
-  }, [])
-
-  const createGroup = async () => {
-    if (groupName.length < 3) {
-      props.setError('Group Name length must be atleast 3')
+  const saveGroup = () => {
+    if (props.subscription === null) {
+      props.setError('You do not have any subscription. Please choose a plan')
       props.setSnackOpen(true)
       return
-    } else if (admins.length === 0) {
-      props.setError('Select atleast one admin')
+    } else if (props.groupList.length === props.subscription.groupCount) {
+      props.setError(
+        'You have used your groups quota. Please upgrade your subscription',
+      )
+      props.setSnackOpen(true)
+      return
+    } else if (groupName.length < 4) {
+      props.setError('Group name must be atleast 4 characters')
       props.setSnackOpen(true)
       return
     }
 
-    const groupRef = collection(db, 'trackingGroups')
-    addDoc(groupRef, {
+    const body = {
       groupName: groupName,
       createdBy: props.createdBy.id,
       members: [],
       hotspot: [],
-      admins: admins,
+      admins: selectedAdmins,
       schedule: {
         startDay,
         endDay,
@@ -90,52 +73,15 @@ const CreateGroupDialog = (props) => {
           endTime: time[1],
         },
       },
-      createdAt: Timestamp.now(),
-      modifiedAt: Timestamp.now(),
-    })
-      .then((res) => {
-        const data = { groupName: groupName, id: res.id }
-        selectedAdmins.forEach(async (id) => {
-          const ref = doc(db, 'trackerAdmin', id)
-          await updateDoc(ref, {
-            groups: arrayUnion(data),
-          }).catch((err) => {
-            props.setError(err.message)
-            props.setSnackOpen(true)
-          })
-        })
-      })
-      .then(() => {
-        setSelectedAdmins([])
-        props.setSuccess('Group Created')
-        props.setSnackOpen(true)
-      })
-      .catch((err) => {
-        props.setError(err.message)
-        props.setSnackOpen(true)
-      })
-
+    }
+    dispatch(createGroup(body))
     props.setOpen(false)
+    setSelectedAdmins([])
     setGroupName('')
     setStartDay('')
     setEndDay('')
     setTime(['', ''])
   }
-
-  useEffect(() => {
-    const arr = []
-    selectedAdmins.forEach((x) => {
-      const d = adminList.filter((item) => item.id === x)[0]
-
-      const data = {
-        fullName: d.fullName,
-        id: d.id,
-      }
-      arr.push(data)
-    })
-
-    setAdmins(arr)
-  }, [selectedAdmins])
 
   const handleChange = (event) => {
     const {
@@ -172,8 +118,8 @@ const CreateGroupDialog = (props) => {
             MenuProps={MenuProps}
           >
             {adminList.map((item) => (
-              <MenuItem key={item.id} value={item.id}>
-                <Checkbox checked={selectedAdmins.indexOf(item.id) > -1} />
+              <MenuItem key={item._id} value={item._id}>
+                <Checkbox checked={selectedAdmins.indexOf(item._id) > -1} />
                 <ListItemText primary={item.fullName} />
               </MenuItem>
             ))}
@@ -191,7 +137,7 @@ const CreateGroupDialog = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => props.setOpen(false)}>Cancel</Button>
-        <Button onClick={() => createGroup()}>Create</Button>
+        <Button onClick={() => saveGroup()}>Create</Button>
       </DialogActions>
     </Dialog>
   )

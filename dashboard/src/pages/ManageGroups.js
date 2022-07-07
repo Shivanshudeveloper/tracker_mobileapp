@@ -1,120 +1,168 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import { Alert, Box, Button, Snackbar, Stack } from '@mui/material'
 import CreateGroupDialog from '../components/groups/CreateGroupDialog'
 import GroupTable from '../components/groups/GroupTable'
 import EditGroupDialog from '../components/groups/EditGroupDialog'
+import { useSubscription } from '../hooks/useSubscription'
+import { getSubscriptionDetails } from '../utils/getSubscriptionDetails'
+import { useSelector } from 'react-redux'
 
 const ManageGroups = () => {
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [selectedGroup, setSelectedGroup] = useState({})
-  const [snackOpen, setSnackOpen] = useState(false)
-  const [success, setSuccess] = useState(null)
-  const [error, setError] = useState(null)
+    const [createOpen, setCreateOpen] = useState(false)
+    const [editOpen, setEditOpen] = useState(false)
+    const [selectedGroup, setSelectedGroup] = useState({})
+    const [snackOpen, setSnackOpen] = useState(false)
+    const [successMsg, setSuccessMsg] = useState(null)
+    const [errorMsg, setErrorMsg] = useState(null)
 
-  const userData = sessionStorage.getItem('userData')
-    ? JSON.parse(sessionStorage.getItem('userData'))
-    : null
+    // subscription state
+    const [subscription, setSubscription] = useState(null)
 
-  const handleSnackClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return
+    const userData = sessionStorage.getItem('userData')
+        ? JSON.parse(sessionStorage.getItem('userData'))
+        : null
+
+    const groups = useSelector((state) => state.groups)
+    const { groupList, success, error } = groups
+
+    const navigate = useNavigate()
+    const { state } = useSubscription()
+
+    useEffect(() => {
+        const authToken = sessionStorage.getItem('authToken')
+
+        if (!authToken) {
+            navigate('/login')
+        }
+    }, [])
+
+    useEffect(() => {
+        const fetchSubDetail = async () => {
+            const details = await getSubscriptionDetails(state)
+            setSubscription(details)
+        }
+
+        fetchSubDetail()
+    }, [])
+
+    useEffect(() => {
+        if (success) {
+            setSuccessMsg(success)
+            setSnackOpen(true)
+        }
+        if (error !== undefined) {
+            setErrorMsg(error)
+            setSnackOpen(true)
+        }
+    }, [success, error])
+
+    const handleSnackClose = (_, reason) => {
+        if (reason === 'clickaway') {
+            return
+        }
+
+        setSnackOpen(false)
+        setErrorMsg(null)
+        setSuccessMsg(null)
     }
 
-    setSnackOpen(false)
-    setError(null)
-    setSuccess(null)
-  }
+    return (
+        <Box sx={{ p: 4 }}>
+            <h2>Manage Groups</h2>
 
-  return (
-    <Box sx={{ p: 4 }}>
-      <h2>Manage Groups</h2>
+            <Stack
+                direction='row'
+                justifyContent='flex-end'
+                rowGap={2}
+                columnGap={2}
+            >
+                <Button
+                    variant='contained'
+                    sx={{ py: 1.2 }}
+                    onClick={() => setCreateOpen(true)}
+                >
+                    Create New Group
+                </Button>
+            </Stack>
 
-      <Stack direction='row' justifyContent='flex-end' rowGap={2} columnGap={2}>
-        <Button
-          variant='contained'
-          sx={{ py: 1.2 }}
-          onClick={() => setCreateOpen(true)}
-        >
-          Create New Group
-        </Button>
-      </Stack>
+            <Box sx={{ my: 5 }}>
+                <GroupTable
+                    success={setSuccessMsg}
+                    error={setErrorMsg}
+                    open={setSnackOpen}
+                    setSelectedGroup={setSelectedGroup}
+                    setEditOpen={setEditOpen}
+                />
+            </Box>
 
-      <Box sx={{ my: 5 }}>
-        <GroupTable
-          success={setSuccess}
-          error={setError}
-          open={setSnackOpen}
-          setSelectedGroup={setSelectedGroup}
-          setEditOpen={setEditOpen}
-        />
-      </Box>
+            <Box>
+                <CreateGroupDialog
+                    open={createOpen}
+                    setOpen={setCreateOpen}
+                    createdBy={{
+                        id: userData?.uid,
+                        fullName: `${userData?.firstName} ${userData?.lastName}`,
+                    }}
+                    setError={setErrorMsg}
+                    setSnackOpen={setSnackOpen}
+                    setSuccess={setSuccessMsg}
+                    subscription={subscription}
+                    groupList={groupList}
+                />
+            </Box>
 
-      <Box>
-        <CreateGroupDialog
-          open={createOpen}
-          setOpen={setCreateOpen}
-          createdBy={{
-            id: userData.uid,
-            fullName: `${userData.firstName} ${userData.lastName}`,
-          }}
-          setError={setError}
-          setSnackOpen={setSnackOpen}
-          setSuccess={setSuccess}
-        />
-      </Box>
+            <Box>
+                <EditGroupDialog
+                    open={editOpen}
+                    setOpen={setEditOpen}
+                    selectedGroup={selectedGroup}
+                    setError={setErrorMsg}
+                    setSnackOpen={setSnackOpen}
+                    setSuccess={setSuccessMsg}
+                    createdBy={{
+                        id: userData?.uid,
+                        fullName: `${userData?.firstName} ${userData?.lastName}`,
+                    }}
+                />
+            </Box>
 
-      <Box>
-        <EditGroupDialog
-          open={editOpen}
-          setOpen={setEditOpen}
-          selectedGroup={selectedGroup}
-          setError={setError}
-          setSnackOpen={setSnackOpen}
-          setSuccess={setSuccess}
-          createdBy={{
-            id: userData.uid,
-            fullName: `${userData.firstName} ${userData.lastName}`,
-          }}
-        />
-      </Box>
-
-      {success !== null && (
-        <Snackbar
-          open={snackOpen}
-          autoHideDuration={4000}
-          onClose={handleSnackClose}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <Alert
-            onClose={handleSnackClose}
-            severity='success'
-            sx={{ width: '100%' }}
-            variant='filled'
-          >
-            {success}
-          </Alert>
-        </Snackbar>
-      )}
-      {error !== null && (
-        <Snackbar
-          open={snackOpen}
-          autoHideDuration={4000}
-          onClose={handleSnackClose}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <Alert
-            onClose={handleSnackClose}
-            severity='error'
-            sx={{ width: '100%' }}
-            variant='filled'
-          >
-            {error}
-          </Alert>
-        </Snackbar>
-      )}
-    </Box>
-  )
+            {success !== null && (
+                <Snackbar
+                    open={snackOpen}
+                    autoHideDuration={4000}
+                    onClose={handleSnackClose}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <Alert
+                        onClose={handleSnackClose}
+                        severity='success'
+                        sx={{ width: '100%' }}
+                        variant='filled'
+                    >
+                        {successMsg}
+                    </Alert>
+                </Snackbar>
+            )}
+            {error !== null && (
+                <Snackbar
+                    open={snackOpen}
+                    autoHideDuration={4000}
+                    onClose={handleSnackClose}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <Alert
+                        onClose={handleSnackClose}
+                        severity='error'
+                        sx={{ width: '100%' }}
+                        variant='filled'
+                    >
+                        {errorMsg}
+                    </Alert>
+                </Snackbar>
+            )}
+        </Box>
+    )
 }
 
 export default ManageGroups

@@ -36,6 +36,8 @@ import {
   where,
 } from 'firebase/firestore'
 import TimeRangePicker from '@wojtekmaj/react-timerange-picker'
+import { useSelector, useDispatch } from 'react-redux'
+import { deleteDevice } from '../../store/actions/device'
 
 const DeviceSetting = (props) => {
   const { success, error, open, toggleEditDeviceDialog } = props
@@ -46,68 +48,75 @@ const DeviceSetting = (props) => {
     ? JSON.parse(sessionStorage.getItem('userData'))
     : null
 
-  useEffect(async () => {
-    if (userData !== null) {
-      const deviceRef = collection(db, 'trackingUsers')
-      const q = query(deviceRef, where('senderId', '==', userData.uid))
+  const adminData = sessionStorage.getItem('adminData')
+    ? JSON.parse(sessionStorage.getItem('adminData'))
+    : null
 
-      const unsub = onSnapshot(q, (snapshot) => {
-        const devices = []
-        snapshot.forEach((snap) => {
-          devices.push({ data: snap.data(), id: snap.id })
-        })
-        setDeviceData(devices)
-      })
+  const devices = useSelector((state) => state.devices)
+  const { deviceList } = devices
 
-      return () => unsub()
-    }
-  }, [])
+  const dispatch = useDispatch()
 
-  // useEffect(() => {
-  //   const ref = doc(db, 'trackingSchedule', userData.uid)
-  //   const unsub = onSnapshot(ref, (snapshot) => {
-  //     if (snapshot.exists()) {
-  //       const data = snapshot.data()
-  //       setSchedule(data)
-  //       setStartDay(data.startDay)
-  //       setEndDay(data.endDay)
-  //       setTime([data.time.startTime, data.time.endTime])
+  // useEffect(async () => {
+  //   if (userData !== null) {
+  //     const deviceRef = collection(db, 'trackingUsers')
+  //     let q
+  //     if (adminData !== null) {
+  //       q = query(
+  //         deviceRef,
+  //         where('senderId', '==', userData.uid),
+  //         where('groupId', 'array-contains-any', adminData.groupId),
+  //       )
+  //     } else {
+  //       q = query(deviceRef, where('senderId', '==', userData.uid))
   //     }
-  //   })
 
-  //   return () => unsub()
+  //     const unsub = onSnapshot(q, (snapshot) => {
+  //       const devices = []
+  //       snapshot.forEach((snap) => {
+  //         devices.push({ ...snap.data(), id: snap.id })
+  //       })
+  //       setDeviceData(devices)
+  //     })
+
+  //     return () => unsub()
+  //   }
   // }, [])
 
-  const deleteDevice = async (item, deviceId) => {
-    const requestRef = doc(db, 'trackingRequest', item.phoneNumber)
-    await deleteDoc(requestRef)
-      .then(() => {
-        item.deviceGroups.forEach(({ id }) => {
-          const groupRef = doc(db, 'trackingGroups', id)
-          updateDoc(groupRef, {
-            members: arrayRemove(item.phoneNumber),
-          }).catch((error) => console.log(error))
-        })
-      })
-      .then(async () => {
-        const deviceRef = doc(db, 'trackingUsers', deviceId)
-        await deleteDoc(deviceRef)
-          .then(() => {
-            success('Device Deleted Successfully')
-            open(true)
-          })
-          .catch((err) => {
-            error(err.message)
-            open(true)
-          })
-      })
-      .catch((err) => console.log(err.message))
+  const removeDevice = (data) => {
+    dispatch(deleteDevice(data._id))
   }
+
+  // const deleteDevice = async (item) => {
+  //   const requestRef = doc(db, 'trackingRequest', item.phoneNumber)
+  //   await deleteDoc(requestRef)
+  //     .then(() => {
+  //       item.deviceGroups.forEach(({ id }) => {
+  //         const groupRef = doc(db, 'trackingGroups', id)
+  //         updateDoc(groupRef, {
+  //           members: arrayRemove(item.phoneNumber),
+  //         }).catch((error) => console.log(error))
+  //       })
+  //     })
+  //     .then(async () => {
+  //       const deviceRef = doc(db, 'trackingUsers', item.id)
+  //       await deleteDoc(deviceRef)
+  //         .then(() => {
+  //           success('Device Deleted Successfully')
+  //           open(true)
+  //         })
+  //         .catch((err) => {
+  //           error(err.message)
+  //           open(true)
+  //         })
+  //     })
+  //     .catch((err) => console.log(err.message))
+  // }
 
   return (
     <Box>
       <TableContainer component={Paper} sx={{ boxShadow: 6 }}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -118,24 +127,27 @@ const DeviceSetting = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {deviceData.map(({ data, id }) => (
+            {deviceList.map((data) => (
               <TableRow
-                key={id}
+                key={data._id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <TableCell>{data.fullName}</TableCell>
-                <TableCell align="center">+91 {data.phoneNumber}</TableCell>
-                <TableCell align="center">
-                  {data.deviceGroups.length === 0 && <>---</>}
-                  {data.deviceGroups.map((x, i) => (
-                    <div key={i}>
-                      <Typography variant="p" component="p">
-                        {x.groupName}
-                        {i !== data.deviceGroups.length - 1 && <>{' , '}</>}
-                      </Typography>
-                    </div>
-                  ))}
+                <TableCell component="th" scope="row">
+                  {data.fullName}
                 </TableCell>
+                <TableCell align="center">+91 {data.phoneNumber}</TableCell>
+                {data.groups.length === 0 ? (
+                  <TableCell align="center">--</TableCell>
+                ) : (
+                  <TableCell align="center">
+                    {data.groups.map((x, i) => (
+                      <>
+                        {x.groupName}
+                        {i !== data.groups.length - 1 && <>{' ,'}</>}
+                      </>
+                    ))}
+                  </TableCell>
+                )}
 
                 <TableCell align="center">
                   {data.trackingStatus === 'accepted' && (
@@ -157,10 +169,7 @@ const DeviceSetting = (props) => {
                   >
                     <Create />
                   </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => deleteDevice(data, id)}
-                  >
+                  <IconButton color="error" onClick={() => removeDevice(data)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>

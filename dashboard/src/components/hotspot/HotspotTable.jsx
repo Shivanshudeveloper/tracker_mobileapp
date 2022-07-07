@@ -25,56 +25,88 @@ import {
   arrayRemove,
   onSnapshot,
 } from 'firebase/firestore'
+import { useDispatch, useSelector } from 'react-redux'
+import { deleteHotspot } from '../../store/actions/hotspot'
 
 const HotspotSetting = (props) => {
   const { open, success, error, toggleEditHotspotDialog } = props
 
-  const [hotspots, setHotspots] = useState([])
+  //const [hotspots, setHotspots] = useState([])
 
   const userData = sessionStorage.getItem('userData')
     ? JSON.parse(sessionStorage.getItem('userData'))
     : null
 
+  const adminData = sessionStorage.getItem('adminData')
+    ? JSON.parse(sessionStorage.getItem('adminData'))
+    : null
+
+  const dispatch = useDispatch()
+  const hotspots = useSelector((state) => state.hotspots)
+  const { hotspotList } = hotspots
+
   //Get All Hotspots
-  useEffect(() => {
-    const ref = collection(db, 'trackingHotspots')
-    const q = query(ref, where('createdBy', '==', userData.uid))
+  // useEffect(() => {
+  //   const ref = collection(db, 'trackingHotspots')
+  //   let q
+  //   let unsub
+  //   if (adminData === null) {
+  //     q = query(ref, where('createdBy', '==', userData.uid))
 
-    const unsub = onSnapshot(q, (snapshot) => {
-      const array = []
-      snapshot.forEach((document) => {
-        array.push({ ...document.data(), id: document.id })
-      })
-      setHotspots(array)
-    })
+  //     unsub = onSnapshot(q, (snapshot) => {
+  //       const array = []
+  //       snapshot.forEach((document) => {
+  //         array.push({ ...document.data(), id: document.id })
+  //       })
+  //       setHotspots(array)
+  //     })
+  //   } else {
+  //     const array = []
+  //     adminData.groupId.forEach((x) => {
+  //       q = query(
+  //         ref,
+  //         where('createdBy', '==', userData.uid),
+  //         where('groupId', 'array-contains-any', adminData.groupId),
+  //       )
+  //       unsub = onSnapshot(q, (snapshot) => {
+  //         snapshot.forEach((document) => {
+  //           array.push({ ...document.data(), id: document.id })
+  //         })
+  //       })
+  //     })
 
-    return () => unsub()
-  }, [])
+  //     setHotspots(array)
+  //   }
+  // }, [])
 
-  const deleteHotspot = async (hotspot) => {
-    await deleteDoc(doc(db, 'trackingHotspots', hotspot.id))
-      .then(() => {
-        const groups = hotspot.groups
-
-        for (let group of groups) {
-          const ref = doc(db, 'trackingGroups', group.id)
-          updateDoc(ref, {
-            hotspot: arrayRemove({
-              hotspotName: hotspot.hotspotName,
-              id: hotspot.id,
-              zipCode: hotspot.location.zipCode,
-            }),
-          }).catch((err) => console.log(err))
-        }
-      })
-      .then(() => {
-        success('Hotspot Deleted Successfully !!')
-        open(true)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+  const removeHotspot = (hotspot) => {
+    dispatch(deleteHotspot(hotspot._id))
   }
+
+  // const deleteHotspot = async (hotspot) => {
+  //   await deleteDoc(doc(db, 'trackingHotspots', hotspot.id))
+  //     .then(() => {
+  //       const groups = hotspot.groups
+
+  //       for (let group of groups) {
+  //         const ref = doc(db, 'trackingGroups', group.id)
+  //         updateDoc(ref, {
+  //           hotspot: arrayRemove({
+  //             hotspotName: hotspot.hotspotName,
+  //             id: hotspot.id,
+  //             zipCode: hotspot.location.zipCode,
+  //           }),
+  //         }).catch((err) => console.log(err))
+  //       }
+  //     })
+  //     .then(() => {
+  //       success('Hotspot Deleted Successfully !!')
+  //       open(true)
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //     })
+  // }
 
   return (
     <Box>
@@ -89,9 +121,9 @@ const HotspotSetting = (props) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {hotspots.map((row) => (
+            {hotspotList.map((row) => (
               <TableRow
-                key={row.id}
+                key={row._id}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
@@ -122,7 +154,7 @@ const HotspotSetting = (props) => {
                   >
                     <Create />
                   </IconButton>
-                  <IconButton color="error" onClick={() => deleteHotspot(row)}>
+                  <IconButton color="error" onClick={() => removeHotspot(row)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>

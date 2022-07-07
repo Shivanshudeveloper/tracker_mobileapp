@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   Button,
   Dialog,
@@ -15,10 +16,13 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { db } from '../../Firebase'
+import { updateAdmin } from '../../store/actions/admin'
 
 const EditAdminDialog = (props) => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     setFullName(props.selectedAdmin.fullName)
@@ -45,47 +49,64 @@ const EditAdminDialog = (props) => {
     return true
   }
 
-  //   console.log(props.selectedAdmin)
-
-  const updateAdmin = async () => {
+  const updateData = () => {
     if (verifyData()) {
-      const ref = doc(db, 'trackerAdmin', props.selectedAdmin.id)
-      await updateDoc(ref, {
+      const body = {
+        _id: props.selectedAdmin._id,
         fullName,
         email,
-        modifiedAt: Timestamp.now(),
-      })
-        .then(() => {
-          props.selectedAdmin.groups.forEach(async ({ id }) => {
-            const ref = doc(db, 'trackingGroups', id)
-            await updateDoc(ref, {
-              admins: arrayRemove({
-                fullName: props.selectedAdmin.fullName,
-                id: props.selectedAdmin.id,
-              }),
-            }).catch((error) => console.log(error))
-          })
+      }
 
-          props.selectedAdmin.groups.forEach(async ({ id }) => {
-            const ref = doc(db, 'trackingGroups', id)
-            await updateDoc(ref, {
-              admins: arrayUnion({
-                fullName: fullName,
-                id: props.selectedAdmin.id,
-              }),
-            }).catch((error) => console.log(error))
-          })
-        })
-        .then(() => {
-          props.success('Admin Updated')
-          props.setSnackOpen(true)
-          setFullName('')
-          setEmail('')
-          props.setOpen(false)
-        })
-        .catch((err) => console.log(err.message))
+      dispatch(updateAdmin(body))
+      props.success('Admin Updated')
+      props.setSnackOpen(true)
+      setFullName('')
+      setEmail('')
+      props.setOpen(false)
     }
   }
+
+  //   console.log(props.selectedAdmin)
+
+  // const updateAdmin = async () => {
+  //   if (verifyData()) {
+  //     const ref = doc(db, 'trackerAdmin', props.selectedAdmin.id)
+  //     await updateDoc(ref, {
+  //       fullName,
+  //       email,
+  //       modifiedAt: Timestamp.now(),
+  //     })
+  //       .then(() => {
+  //         props.selectedAdmin.groups.forEach(async ({ id }) => {
+  //           const ref = doc(db, 'trackingGroups', id)
+  //           await updateDoc(ref, {
+  //             admins: arrayRemove({
+  //               fullName: props.selectedAdmin.fullName,
+  //               id: props.selectedAdmin.id,
+  //             }),
+  //           }).catch((error) => console.log(error))
+  //         })
+
+  //         props.selectedAdmin.groups.forEach(async ({ id }) => {
+  //           const ref = doc(db, 'trackingGroups', id)
+  //           await updateDoc(ref, {
+  //             admins: arrayUnion({
+  //               fullName: fullName,
+  //               id: props.selectedAdmin.id,
+  //             }),
+  //           }).catch((error) => console.log(error))
+  //         })
+  //       })
+  //       .then(() => {
+  //         props.success('Admin Updated')
+  //         props.setSnackOpen(true)
+  //         setFullName('')
+  //         setEmail('')
+  //         props.setOpen(false)
+  //       })
+  //       .catch((err) => console.log(err.message))
+  //   }
+  // }
 
   return (
     <Dialog open={props.open} onClose={() => props.setOpen(false)}>
@@ -115,7 +136,7 @@ const EditAdminDialog = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => props.setOpen(false)}>Cancel</Button>
-        <Button onClick={() => updateAdmin()}>Update</Button>
+        <Button onClick={() => updateData()}>Update</Button>
       </DialogActions>
     </Dialog>
   )

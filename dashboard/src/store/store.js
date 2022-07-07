@@ -2,25 +2,46 @@ import { createStore, applyMiddleware, combineReducers } from 'redux'
 import thunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 
-import { UserFormReducer } from './reducers/UserFormReducer'
+import { hotspotReducer } from './reducers/hotspotReducer'
+import { groupReducer } from './reducers/groupReducer'
+import { adminReducer } from './reducers/adminReducer'
+import { deviceReducer } from './reducers/deviceReducer'
 
 const reducer = combineReducers({
-  forms: UserFormReducer,
+    hotspots: hotspotReducer,
+    groups: groupReducer,
+    admins: adminReducer,
+    devices: deviceReducer,
 })
 
-const gettingFormsFromStorage = sessionStorage.getItem('userForms')
-  ? JSON.parse(sessionStorage.getItem('userForms'))
-  : []
+const hotspotFromStorage = sessionStorage.getItem('hotspotList')
+    ? JSON.parse(sessionStorage.getItem('hotspotList'))
+    : []
+
+const groupFromStorage = sessionStorage.getItem('groupList')
+    ? JSON.parse(sessionStorage.getItem('groupList'))
+    : []
+
+const adminFromStorage = sessionStorage.getItem('adminList')
+    ? JSON.parse(sessionStorage.getItem('adminList'))
+    : []
+
+const deviceFromStorage = sessionStorage.getItem('deviceList')
+    ? JSON.parse(sessionStorage.getItem('deviceList'))
+    : []
 
 const initialState = {
-  forms: { userForms: gettingFormsFromStorage },
+    hotspots: { hotspotList: hotspotFromStorage },
+    groups: { groupList: groupFromStorage },
+    admins: { adminList: adminFromStorage },
+    devices: { deviceList: deviceFromStorage },
 }
 const middleware = [thunk]
 
 const store = createStore(
-  reducer,
-  initialState,
-  composeWithDevTools(applyMiddleware(...middleware))
+    reducer,
+    initialState,
+    composeWithDevTools(applyMiddleware(...middleware))
 )
 
 export default store

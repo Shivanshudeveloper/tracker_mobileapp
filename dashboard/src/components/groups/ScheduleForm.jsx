@@ -55,7 +55,7 @@ const ScheduleForm = (props) => {
             onChange={(e) => props.setEndDay(e.target.value)}
             label="End Day"
           >
-            {week.slice(week.indexOf(props.startDay)).map((day, i) => (
+            {week.map((day, i) => (
               <MenuItem key={i} value={day} sx={{ p: 1.2 }}>
                 {day}
               </MenuItem>

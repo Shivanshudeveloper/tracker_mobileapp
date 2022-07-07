@@ -34,7 +34,7 @@ const DeviceFilter = (props) => {
       >
         {props.mobileDevices.map((device, i) => (
           <MenuItem
-            key={i}
+            key={device._id}
             value={`${device.fullName} - ${device.phoneNumber}`}
           >
             <Checkbox
@@ -45,7 +45,7 @@ const DeviceFilter = (props) => {
               }
             />
             <ListItemText
-              primary={`${device.fullName} - ${device.phoneNumber}`}
+              primary={`${device.fullName} +91 ${device.phoneNumber}`}
             />
           </MenuItem>
         ))}

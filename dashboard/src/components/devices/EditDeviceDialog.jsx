@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   Button,
   Checkbox,
@@ -15,6 +16,7 @@ import {
 } from '@mui/material'
 import { db } from '../../Firebase/index'
 import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore'
+import { updateDevice } from '../../store/actions/device'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -39,8 +41,10 @@ const EditDeviceDialog = (props) => {
   } = props
 
   const [newFullName, setNewFullName] = useState('')
-  const [newDeviceGroup, setNewDeviceGroup] = useState([])
+  // const [newDeviceGroup, setNewDeviceGroup] = useState([])
   const [selectedGroups, setSelectedGroups] = useState([])
+
+  const dispatch = useDispatch()
 
   const handleChange = (event) => {
     const {
@@ -52,63 +56,82 @@ const EditDeviceDialog = (props) => {
   useEffect(() => {
     if (Object.entries(selectedDevice).length !== 0) {
       setNewFullName(selectedDevice.fullName)
-      const groups = selectedDevice.deviceGroups
+      const groups = selectedDevice.groups
 
       const arr = []
-      groups.forEach((x) => arr.push(x.id))
+      groups.forEach((x) => arr.push(x._id))
       setSelectedGroups(arr)
     }
   }, [selectedDevice])
 
-  useEffect(() => {
-    const arr = []
-    selectedGroups.forEach((x) => {
-      console.log(x)
-      const d = trackingGroups.filter((item) => item.id === x)[0]
-      const data = {
-        groupName: d.groupName,
-        id: d.id,
-      }
-      arr.push(data)
-    })
+  // useEffect(() => {
+  //   const arr = []
+  //   selectedGroups.forEach((x) => {
+  //     const d = trackingGroups.filter((item) => item.id === x)[0]
+  //     const data = {
+  //       groupName: d.groupName,
+  //       id: d.id,
+  //     }
+  //     arr.push(data)
+  //   })
 
-    setNewDeviceGroup(arr)
-  }, [selectedGroups])
+  //   setNewDeviceGroup(arr)
+  // }, [selectedGroups])
 
-  const updateDevice = () => {
-    const deviceRef = doc(db, 'trackingUsers', selectedDevice.id)
-    updateDoc(deviceRef, {
+  const updateDetails = () => {
+    if (newFullName.length === 0) {
+      setError('Full name is required')
+      setSnackOpen(true)
+      return
+    }
+    const body = {
+      _id: selectedDevice._id,
       fullName: newFullName,
-      deviceGroups: newDeviceGroup,
-    })
-      .then(() => {
-        selectedDevice.deviceGroups.forEach(({ id }) => {
-          const groupRef = doc(db, 'trackingGroups', id)
-          updateDoc(groupRef, {
-            members: arrayRemove(selectedDevice.phoneNumber),
-          }).catch((error) => console.log(error))
-        })
+      groups: selectedGroups,
+    }
 
-        selectedGroups.forEach((id) => {
-          const groupRef = doc(db, 'trackingGroups', id)
-          updateDoc(groupRef, {
-            members: arrayRemove(selectedDevice.phoneNumber),
-          }).catch((error) => console.log(error))
-          updateDoc(groupRef, {
-            members: arrayUnion(selectedDevice.phoneNumber),
-          }).catch((error) => console.log(error))
-        })
-      })
-      .then(() => {
-        setSuccess('Details Updated Successfully')
-        setSnackOpen(true)
-        setEditDialogOpen(false)
-      })
-      .catch((error) => {
-        setError(error.message)
-        setSnackOpen(true)
-      })
+    dispatch(updateDevice(body))
+    setNewFullName('')
+    setSelectedGroups([])
+    setEditDialogOpen(false)
   }
+
+  // const updateDevice = () => {
+  //   const deviceRef = doc(db, 'trackingUsers', selectedDevice.id)
+  //   console.log('Here 1')
+  //   updateDoc(deviceRef, {
+  //     fullName: newFullName,
+  //     deviceGroups: newDeviceGroup,
+  //     groupId: selectedGroups,
+  //   })
+  //     .then(() => {
+  //       selectedDevice.deviceGroups.forEach(({ id }) => {
+  //         const groupRef = doc(db, 'trackingGroups', id)
+  //         updateDoc(groupRef, {
+  //           members: arrayRemove(selectedDevice.phoneNumber),
+  //         }).catch((error) => console.log(error))
+  //       })
+  //       console.log('Here')
+  //       selectedGroups.forEach((id) => {
+  //         const groupRef = doc(db, 'trackingGroups', id)
+  //         updateDoc(groupRef, {
+  //           members: arrayRemove(selectedDevice.phoneNumber),
+  //         }).catch((error) => console.log(error))
+  //         updateDoc(groupRef, {
+  //           members: arrayUnion(selectedDevice.phoneNumber),
+  //         }).catch((error) => console.log(error))
+  //       })
+  //     })
+  //     .then(() => {
+  //       setSuccess('Details Updated Successfully')
+  //       setSnackOpen(true)
+  //       setEditDialogOpen(false)
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message)
+  //       setSnackOpen(true)
+  //     })
+  // }
 
   return (
     <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
@@ -137,8 +160,8 @@ const EditDeviceDialog = (props) => {
             MenuProps={MenuProps}
           >
             {trackingGroups.map((item) => (
-              <MenuItem key={item.id} value={item.id}>
-                <Checkbox checked={selectedGroups.indexOf(item.id) > -1} />
+              <MenuItem key={item._id} value={item._id}>
+                <Checkbox checked={selectedGroups.indexOf(item._id) > -1} />
                 <ListItemText primary={item.groupName} />
               </MenuItem>
             ))}
@@ -147,7 +170,7 @@ const EditDeviceDialog = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-        <Button onClick={() => updateDevice()}>Save Changes</Button>
+        <Button onClick={() => updateDetails()}>Save Changes</Button>
       </DialogActions>
     </Dialog>
   )

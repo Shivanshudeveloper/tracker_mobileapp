@@ -32,12 +32,10 @@ const HotspotFilter = (props) => {
         renderValue={(selected) => selected.join(', ')}
         MenuProps={MenuProps}
       >
-        {props.hotspotNames.map((hotspot, i) => (
-          <MenuItem key={i} value={hotspot.hotspotName}>
+        {props.hotspotNames.map((hotspot) => (
+          <MenuItem key={hotspot._id} value={hotspot._id}>
             <Checkbox
-              checked={
-                props.selectedHotspotNames.indexOf(hotspot.hotspotName) > -1
-              }
+              checked={props.selectedHotspotNames.indexOf(hotspot._id) > -1}
             />
             <ListItemText primary={hotspot.hotspotName} />
           </MenuItem>

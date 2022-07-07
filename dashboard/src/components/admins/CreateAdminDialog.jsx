@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   Box,
   Button,
@@ -8,12 +9,17 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material'
-import { addDoc, collection, Timestamp } from 'firebase/firestore'
-import { db } from '../../Firebase'
+import { addDoc, collection, doc, setDoc, Timestamp } from 'firebase/firestore'
+import { auth, db } from '../../Firebase'
+import { v4 as uuidv4 } from 'uuid'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createAdmin } from '../../store/actions/admin'
 
 const CreateAdminDialog = (props) => {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+
+  const dispatch = useDispatch()
 
   const isValidEmail = (enteredEmail) => {
     const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -22,7 +28,17 @@ const CreateAdminDialog = (props) => {
   }
 
   function verifyData() {
-    if (fullName === '') {
+    if (props.subscription === null) {
+      props.error('You do not have any subscription. Please choose a plan')
+      props.setSnackOpen(true)
+      return false
+    } else if (props.adminList.length === props.subscription.adminCount) {
+      props.error(
+        'You have used your admin quota. Please upgrade your subscription',
+      )
+      props.setSnackOpen(true)
+      return false
+    } else if (fullName === '') {
       props.error('Full Name cannot be empty')
       props.setSnackOpen(true)
       return false
@@ -35,25 +51,30 @@ const CreateAdminDialog = (props) => {
     return true
   }
 
-  const createAdmin = async () => {
+  const saveAdmin = async () => {
     if (verifyData()) {
-      const ref = collection(db, 'trackerAdmin')
-      await addDoc(ref, {
-        fullName,
-        email,
-        groups: [],
-        createdBy: props.createdBy,
-        createdAt: Timestamp.now(),
-        modifiedAt: Timestamp.now(),
-      })
-        .then(() => {
-          props.success('Admin Added')
-          props.setSnackOpen(true)
+      const password = '#123321#'
+
+      await createUserWithEmailAndPassword(auth, email, password)
+        .then((user) => {
+          console.log(user)
+          const body = {
+            fullName,
+            email,
+            groups: [],
+            createdBy: props.createdBy,
+            passwordChanged: false,
+          }
+          dispatch(createAdmin(body))
           setFullName('')
           setEmail('')
           props.setOpen(false)
         })
-        .catch((err) => console.log(err.message))
+        .catch((error) => {
+          const errorCode = error.code
+          const errorMessage = error.message
+          alert(errorCode, errorMessage)
+        })
     }
   }
 
@@ -85,7 +106,7 @@ const CreateAdminDialog = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => props.setOpen(false)}>Cancel</Button>
-        <Button onClick={() => createAdmin()}>Create</Button>
+        <Button onClick={() => saveAdmin()}>Create</Button>
       </DialogActions>
     </Dialog>
   )

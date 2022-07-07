@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   Checkbox,
   FormControl,
@@ -19,6 +20,7 @@ import axios from 'axios'
 import { API_SERVICE } from '../../URI'
 import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../../Firebase'
+import { updateHotspot } from '../../store/actions/hotspot'
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -60,39 +62,44 @@ const EditHotspotDialogForm = (props) => {
   })
   const [isFetching, setIsFetching] = useState(false)
 
+  const dispatch = useDispatch()
+
   useEffect(() => {
     if (Object.entries(selectedHotspot).length !== 0) {
       setHotspotName(selectedHotspot.hotspotName)
       const groups = selectedHotspot.groups
 
       const arr = []
-      groups.forEach((x) => arr.push(x.id))
+      groups.forEach((x) => arr.push(x._id))
       setSelectedGroups(arr)
 
-      getLatLong(selectedHotspot.location.lat, selectedHotspot.location.long)
+      getLatLong(
+        selectedHotspot.location.latitude,
+        selectedHotspot.location.longitude,
+      )
       setViewport({
         ...viewport,
-        latitude: selectedHotspot.location.lat,
-        longitude: selectedHotspot.location.long,
+        latitude: selectedHotspot.location.latitude,
+        longitude: selectedHotspot.location.longitude,
       })
-      setlat(selectedHotspot.location.lat)
-      setlong(selectedHotspot.location.long)
+      setlat(selectedHotspot.location.latitude)
+      setlong(selectedHotspot.location.longitude)
     }
   }, [selectedHotspot])
 
-  useEffect(() => {
-    const arr = []
-    selectedGroups.forEach((x) => {
-      const d = trackingGroups.filter((item) => item.id === x)[0]
-      const data = {
-        groupName: d.groupName,
-        id: d.id,
-      }
-      arr.push(data)
-    })
+  // useEffect(() => {
+  //   const arr = []
+  //   selectedGroups.forEach((x) => {
+  //     const d = trackingGroups.filter((item) => item.id === x)[0]
+  //     const data = {
+  //       groupName: d.groupName,
+  //       id: d.id,
+  //     }
+  //     arr.push(data)
+  //   })
 
-    setNewGroups(arr)
-  }, [selectedGroups])
+  //   setNewGroups(arr)
+  // }, [selectedGroups])
 
   const handleViewportChange = useCallback(
     (newViewport) => setViewport(newViewport),
@@ -112,7 +119,7 @@ const EditHotspotDialogForm = (props) => {
 
   const getLatLong = async (latitude, longitude) => {
     axios
-      .get(`${API_SERVICE}/api/v1/main/getlatlong/${latitude}/${longitude}`)
+      .get(`${API_SERVICE}/getlatlong/${latitude}/${longitude}`)
       .then((res) => {
         setLocation(res.data.formattedAddress)
         setZipCode(res.data.zipcode)
@@ -130,66 +137,82 @@ const EditHotspotDialogForm = (props) => {
     setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
   }
 
-  const updateHotspot = () => {
-    const ref = doc(db, 'trackingHotspots', selectedHotspot.id)
-    updateDoc(ref, {
+  const updateDetails = () => {
+    const body = {
+      _id: selectedHotspot._id,
       hotspotName,
-      groups: newGroups,
-      location: { lat, long, zipCode },
-    })
-      .then(() => {
-        selectedHotspot.groups.forEach(({ id }) => {
-          const groupRef = doc(db, 'trackingGroups', id)
-          updateDoc(groupRef, {
-            hotspot: arrayRemove({
-              hotspotName: selectedHotspot.hotspotName,
-              id: selectedHotspot.id,
-              location: {
-                lat: Number(selectedHotspot.location.lat.toPrecision(6)),
-                long: Number(selectedHotspot.location.long.toPrecision(6)),
-                zipCode: selectedHotspot.location.zipCode,
-              },
-            }),
-          }).catch((error) => console.log(error))
-        })
-
-        selectedGroups.forEach((id) => {
-          const groupRef = doc(db, 'trackingGroups', id)
-          updateDoc(groupRef, {
-            hotspot: arrayRemove({
-              hotspotName: selectedHotspot.hotspotName,
-              id: selectedHotspot.id,
-              location: {
-                lat: Number(selectedHotspot.location.lat.toPrecision(6)),
-                long: Number(selectedHotspot.location.long.toPrecision(6)),
-                zipCode: selectedHotspot.location.zipCode,
-              },
-            }),
-          }).catch((error) => console.log(error))
-          updateDoc(groupRef, {
-            hotspot: arrayUnion({
-              hotspotName,
-              id: selectedHotspot.id,
-              location: {
-                lat: Number(lat.toPrecision(6)),
-                long: Number(long.toPrecision(6)),
-                zipCode: selectedHotspot.location.zipCode,
-              },
-            }),
-          }).catch((error) => console.log(error))
-        })
-      })
-      .then(() => {
-        setSuccess('Details Updated Successfully')
-        setSnackOpen(true)
-        setDialogOpen(false)
-      })
-      .catch((error) => {
-        setError(error.message)
-        setSnackOpen(true)
-        setDialogOpen(false)
-      })
+      location: {
+        latitude: Number(lat.toPrecision(6)),
+        longitude: Number(long.toPrecision(6)),
+        zipCode,
+      },
+      groups: selectedGroups,
+    }
+    dispatch(updateHotspot(body))
+    setDialogOpen(false)
   }
+
+  // const updateHotspot = () => {
+  //   const ref = doc(db, 'trackingHotspots', selectedHotspot.id)
+  //   updateDoc(ref, {
+  //     hotspotName,
+  //     groups: newGroups,
+  //     groupId: selectedGroups,
+  //     location: { lat, long, zipCode },
+  //   })
+  //     .then(() => {
+  //       selectedHotspot.groups.forEach(({ id }) => {
+  //         const groupRef = doc(db, 'trackingGroups', id)
+  //         updateDoc(groupRef, {
+  //           hotspot: arrayRemove({
+  //             hotspotName: selectedHotspot.hotspotName,
+  //             id: selectedHotspot.id,
+  //             location: {
+  //               lat: Number(selectedHotspot.location.lat.toPrecision(6)),
+  //               long: Number(selectedHotspot.location.long.toPrecision(6)),
+  //               zipCode: selectedHotspot.location.zipCode,
+  //             },
+  //           }),
+  //         }).catch((error) => console.log(error))
+  //       })
+
+  //       selectedGroups.forEach((id) => {
+  //         const groupRef = doc(db, 'trackingGroups', id)
+  //         updateDoc(groupRef, {
+  //           hotspot: arrayRemove({
+  //             hotspotName: selectedHotspot.hotspotName,
+  //             id: selectedHotspot.id,
+  //             location: {
+  //               lat: Number(selectedHotspot.location.lat.toPrecision(6)),
+  //               long: Number(selectedHotspot.location.long.toPrecision(6)),
+  //               zipCode: selectedHotspot.location.zipCode,
+  //             },
+  //           }),
+  //         }).catch((error) => console.log(error))
+  //         updateDoc(groupRef, {
+  //           hotspot: arrayUnion({
+  //             hotspotName,
+  //             id: selectedHotspot.id,
+  //             location: {
+  //               lat: Number(lat.toPrecision(6)),
+  //               long: Number(long.toPrecision(6)),
+  //               zipCode: selectedHotspot.location.zipCode,
+  //             },
+  //           }),
+  //         }).catch((error) => console.log(error))
+  //       })
+  //     })
+  //     .then(() => {
+  //       setSuccess('Details Updated Successfully')
+  //       setSnackOpen(true)
+  //       setDialogOpen(false)
+  //     })
+  //     .catch((error) => {
+  //       setError(error.message)
+  //       setSnackOpen(true)
+  //       setDialogOpen(false)
+  //     })
+  // }
 
   return (
     <Dialog open={open} onClose={() => setDialogOpen(false)}>
@@ -219,8 +242,8 @@ const EditHotspotDialogForm = (props) => {
               MenuProps={MenuProps}
             >
               {trackingGroups.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  <Checkbox checked={selectedGroups.indexOf(item.id) > -1} />
+                <MenuItem key={item._id} value={item._id}>
+                  <Checkbox checked={selectedGroups.indexOf(item._id) > -1} />
                   <ListItemText primary={item.groupName} />
                 </MenuItem>
               ))}
@@ -272,7 +295,7 @@ const EditHotspotDialogForm = (props) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-        <Button disabled={isFetching} onClick={() => updateHotspot()}>
+        <Button disabled={isFetching} onClick={() => updateDetails()}>
           Update
         </Button>
       </DialogActions>

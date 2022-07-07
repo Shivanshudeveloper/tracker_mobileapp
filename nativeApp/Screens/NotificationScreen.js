@@ -1,137 +1,191 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native'
+import {
+    View,
+    StyleSheet,
+    TouchableWithoutFeedback,
+    ScrollView,
+} from 'react-native'
 import { Subheading, Title, List, Divider, Avatar } from 'react-native-paper'
 import { Picker } from '@react-native-picker/picker'
 import AppBar from '../Components/AppBarComponent'
 
 import { db, auth } from '../firebase'
-import { doc, onSnapshot } from 'firebase/firestore'
+import {
+    doc,
+    onSnapshot,
+    query,
+    orderBy,
+    limit,
+    collection,
+    setDoc,
+} from 'firebase/firestore'
 import moment from 'moment'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const NotificationScreen = () => {
-  const [menuVisible, setMenuVisible] = useState(false)
-  const [filter, setFilter] = useState('cpp')
-  const [notificationList, setNotficationList] = useState([])
+    const [menuVisible, setMenuVisible] = useState(false)
+    const [filter, setFilter] = useState('cpp')
+    const [notificationList, setNotficationList] = useState([])
 
-  const openMenu = () => setMenuVisible(true)
-  const closeMenu = () => setMenuVisible(false)
+    const openMenu = () => setMenuVisible(true)
+    const closeMenu = () => setMenuVisible(false)
 
-  const currentUser = auth.currentUser
-  let { phoneNumber } = currentUser
-  phoneNumber = phoneNumber.slice(3)
+    const currentUser = auth.currentUser
+    let { phoneNumber } = currentUser
+    phoneNumber = phoneNumber.slice(3)
 
-  const getTime = (sec) => {
-    const str = moment(new Date(sec * 1000)).fromNow()
+    console.log('here 1')
 
-    switch (str) {
-      case 'in a few seconds':
-        return 'few sec'
-      case 'a few seconds ago':
-        return 'few sec'
-      case 'a minute ago':
-        return '1m'
-      case 'an hour ago':
-        return '1h'
-      case 'a day ago':
-        return '1day'
-      default:
-        const first = str.split(' ')[0]
-        let mid = str.split(' ')[1]
-        if (mid === 'minutes' || mid === 'minute') {
-          mid = 'm'
+    const getTime = (sec) => {
+        const str = moment(new Date(sec * 1000)).fromNow()
+
+        switch (str) {
+            case 'in a few seconds':
+                return 'few sec'
+            case 'a few seconds ago':
+                return 'few sec'
+            case 'a minute ago':
+                return '1m'
+            case 'an hour ago':
+                return '1h'
+            case 'a day ago':
+                return '1day'
+            default:
+                const first = str.split(' ')[0]
+                let mid = str.split(' ')[1]
+                if (mid === 'minutes' || mid === 'minute') {
+                    mid = 'm'
+                }
+                if (mid === 'hours' || mid === 'hour') {
+                    mid = 'h'
+                }
+                if (mid === 'days' || mid === 'day') {
+                    mid = 'd'
+                }
+                return first + mid
         }
-        if (mid === 'hours' || mid === 'hour') {
-          mid = 'h'
-        }
-        if (mid === 'days' || mid === 'day') {
-          mid = 'd'
-        }
-        return first + mid
     }
-  }
 
-  useEffect(() => {
-    const ref = doc(db, 'trackingAndroidNotification', phoneNumber)
+    useEffect(() => {
+        const ref = collection(
+            db,
+            'trackingAndroidNotification',
+            phoneNumber,
+            'notifications'
+        )
+        const q = query(ref, orderBy('createdAt', 'desc'), limit(100))
 
-    const unsub = onSnapshot(ref, (snapshot) => {
-      if (snapshot.exists()) {
-        const list = snapshot.data().notificationList
+        const unsub = onSnapshot(q, (snapshots) => {
+            const list = []
+            snapshots.forEach((snap) => {
+                list.push({ ...snap.data(), id: snap.id })
+            })
 
-        const arr = list.sort((a, b) => {
-          return b.createdAt.seconds - a.createdAt.seconds
+            setNotficationList(list)
         })
 
-        setNotficationList(arr)
-      }
-    })
+        markedAsRead()
 
-    return () => unsub()
-  }, [])
+        return async () => {
+            unsub()
+        }
+    }, [])
 
-  return (
-    <View style={styles.container}>
-      <AppBar
-        onPress={openMenu}
-        closeMenu={closeMenu}
-        title='Notifications'
-        menuVisible={menuVisible}
-      />
-      <View style={styles.mainContainer}>
-        <TouchableWithoutFeedback onPress={() => console.log('pressed')}>
-          <Subheading style={styles.markAllText}>Mark all as Read</Subheading>
-        </TouchableWithoutFeedback>
-        <View style={styles.notificationContainer}>
-          {notificationList.map((item, i) => (
-            <View key={i}>
-              <List.Item
-                style={{ marginVertical: 5 }}
-                title={item.message}
-                description={`${getTime(item.createdAt.seconds)} ago`}
-                left={(props) => (
-                  <Avatar.Image
-                    {...props}
-                    size={50}
-                    source={{ uri: item.sender.profilePhoto }}
-                  />
-                )}
-              />
-              <Divider />
-            </View>
-          ))}
+    const markedAsRead = async () => {
+        const filteredArr = notificationList.filter((x) => x.seen === false)
+        const idArr = filteredArr.map((x) => x.id)
+
+        for (let id of idArr) {
+            const ref = doc(
+                db,
+                'trackingAndroidNotification',
+                phoneNumber,
+                'notifications',
+                id
+            )
+
+            setDoc(
+                ref,
+                {
+                    seen: true,
+                },
+                { merge: true }
+            ).catch((err) => console.log(err))
+        }
+    }
+
+    return (
+        <View style={styles.container}>
+            <AppBar
+                onPress={openMenu}
+                closeMenu={closeMenu}
+                title='Notifications'
+                menuVisible={menuVisible}
+            />
+            <SafeAreaView style={styles.mainContainer}>
+                <TouchableWithoutFeedback onPress={() => markedAsRead()}>
+                    <Subheading style={styles.markAllText}>
+                        Mark all as Read
+                    </Subheading>
+                </TouchableWithoutFeedback>
+                <ScrollView style={styles.notificationContainer}>
+                    {notificationList.map((item, i) => (
+                        <View key={item.id}>
+                            <List.Item
+                                style={{ marginVertical: 5 }}
+                                title={item.message}
+                                titleStyle={{
+                                    fontWeight: item.seen ? '500' : 'bold',
+                                }}
+                                description={`${getTime(
+                                    item.createdAt.seconds
+                                )} ago`}
+                                left={(props) => (
+                                    <Avatar.Image
+                                        {...props}
+                                        size={50}
+                                        source={{
+                                            uri: item.sender.profilePhoto,
+                                        }}
+                                    />
+                                )}
+                            />
+                        </View>
+                    ))}
+                </ScrollView>
+            </SafeAreaView>
         </View>
-      </View>
-    </View>
-  )
+    )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%',
-  },
-  mainContainer: {
-    padding: 10,
-    position: 'relative',
-  },
-  markAllText: {
-    textAlign: 'right',
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    marginVertical: 10,
-  },
-  filterTitleText: {
-    textAlignVertical: 'center',
-  },
-  pickerContainer: {
-    flex: 1,
-    height: 50,
-    marginLeft: 20,
-    backgroundColor: '#d1d1d1',
-  },
-  notificationContainer: {
-    marginTop: 10,
-  },
+    container: {
+        width: '100%',
+        height: '100%',
+    },
+    mainContainer: {
+        paddingHorizontal: 10,
+        position: 'relative',
+    },
+    markAllText: {
+        textAlign: 'right',
+    },
+    filterContainer: {
+        flexDirection: 'row',
+        marginVertical: 10,
+    },
+    filterTitleText: {
+        textAlignVertical: 'center',
+    },
+    pickerContainer: {
+        flex: 1,
+        height: 50,
+        marginLeft: 20,
+        backgroundColor: '#d1d1d1',
+    },
+    notificationContainer: {
+        marginTop: 10,
+    },
 })
 
 export default NotificationScreen

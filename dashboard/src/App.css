@@ -76,3 +76,89 @@
 .css-ha3bif-MuiTimelineItem-root:before {
   padding-left: 3px !important;
 }
+
+.card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.pricing-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 15px;
+  width: 350px;
+}
+
+.pro {
+  background: linear-gradient(#42424a, #191919);
+}
+
+.btn {
+  font-size: 18px;
+  align-self: flex-end;
+  margin-bottom: 20px;
+  width: 100%;
+  text-transform: capitalize;
+}
+
+.pro-btn {
+  background: linear-gradient(#ffa726, #fb8c00);
+}
+
+.free-btn {
+  border: 1px solid #e91e63;
+  color: #e91e63;
+}
+
+.free-btn:hover {
+  color: #e91e63;
+  border: 1px solid #e91e63;
+}
+
+.chip {
+  font-size: 20px;
+  padding: 1.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  border-radius: 25px;
+  font-weight: bold;
+}
+
+.StripeElement {
+  height: 40px;
+  padding: 10px 12px;
+  width: 100%;
+  color: #32325d;
+  background-color: white;
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  -webkit-transition: box-shadow 150ms ease;
+  transition: box-shadow 150ms ease;
+}
+
+.StripeElement--focus {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}
+
+.StripeElement--invalid {
+  border-color: #fa755a;
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+
+.export-btn {
+  font-size: 18px;
+  border: none;
+  background-color: transparent;
+  color: #007bff;
+  width: 100%;
+  height: 100%;
+  padding: 0 30px;
+}

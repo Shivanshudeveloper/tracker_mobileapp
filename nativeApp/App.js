@@ -4,16 +4,19 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Navigation from './Navigation'
 import useColorScheme from './hooks/useColorScheme'
 import { Provider as PaperProvider } from 'react-native-paper'
+import { LogBox } from 'react-native'
 
 export default function App() {
-  const colorScheme = useColorScheme()
+    const colorScheme = useColorScheme()
 
-  return (
-    <PaperProvider>
-      <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
-        <StatusBar style='auto' />
-      </SafeAreaProvider>
-    </PaperProvider>
-  )
+    LogBox.ignoreLogs(['AsyncStorage has been extracted'])
+
+    return (
+        <PaperProvider>
+            <SafeAreaProvider>
+                <Navigation colorScheme={colorScheme} />
+                <StatusBar style='auto' />
+            </SafeAreaProvider>
+        </PaperProvider>
+    )
 }
