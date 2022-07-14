@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { Box, Typography } from '@mui/material'
 
 import ProCard from '../components/pricing/ProCard'
@@ -16,11 +16,10 @@ const Pricing = () => {
     const navigate = useNavigate()
 
     const { state, dispatch } = useSubscription()
-
     const customerId = state?.customerId
 
     useEffect(() => {
-        if (state.subscription) {
+        if (state.subscriptions) {
             let subscription
             for (let sub of state?.subscriptions?.data) {
                 if (sub.status === 'active') {
@@ -87,7 +86,11 @@ const Pricing = () => {
                         cart: { product, clientSecret },
                     },
                 })
-                navigate('/subscribe?', { state: { quantity } })
+                console.log('Here')
+
+                if (product.product.name === 'Free Plan') {
+                    window.location.reload()
+                }
             } else {
                 dispatch({
                     type: 'SELECT_PRODUCT',
@@ -95,14 +98,16 @@ const Pricing = () => {
                         cart: { product, clientSecret },
                     },
                 })
+
+                if (product.product.name === 'Free Plan') {
+                    window.location.reload()
+                }
                 navigate('/subscribe', { state: { quantity } })
             }
         } catch (error) {
             console.log(error.message)
         }
     }
-
-    console.log(currentPlan)
 
     return (
         <Box sx={{ p: 2 }}>

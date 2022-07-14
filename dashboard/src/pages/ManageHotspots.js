@@ -23,7 +23,7 @@ import EditHotspotDialogForm from '../components/hotspot/EditHotspotDialogForm'
 import Geocoder from 'react-map-gl-geocoder'
 import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
 import axios from 'axios'
-import { API_SERVICE } from '../URI'
+import { API_SERVICE, MAP_STYLE, MAP_TOKEN } from '../URI'
 import HotspotTable from '../components/hotspot/HotspotTable'
 import {
     createHotspot,
@@ -296,8 +296,8 @@ const ManageHotspots = () => {
                 <Grid item xs={12} md={6} sx={{ height: '100' }}>
                     <ReactMapGL
                         {...allViewport}
-                        mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-                        mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+                        mapboxApiAccessToken={MAP_TOKEN}
+                        mapStyle={MAP_STYLE}
                         onViewportChange={(nextViewport) =>
                             setAllViewport(nextViewport)
                         }
@@ -422,8 +422,8 @@ const ManageHotspots = () => {
                     <ReactMapGL
                         {...viewport}
                         ref={mapRef}
-                        mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-                        mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+                        mapboxApiAccessToken={MAP_TOKEN}
+                        mapStyle={MAP_STYLE}
                         onViewportChange={(nextViewport) =>
                             setViewport(nextViewport)
                         }
@@ -436,7 +436,7 @@ const ManageHotspots = () => {
                         <Geocoder
                             mapRef={mapRef}
                             onViewportChange={handleGeocoderViewportChange}
-                            mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
+                            mapboxApiAccessToken={MAP_TOKEN}
                             position='top-left'
                             marker={true}
                             countries='IN'

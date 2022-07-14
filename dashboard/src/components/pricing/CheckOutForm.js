@@ -26,7 +26,7 @@ export default function CheckoutForm() {
 
     const navigate = useNavigate()
     const location = useLocation()
-    const { quantity } = location.state
+    const quantity = location.state ? location.state.quantity : 0
 
     // helper for displaying status messages.
     const setMessage = (message) => {

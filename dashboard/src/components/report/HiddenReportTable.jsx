@@ -26,7 +26,6 @@ function Row(props) {
     selectedGroups,
     selectedMonth,
   } = props
-  const [open, setOpen] = React.useState(false)
   const [history, setHistory] = React.useState([])
   const [load, setLoad] = React.useState(false)
 
@@ -84,15 +83,7 @@ function Row(props) {
   return (
     <React.Fragment>
       <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-        <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </TableCell>
+        <TableCell></TableCell>
         <TableCell component="th" scope="row">
           {row.device}
         </TableCell>
@@ -129,66 +120,64 @@ function Row(props) {
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1 }}>
-              <Typography variant="h6" sx={{ my: 2 }} component="div">
-                History
-              </Typography>
-              <Table size="small" aria-label="purchases">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Date</TableCell>
-                    <TableCell>Address</TableCell>
-                    <TableCell align="right">Hotspot</TableCell>
-                    <TableCell align="right">Group</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {!load &&
-                    history.map((historyRow, index) => (
-                      <TableRow key={index + 1}>
-                        <TableCell
-                          sx={{ borderWidth: 0, padding: '16px' }}
-                          component="th"
-                          scope="row"
-                        >
-                          {moment(historyRow.createdAt).format(
-                            'DD MMMM YYYY - hh:mm a',
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ borderWidth: 0, padding: '16px' }}>
-                          {historyRow.address}
-                        </TableCell>
-                        <TableCell
-                          sx={{ borderWidth: 0, padding: '16px' }}
-                          align="right"
-                        >
-                          {historyRow.hotspot.hotspotName}
-                        </TableCell>
-                        <TableCell
-                          sx={{ borderWidth: 0, padding: '16px' }}
-                          align="right"
-                        >
-                          {historyRow.group.groupName}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-              {load && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    width: '100%',
-                    my: 3,
-                  }}
-                >
-                  <CircularProgress sx={{ fontSize: 30 }} />
-                </Box>
-              )}
-            </Box>
-          </Collapse>
+          <Box sx={{ margin: 1 }}>
+            <Typography variant="h6" sx={{ my: 2 }} component="div">
+              History
+            </Typography>
+            <Table size="small" aria-label="purchases">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Address</TableCell>
+                  <TableCell align="right">Hotspot</TableCell>
+                  <TableCell align="right">Group</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!load &&
+                  history.map((historyRow, index) => (
+                    <TableRow key={index + 1}>
+                      <TableCell
+                        sx={{ borderWidth: 0, padding: '16px' }}
+                        component="th"
+                        scope="row"
+                      >
+                        {moment(historyRow.createdAt).format(
+                          'DD MMMM YYYY - hh:mm a',
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ borderWidth: 0, padding: '16px' }}>
+                        {historyRow.address}
+                      </TableCell>
+                      <TableCell
+                        sx={{ borderWidth: 0, padding: '16px' }}
+                        align="right"
+                      >
+                        {historyRow.hotspot.hotspotName}
+                      </TableCell>
+                      <TableCell
+                        sx={{ borderWidth: 0, padding: '16px' }}
+                        align="right"
+                      >
+                        {historyRow.group.groupName}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+            {load && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  width: '100%',
+                  my: 3,
+                }}
+              >
+                <CircularProgress sx={{ fontSize: 30 }} />
+              </Box>
+            )}
+          </Box>
         </TableCell>
       </TableRow>
     </React.Fragment>
@@ -197,8 +186,8 @@ function Row(props) {
 
 const ReportTable = (props) => {
   return (
-    <TableContainer component={Paper}>
-      <Table>
+    <TableContainer hidden component={Paper}>
+      <Table id={props.id}>
         <TableHead>
           <TableRow>
             <TableCell />

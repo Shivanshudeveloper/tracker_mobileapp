@@ -82,21 +82,32 @@ const ProCard = (props) => {
                         width: '100%',
                     }}
                 />
-                <Typography
-                    variant='h1'
-                    sx={{ my: 2, fontSize: 40, color: 'white' }}
-                >
-                    $1{' '}
-                    <span
-                        style={{
-                            color: 'gray',
-                            fontSize: 15,
-                            textTransform: 'uppercase',
-                        }}
+
+                <Stack direction='row' justifyContent='space-between'>
+                    <Typography
+                        variant='h1'
+                        sx={{ my: 2, fontSize: 40, color: 'white' }}
                     >
-                        / user
-                    </span>
-                </Typography>
+                        $1{' '}
+                        <span
+                            style={{
+                                color: 'gray',
+                                fontSize: 15,
+                                textTransform: 'uppercase',
+                            }}
+                        >
+                            / user
+                        </span>
+                    </Typography>
+
+                    <Typography
+                        variant='h1'
+                        sx={{ my: 2, fontSize: 40, color: 'white' }}
+                    >
+                        {`${props.value}`}
+                    </Typography>
+                </Stack>
+
                 <Stack
                     spacing={2}
                     direction='row'

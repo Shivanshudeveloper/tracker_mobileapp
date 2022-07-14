@@ -3,7 +3,7 @@ import { auth, db } from '../Firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import { API_SERVICE } from '../URI'
 import axios from 'axios'
-import { doc } from 'firebase/firestore'
+import { doc, getDoc } from 'firebase/firestore'
 
 const initialState = {
     customerId: null,
@@ -51,25 +51,68 @@ export const SubscriptionProvider = (props) => {
     const { children } = props
     const [state, dispatch] = useReducer(reducer, initialState)
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
-        : null
-
     useEffect(async () => {
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const customer = await fetchCustomer(user)
-                if (customer) {
-                    const subscriptions = await fetchSubscriptions(customer?.id)
+            try {
+                const ref = doc(db, 'trackerWebUser', user.uid)
+                const snap = await getDoc(ref)
+
+                let userData
+
+                if (snap.exists()) {
+                    const data = snap.data()
+                    userData = {
+                        uid: data.uid,
+                        displayName: `${data.firstName} ${data.lastName}`,
+                        email: data.email,
+                    }
+                } else {
+                    const _email = user.email
+                    console.log(_email)
+                    const { data } = await axios.get(
+                        `${API_SERVICE}/get/admin/${_email}`
+                    )
+
+                    const { createdBy } = data
+
+                    const ref = doc(db, 'trackerWebUser', createdBy)
+                    const snap = await getDoc(ref)
+
+                    if (snap.exists()) {
+                        const data = snap.data()
+                        userData = {
+                            uid: data.uid,
+                            displayName: `${data.firstName} ${data.lastName}`,
+                            email: data.email,
+                        }
+                    }
+                }
+
+                if (userData) {
+                    const customer = await fetchCustomer(userData)
+                    if (customer) {
+                        const subscriptions = await fetchSubscriptions(
+                            customer?.id
+                        )
+                        dispatch({
+                            type: 'SUBSCRIPTION_DATA_CHANGED',
+                            payload: {
+                                customerId: customer?.id,
+                                subscriptions: subscriptions,
+                            },
+                        })
+                    }
+                } else {
                     dispatch({
                         type: 'SUBSCRIPTION_DATA_CHANGED',
                         payload: {
-                            customerId: customer?.id,
-                            subscriptions: subscriptions,
+                            customerId: null,
+                            subscriptions: [],
                         },
                     })
                 }
-            } else {
+            } catch (error) {
+                console.log(error.message)
                 dispatch({
                     type: 'SUBSCRIPTION_DATA_CHANGED',
                     payload: {

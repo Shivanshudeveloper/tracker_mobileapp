@@ -83,4 +83,4 @@ const ScheduleForm = (props) => {
   )
 }
 
-export default ScheduleForm
+export default React.memo(ScheduleForm)

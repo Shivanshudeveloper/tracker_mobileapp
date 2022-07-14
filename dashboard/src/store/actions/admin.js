@@ -1,6 +1,7 @@
 import * as types from '../constants'
 import axios from 'axios'
 import { API_SERVICE } from '../../URI'
+import { async } from '@firebase/util'
 
 const createAdmin = (bodyData) => async (dispatch, getState) => {
     try {
@@ -108,4 +109,24 @@ const deleteAdmin = (_id) => async (dispatch, getState) => {
     }
 }
 
-export { createAdmin, getAdmins, updateAdmin, deleteAdmin }
+const sendEmail = (emailData) => async (dispatch) => {
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }
+
+        const { data } = await axios.post(
+            `${API_SERVICE}/send-email`,
+            emailData,
+            config
+        )
+
+        console.log(data)
+    } catch (error) {
+        console.log('Error occured while sending email')
+    }
+}
+
+export { createAdmin, getAdmins, updateAdmin, deleteAdmin, sendEmail }

@@ -13,7 +13,7 @@ import { addDoc, collection, doc, setDoc, Timestamp } from 'firebase/firestore'
 import { auth, db } from '../../Firebase'
 import { v4 as uuidv4 } from 'uuid'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { createAdmin } from '../../store/actions/admin'
+import { createAdmin, sendEmail } from '../../store/actions/admin'
 
 const CreateAdminDialog = (props) => {
   const [fullName, setFullName] = useState('')
@@ -56,8 +56,7 @@ const CreateAdminDialog = (props) => {
       const password = '#123321#'
 
       await createUserWithEmailAndPassword(auth, email, password)
-        .then((user) => {
-          console.log(user)
+        .then(async function (user) {
           const body = {
             fullName,
             email,
@@ -66,6 +65,14 @@ const CreateAdminDialog = (props) => {
             passwordChanged: false,
           }
           dispatch(createAdmin(body))
+
+          const emailData = {
+            to: email,
+            subject: 'GPS Tracker login credentials for admin',
+            body: `Your login credentials are:\nemail: ${email}\npassword: ${password}`,
+          }
+          dispatch(sendEmail(emailData))
+
           setFullName('')
           setEmail('')
           props.setOpen(false)

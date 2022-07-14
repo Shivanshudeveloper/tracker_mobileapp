@@ -12,6 +12,7 @@ import ReactHTMLTableToExcel from 'react-html-table-to-excel'
 import { useNavigate } from 'react-router'
 import { useSubscription } from '../hooks/useSubscription'
 import { getSubscriptionDetails } from '../utils/getSubscriptionDetails'
+import HiddenReportTable from '../components/report/HiddenReportTable'
 
 const Months = [
     'January',
@@ -90,7 +91,6 @@ const Report = () => {
     useEffect(() => {
         const fetchSubDetail = async () => {
             const details = await getSubscriptionDetails(state)
-            console.log('subscription', details)
             setSubscription(details)
         }
 
@@ -207,6 +207,32 @@ const Report = () => {
             <Box sx={{ my: 4 }}>
                 {!loading ? (
                     <ReportTable
+                        tableData={
+                            selectedDevices.length === 0
+                                ? tableData
+                                : filteredData
+                        }
+                        id='table-to-xls'
+                        hotspotList={hotspotList}
+                        selectedHotspots={selectedHotspots}
+                        selectedGroups={selectedGroups}
+                        selectedMonth={Months.indexOf(selectedMonth)}
+                    />
+                ) : (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            mt: '300px',
+                        }}
+                    >
+                        <CircularProgress color='inherit' />
+                    </Box>
+                )}
+            </Box>
+            <Box sx={{ my: 4 }}>
+                {!loading ? (
+                    <HiddenReportTable
                         tableData={
                             selectedDevices.length === 0
                                 ? tableData

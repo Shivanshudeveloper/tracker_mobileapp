@@ -3,17 +3,9 @@ import { Helmet } from 'react-helmet'
 import { Avatar, Box, Container, Typography } from '@mui/material'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import axios from 'axios'
-import { API_SERVICE } from '../URI'
+import { API_SERVICE, MAP_STYLE, MAP_TOKEN } from '../URI'
 import { db } from '../Firebase/index'
-import {
-    collection,
-    doc,
-    limit,
-    onSnapshot,
-    orderBy,
-    query,
-    where,
-} from 'firebase/firestore'
+import { doc, onSnapshot } from 'firebase/firestore'
 import LocationTimeline from '../components/dashboard/LocationTimeline'
 
 const Locationview = (props) => {
@@ -78,34 +70,12 @@ const Locationview = (props) => {
         return () => unsub()
     }, [phoneNumber])
 
-    // useEffect(() => {
-    //   if (user !== undefined && user !== null) {
-    //     const requestRef = doc(db, 'trackingRequest', phoneNumber)
-
-    //     const unsub = onSnapshot(requestRef, (doc) => {
-    //       if (doc.exists()) {
-    //         const reqList = doc.data().requestList
-    //         const thisReq = reqList.filter((req) => req.sender.id === createdBy)[0]
-    //         if (thisReq !== undefined) {
-    //           if (thisReq.requestStatus === 'accepted') {
-    //             setRequestStatus('accepted')
-    //           } else if (thisReq.requestStatus === 'pending') {
-    //             setRequestStatus('pending')
-    //           } else if (thisReq.requestStatus === 'rejected') {
-    //             setRequestStatus('rejected')
-    //           }
-    //         }
-    //       }
-    //     })
-
-    //     return () => unsub()
-    //   }
-    // }, [phoneNumber, createdBy])
-
     useEffect(async () => {
         try {
             const { data } = await axios.get(
-                `${API_SERVICE}/get/location/${createdBy}/${phoneNumber}`
+                `${API_SERVICE}/get/location/${createdBy}/${phoneNumber}/${
+                    new Date().getMonth() + 1
+                }`
             )
 
             setLocations(data)
@@ -154,8 +124,8 @@ const Locationview = (props) => {
                     {user.trackingStatus === 'accepted' && (
                         <ReactMapGL
                             {...viewport}
-                            mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-                            mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+                            mapboxApiAccessToken={MAP_TOKEN}
+                            mapStyle={MAP_STYLE}
                             onViewportChange={(nextViewport) =>
                                 setViewport(nextViewport)
                             }
@@ -251,8 +221,8 @@ const Locationview = (props) => {
 
                             <ReactMapGL
                                 {...viewport}
-                                mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-                                mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+                                mapboxApiAccessToken={MAP_TOKEN}
+                                mapStyle={MAP_STYLE}
                                 onViewportChange={(nextViewport) =>
                                     setViewport(nextViewport)
                                 }

@@ -86,9 +86,9 @@ const FreeCard = (props) => {
                     </span>
                 </Typography>
 
-                <List sx={{ my: 3, mt: 10 }}>
+                <List sx={{ my: 3, mt: 8 }}>
                     {benefits.map((x, i) => (
-                        <ListItem disablePadding>
+                        <ListItem key={i} disablePadding>
                             <ListItemIcon>
                                 {i === 1 ? (
                                     <CheckCircleIcon

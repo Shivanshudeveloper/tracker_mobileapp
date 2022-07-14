@@ -135,6 +135,13 @@
   dependencies:
     "follow-redirects" "^1.14.0"
 
+"axios@^0.25.0":
+  "integrity" "sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g=="
+  "resolved" "https://registry.npmjs.org/axios/-/axios-0.25.0.tgz"
+  "version" "0.25.0"
+  dependencies:
+    "follow-redirects" "^1.14.7"
+
 "balanced-match@^1.0.0":
   "integrity" "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="
   "resolved" "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz"
@@ -691,10 +698,10 @@
   dependencies:
     "locate-path" "^3.0.0"
 
-"follow-redirects@^1.14.0":
-  "integrity" "sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA=="
-  "resolved" "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.14.5.tgz"
-  "version" "1.14.5"
+"follow-redirects@^1.14.0", "follow-redirects@^1.14.7":
+  "integrity" "sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA=="
+  "resolved" "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.1.tgz"
+  "version" "1.15.1"
 
 "forever-agent@~0.6.1":
   "integrity" "sha1-+8cfDEGt6zf5bFd60e1C2P2sypE="
@@ -1436,6 +1443,13 @@
   "integrity" "sha1-5aSs0sEB/fPZpNB/DbxNtJ3SgXY="
   "resolved" "https://registry.npmjs.org/pify/-/pify-3.0.0.tgz"
   "version" "3.0.0"
+
+"postmark@^3.0.12":
+  "integrity" "sha512-5KPDGRS68SVoMRH0SHEwFdZtFVhF/L8hDukvM9xtQ7uk8i6bQDHwgLJH3sOT2RrFXnDnU8y0Sxua5CSc4BOaGg=="
+  "resolved" "https://registry.npmjs.org/postmark/-/postmark-3.0.12.tgz"
+  "version" "3.0.12"
+  dependencies:
+    "axios" "^0.25.0"
 
 "prepend-http@^2.0.0":
   "integrity" "sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc="

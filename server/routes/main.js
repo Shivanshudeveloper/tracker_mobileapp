@@ -39,6 +39,7 @@ const {
     updateAdmin,
     deleteAdmin,
     getAdmin,
+    sendEmailToAdmin,
 } = require('../controllers/adminController')
 const {
     createDevice,
@@ -921,6 +922,7 @@ router.get('/tracker/userlocation/:email', async (req, res) => {
 router.get('/get/admins/:createdBy', getAdmins)
 router.get('/get/admin/:email', getAdmin)
 router.post('/create/admin', createAdmin)
+router.post('/send-email', sendEmailToAdmin)
 router.put('/update/admin', updateAdmin)
 router.delete('/delete/admin/:_id', deleteAdmin)
 

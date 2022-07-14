@@ -104,10 +104,10 @@ const ManageGroups = () => {
                         id: userData?.uid,
                         fullName: `${userData?.firstName} ${userData?.lastName}`,
                     }}
+                    subscription={subscription}
                     setError={setErrorMsg}
                     setSnackOpen={setSnackOpen}
                     setSuccess={setSuccessMsg}
-                    subscription={subscription}
                     groupList={groupList}
                 />
             </Box>

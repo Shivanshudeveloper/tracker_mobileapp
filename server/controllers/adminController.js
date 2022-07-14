@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler')
 const Admin = require('../models/TrackingAdmin')
 const Group = require('../models/TrackingGroup')
+const postmark = require('postmark')
 
 const createAdmin = asyncHandler(async (req, res) => {
     try {
@@ -121,4 +122,34 @@ const deleteAdmin = asyncHandler(async (req, res) => {
     }
 })
 
-module.exports = { createAdmin, getAdmin, getAdmins, updateAdmin, deleteAdmin }
+const sendEmailToAdmin = asyncHandler(async (req, res) => {
+    try {
+        const { to, subject, body } = req.body
+        const from = process.env.FROM_EMAIL
+
+        const serverToken = process.env.EMAIL_API
+        const client = new postmark.ServerClient(serverToken)
+
+        client
+            .sendEmail({
+                From: from,
+                To: to,
+                Subject: subject,
+                TextBody: body,
+            })
+            .then(() => {
+                res.status(200).send('Email sent successfully')
+            })
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+})
+
+module.exports = {
+    createAdmin,
+    getAdmin,
+    getAdmins,
+    updateAdmin,
+    deleteAdmin,
+    sendEmailToAdmin,
+}

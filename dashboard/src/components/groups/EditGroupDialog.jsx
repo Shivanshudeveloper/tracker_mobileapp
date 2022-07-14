@@ -14,19 +14,6 @@ import {
   ListItemText,
   MenuItem,
 } from '@mui/material'
-import {
-  addDoc,
-  collection,
-  onSnapshot,
-  query,
-  where,
-  doc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  Timestamp,
-} from 'firebase/firestore'
-import { db } from '../../Firebase'
 import ScheduleForm from './ScheduleForm'
 import { updateGroup } from '../../store/actions/group'
 
@@ -56,22 +43,6 @@ const EditGroupDialog = (props) => {
 
   const dispatch = useDispatch()
 
-  // useEffect(() => {
-  //   const ref = collection(db, 'trackerAdmin')
-  //   const q = query(ref, where('createdBy', '==', props.createdBy.id))
-
-  //   const unsub = onSnapshot(q, (snapshot) => {
-  //     const adminArr = []
-  //     snapshot.forEach((snap) => {
-  //       adminArr.push({ fullName: snap.data().fullName, id: snap.id })
-  //     })
-
-  //     setAdminList(adminArr)
-  //   })
-
-  //   return () => unsub()
-  // }, [])
-
   useEffect(() => {
     if (Object.keys(props.selectedGroup).length !== 0) {
       setGroupName(props.selectedGroup.groupName)
@@ -86,21 +57,6 @@ const EditGroupDialog = (props) => {
       setSelectedAdmins(arr)
     }
   }, [props.selectedGroup])
-
-  // useEffect(() => {
-  //   const arr = []
-  //   selectedAdmins.forEach((x) => {
-  //     const d = adminList.filter((item) => item.id === x)[0]
-
-  //     const data = {
-  //       fullName: d.fullName,
-  //       id: d.id,
-  //     }
-  //     arr.push(data)
-  //   })
-
-  //   setAdmins(arr)
-  // }, [selectedAdmins])
 
   const handleChange = (event) => {
     const {
@@ -142,76 +98,6 @@ const EditGroupDialog = (props) => {
     setEndDay('Sunday')
     setTime(['10:00', '11:00'])
   }
-
-  // const updateGroup = async () => {
-  //   if (groupName.length < 3) {
-  //     props.setError('Group Name length must be atleast 3')
-  //     props.setSnackOpen(true)
-  //     return
-  //   } else if (admins.length === 0) {
-  //     props.setError('Select atleast one admin')
-  //     props.setSnackOpen(true)
-  //     return
-  //   }
-
-  //   const groupRef = doc(db, 'trackingGroups', props.selectedGroup.id)
-  //   await updateDoc(groupRef, {
-  //     groupName: groupName,
-  //     admins: admins,
-  //     schedule: {
-  //       startDay,
-  //       endDay,
-  //       time: {
-  //         startTime: time[0],
-  //         endTime: time[1],
-  //       },
-  //     },
-  //     modifiedAt: Timestamp.now(),
-  //   })
-  //     .then(() => {
-  //       const oldAdmins = props.selectedGroup.admins
-
-  //       oldAdmins.forEach(async ({ id }) => {
-  //         const adminRef = doc(db, 'trackerAdmin', id)
-  //         await updateDoc(adminRef, {
-  //           groups: arrayRemove({
-  //             groupName: props.selectedGroup.groupName,
-  //             id: props.selectedGroup.id,
-  //           }),
-  //           groupId: arrayRemove(props.selectedGroup.id),
-  //         }).catch((error) => console.log(error))
-  //       })
-
-  //       selectedAdmins.forEach(async (id) => {
-  //         const ref = doc(db, 'trackerAdmin', id)
-  //         await updateDoc(ref, {
-  //           groups: arrayUnion({
-  //             groupName,
-  //             id: props.selectedGroup.id,
-  //           }),
-  //           groupId: arrayUnion(props.selectedGroup.id),
-  //         }).catch((err) => {
-  //           props.setError(err.message)
-  //           props.setSnackOpen(true)
-  //         })
-  //       })
-  //     })
-  //     .then(() => {
-  //       setSelectedAdmins([])
-  //       props.setSuccess('Group Updated')
-  //       props.setSnackOpen(true)
-  //     })
-  //     .catch((err) => {
-  //       props.setError(err.message)
-  //       props.setSnackOpen(true)
-  //     })
-
-  //   props.setOpen(false)
-  //   setGroupName('')
-  //   setStartDay('Sunday')
-  //   setEndDay('Sunday')
-  //   setTime(['10:00', '11:00'])
-  // }
 
   return (
     <Dialog open={props.open} onClose={() => props.setOpen(false)}>

@@ -17,7 +17,7 @@ import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import Geocoder from 'react-map-gl-geocoder'
 import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
 import axios from 'axios'
-import { API_SERVICE } from '../../URI'
+import { API_SERVICE, MAP_STYLE, MAP_TOKEN } from '../../URI'
 import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../../Firebase'
 import { updateHotspot } from '../../store/actions/hotspot'
@@ -34,15 +34,7 @@ const MenuProps = {
 }
 
 const EditHotspotDialogForm = (props) => {
-  const {
-    trackingGroups,
-    setDialogOpen,
-    open,
-    selectedHotspot,
-    setSnackOpen,
-    setError,
-    setSuccess,
-  } = props
+  const { trackingGroups, setDialogOpen, open, selectedHotspot } = props
 
   const mapRef = useRef()
 
@@ -86,20 +78,6 @@ const EditHotspotDialogForm = (props) => {
       setlong(selectedHotspot.location.longitude)
     }
   }, [selectedHotspot])
-
-  // useEffect(() => {
-  //   const arr = []
-  //   selectedGroups.forEach((x) => {
-  //     const d = trackingGroups.filter((item) => item.id === x)[0]
-  //     const data = {
-  //       groupName: d.groupName,
-  //       id: d.id,
-  //     }
-  //     arr.push(data)
-  //   })
-
-  //   setNewGroups(arr)
-  // }, [selectedGroups])
 
   const handleViewportChange = useCallback(
     (newViewport) => setViewport(newViewport),
@@ -152,68 +130,6 @@ const EditHotspotDialogForm = (props) => {
     setDialogOpen(false)
   }
 
-  // const updateHotspot = () => {
-  //   const ref = doc(db, 'trackingHotspots', selectedHotspot.id)
-  //   updateDoc(ref, {
-  //     hotspotName,
-  //     groups: newGroups,
-  //     groupId: selectedGroups,
-  //     location: { lat, long, zipCode },
-  //   })
-  //     .then(() => {
-  //       selectedHotspot.groups.forEach(({ id }) => {
-  //         const groupRef = doc(db, 'trackingGroups', id)
-  //         updateDoc(groupRef, {
-  //           hotspot: arrayRemove({
-  //             hotspotName: selectedHotspot.hotspotName,
-  //             id: selectedHotspot.id,
-  //             location: {
-  //               lat: Number(selectedHotspot.location.lat.toPrecision(6)),
-  //               long: Number(selectedHotspot.location.long.toPrecision(6)),
-  //               zipCode: selectedHotspot.location.zipCode,
-  //             },
-  //           }),
-  //         }).catch((error) => console.log(error))
-  //       })
-
-  //       selectedGroups.forEach((id) => {
-  //         const groupRef = doc(db, 'trackingGroups', id)
-  //         updateDoc(groupRef, {
-  //           hotspot: arrayRemove({
-  //             hotspotName: selectedHotspot.hotspotName,
-  //             id: selectedHotspot.id,
-  //             location: {
-  //               lat: Number(selectedHotspot.location.lat.toPrecision(6)),
-  //               long: Number(selectedHotspot.location.long.toPrecision(6)),
-  //               zipCode: selectedHotspot.location.zipCode,
-  //             },
-  //           }),
-  //         }).catch((error) => console.log(error))
-  //         updateDoc(groupRef, {
-  //           hotspot: arrayUnion({
-  //             hotspotName,
-  //             id: selectedHotspot.id,
-  //             location: {
-  //               lat: Number(lat.toPrecision(6)),
-  //               long: Number(long.toPrecision(6)),
-  //               zipCode: selectedHotspot.location.zipCode,
-  //             },
-  //           }),
-  //         }).catch((error) => console.log(error))
-  //       })
-  //     })
-  //     .then(() => {
-  //       setSuccess('Details Updated Successfully')
-  //       setSnackOpen(true)
-  //       setDialogOpen(false)
-  //     })
-  //     .catch((error) => {
-  //       setError(error.message)
-  //       setSnackOpen(true)
-  //       setDialogOpen(false)
-  //     })
-  // }
-
   return (
     <Dialog open={open} onClose={() => setDialogOpen(false)}>
       <DialogContent sx={{ width: '1200' }}>
@@ -264,8 +180,8 @@ const EditHotspotDialogForm = (props) => {
         <ReactMapGL
           {...viewport}
           ref={mapRef}
-          mapboxApiAccessToken="pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw"
-          mapStyle="mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63"
+          mapboxApiAccessToken={MAP_TOKEN}
+          mapStyle={MAP_STYLE}
           onViewportChange={(nextViewport) => setViewport(nextViewport)}
           onClick={async (e) => {
             setlat(e.lngLat[1])
@@ -277,7 +193,7 @@ const EditHotspotDialogForm = (props) => {
           <Geocoder
             mapRef={mapRef}
             onViewportChange={handleGeocoderViewportChange}
-            mapboxApiAccessToken="pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw"
+            mapboxApiAccessToken={MAP_TOKEN}
             position="top-left"
             marker={true}
             countries="IN"

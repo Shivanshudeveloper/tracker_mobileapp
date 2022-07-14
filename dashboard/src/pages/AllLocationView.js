@@ -4,18 +4,8 @@ import { Avatar, Box, Container, Typography } from '@mui/material'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import axios from 'axios'
 import LocationTimeline from '../components/dashboard/LocationTimeline'
-import { db } from '../Firebase/index'
-import {
-    collection,
-    doc,
-    limit,
-    onSnapshot,
-    orderBy,
-    query,
-    where,
-} from 'firebase/firestore'
 
-import { API_SERVICE } from '../URI'
+import { API_SERVICE, MAP_STYLE, MAP_TOKEN } from '../URI'
 
 const AllLocationView = (props) => {
     const { userList, senderId, trackingList } = props
@@ -72,7 +62,9 @@ const AllLocationView = (props) => {
         }
         try {
             const { data } = await axios.get(
-                `${API_SERVICE}/get/location/${senderId}/${selectedDevice}`
+                `${API_SERVICE}/get/location/${senderId}/${selectedDevice}/${
+                    new Date().getMonth() + 1
+                }`
             )
 
             setLocations(data)
@@ -121,8 +113,8 @@ const AllLocationView = (props) => {
                 <Container maxWidth={true} sx={{ height: '100' }}>
                     <ReactMapGL
                         {...viewport}
-                        mapboxApiAccessToken='pk.eyJ1Ijoic2hpdmFuc2h1OTgxIiwiYSI6ImNrdmoyMjh5bDJmeHgydXAxem1sbHlhOXQifQ.2PZhm_gYI4mjpPyh7xGFSw'
-                        mapStyle='mapbox://styles/shivanshu981/ckvrknxuq05w515pbotlkvj63'
+                        mapboxApiAccessToken={MAP_TOKEN}
+                        mapStyle={MAP_STYLE}
                         onViewportChange={(nextViewport) =>
                             setViewport(nextViewport)
                         }

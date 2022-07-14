@@ -105,26 +105,28 @@ const CreateGroupDialog = (props) => {
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
         />
-
-        <FormControl margin="normal" fullWidth variant="outlined">
-          <InputLabel id="admin">Select Admin</InputLabel>
-          <Select
-            labelId="admin"
-            label="Select Admin"
-            value={selectedAdmins}
-            onChange={handleChange}
-            multiple
-            renderValue={(selected) => selected.join(', ')}
-            MenuProps={MenuProps}
-          >
-            {adminList.map((item) => (
-              <MenuItem key={item._id} value={item._id}>
-                <Checkbox checked={selectedAdmins.indexOf(item._id) > -1} />
-                <ListItemText primary={item.fullName} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {props.subscription !== null &&
+          props.subscription.groupCount === Number.MAX_VALUE && (
+            <FormControl margin="normal" fullWidth variant="outlined">
+              <InputLabel id="admin">Select Admin</InputLabel>
+              <Select
+                labelId="admin"
+                label="Select Admin"
+                value={selectedAdmins}
+                onChange={handleChange}
+                multiple
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={MenuProps}
+              >
+                {adminList.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    <Checkbox checked={selectedAdmins.indexOf(item._id) > -1} />
+                    <ListItemText primary={item.fullName} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
         <ScheduleForm
           startDay={startDay}
