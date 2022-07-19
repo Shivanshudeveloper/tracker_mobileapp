@@ -20,6 +20,7 @@ const subConfig = asyncHandler(async (req, res) => {
 const createCustomer = asyncHandler(async (req, res) => {
     try {
         const { userId, email, name } = req.body
+        console.log(userId, email, name)
 
         const result = await StripeCustomer.findOne({ userId })
         if (result) {
@@ -59,6 +60,7 @@ const createCustomer = asyncHandler(async (req, res) => {
             res.send(customer)
         }
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: error.message })
     }
 })

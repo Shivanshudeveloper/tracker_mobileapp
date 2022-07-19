@@ -9,6 +9,4 @@ const MAP_STYLE = process.env.REACT_APP_MAP_STYLE
 
 // const API_SERVICE = "https://trackermobileapp.herokuapp.com";
 
-console.log(API_SERVICE, SECRET_KEY, MAP_TOKEN, MAP_STYLE)
-
 export { API_SERVICE, SECRET_KEY, MAP_TOKEN, MAP_STYLE }

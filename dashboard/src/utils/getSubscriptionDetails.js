@@ -9,10 +9,13 @@ const fetchPlans = async () => {
 
 export const getSubscriptionDetails = async (state) => {
     let subscriptionDetail
-    for (let sub of state?.subscriptions?.data) {
-        if (sub.status === 'active') {
-            subscriptionDetail = sub
-            break
+
+    if (state.subscriptions.length !== 0) {
+        for (let sub of state?.subscriptions?.data) {
+            if (sub.status === 'active') {
+                subscriptionDetail = sub
+                break
+            }
         }
     }
 
