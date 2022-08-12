@@ -60,6 +60,7 @@ const {
     addLocationByNumber,
     updateLocationByNumber,
     getLiveLocationByNumber,
+    getLiveLocationByNumbers,
 } = require('../controllers/liveLocationController')
 const {
     addLocation,
@@ -956,6 +957,7 @@ router.get('/subscriptions/:customerId', subscriptions)
 
 // Live Location
 router.get('/get/livelocation/:phoneNumber', getLiveLocationByNumber)
+router.post('/get/livelocations', getLiveLocationByNumbers)
 router.post('/create/livelocation', addLocationByNumber)
 router.put('/update/livelocation', updateLocationByNumber)
 

@@ -7,6 +7,7 @@ import {
     StyleSheet,
     View,
     useColorScheme,
+    Alert,
 } from 'react-native'
 import {
     Button,
@@ -15,16 +16,9 @@ import {
     Subheading,
     Snackbar,
 } from 'react-native-paper'
-import {
-    FirebaseRecaptchaVerifierModal,
-    FirebaseRecaptchaBanner,
-} from 'expo-firebase-recaptcha'
+import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha'
 import { PhoneAuthProvider, signInWithCredential } from 'firebase/auth'
-import { auth, app, db, storage } from '../firebase'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import axios from 'axios'
-import { API_SERVICE } from '../URI'
+import { auth, app } from '../firebase'
 
 const VerifyOtpScreen = (props) => {
     const recaptchaVerifier = useRef(null)
@@ -85,13 +79,9 @@ const VerifyOtpScreen = (props) => {
                 code
             )
             await signInWithCredential(auth, credential)
-                .then(async () => {
-                    clearInterval(clockCall)
-                    clearTimeout(0)
-                    setMessage('Phone authentication successful 👍')
-                    setVisible(true)
-                })
-                .catch((error) => console.log(error))
+            clearInterval(clockCall)
+            clearTimeout(0)
+            navigation.replace('Root')
         } catch (err) {
             setMessage(`Error: ${err.message}`)
             setVisible(true)

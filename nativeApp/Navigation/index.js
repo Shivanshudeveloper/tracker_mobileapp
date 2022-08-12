@@ -18,74 +18,27 @@ import LoginScreen from '../Screens/LoginScreen'
 import VerifyOtpScreen from '../Screens/VerifyOtpScreen'
 import TrackerListScreen from '../Screens/TrackerListScreen'
 import { auth } from '../firebase'
-import axios from 'axios'
-import { API_SERVICE } from '../URI'
+import { onAuthStateChanged } from 'firebase/auth'
 
 const Navigation = ({ colorScheme }) => {
     const [initializing, setInitializing] = useState(true)
     const [user, setUser] = useState()
 
-    // Handle user state changes
-    async function onAuthStateChanged(user) {
-        if (user) {
-            let { phoneNumber } = user
-            phoneNumber = phoneNumber.slice(3)
-            const { data } = await axios.get(
-                `${API_SERVICE}/get/livelocation/${phoneNumber}`
-            )
-
-            if (data) {
-                setUser(data)
-                if (initializing) setInitializing(false)
-            } else {
-                try {
-                    console.log('Setting')
-                    const body = {
-                        phoneNumber,
-                        location: {
-                            latitude: 0,
-                            longitude: 0,
-                        },
-                    }
-
-                    const config = {
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-
-                    console.log(body)
-                    console.log(config)
-
-                    const { data } = await axios.post(
-                        `${API_SERVICE}/create/livelocation`,
-                        body,
-                        config
-                    )
-
-                    setUser(data)
-                } catch (error) {
-                    console.log(error.message)
-                }
-            }
-        } else {
+    useEffect(() => {
+        return onAuthStateChanged(auth, (user) => {
             setUser(user)
             if (initializing) setInitializing(false)
-        }
-    }
-
-    useEffect(() => {
-        return auth.onAuthStateChanged(onAuthStateChanged)
+        })
     }, [])
 
     if (initializing) return null
 
-    if (user) {
+    if (!user) {
         return (
             <NavigationContainer
                 theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
             >
-                <RootNavigator />
+                <AuthNavigator />
             </NavigationContainer>
         )
     }
@@ -94,7 +47,7 @@ const Navigation = ({ colorScheme }) => {
         <NavigationContainer
             theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
         >
-            <AuthNavigator />
+            <RootNavigator />
         </NavigationContainer>
     )
 }

@@ -225,8 +225,8 @@ const ManageMobileDevices = () => {
             )
             setSnackOpen(true)
             return
-        } else if (phoneNumber.length !== 10) {
-            setError('Phone number must be 10 digit long')
+        } else if (phoneNumber.length === 0) {
+            setError('Phone number is required')
             setSnackOpen(true)
             return
         } else if (fullName.length === 0) {
@@ -310,6 +310,7 @@ const ManageMobileDevices = () => {
                             fullWidth
                             id='phoneNumber'
                             label='Phone Number'
+                            placeholder='+911234567890'
                             name='phoneNumber'
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}

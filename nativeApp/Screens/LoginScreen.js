@@ -68,7 +68,7 @@ const LoginScreen = () => {
                     Login
                 </Button>
             </View>
-            <View style={styles.registerLinkContainer}>
+            {/* <View style={styles.registerLinkContainer}>
                 <Subheading>Don't have an account? </Subheading>
                 <TouchableWithoutFeedback
                     onPress={() => navigation.navigate('Register')}
@@ -77,7 +77,7 @@ const LoginScreen = () => {
                         Sign-up for free
                     </Subheading>
                 </TouchableWithoutFeedback>
-            </View>
+            </View> */}
             <Snackbar
                 visible={visible}
                 onDismiss={onDismissSnackBar}

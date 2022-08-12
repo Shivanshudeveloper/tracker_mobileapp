@@ -68,7 +68,7 @@ export const SubscriptionProvider = (props) => {
                     }
                 } else {
                     const _email = user.email
-                    console.log(_email)
+
                     const { data } = await axios.get(
                         `${API_SERVICE}/get/admin/${_email}`
                     )

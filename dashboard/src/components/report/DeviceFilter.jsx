@@ -45,7 +45,7 @@ const DeviceFilter = (props) => {
               }
             />
             <ListItemText
-              primary={`${device.fullName} +91 ${device.phoneNumber}`}
+              primary={`${device.fullName} | ${device.phoneNumber}`}
             />
           </MenuItem>
         ))}

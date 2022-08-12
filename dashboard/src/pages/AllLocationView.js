@@ -36,11 +36,12 @@ const AllLocationView = (props) => {
         trackingList.forEach((list) => {
             userList.forEach((item) => {
                 if (list.phoneNumber === item.phoneNumber) {
-                    list['location'] = item.liveLocation
+                    list['location'] = item.location
                     data.push(list)
                 }
             })
         })
+        console.log(data)
 
         setTrackingData(data)
     }, [trackingList, userList])
@@ -185,10 +186,13 @@ const AllLocationView = (props) => {
                 </Container>
                 {showDetails && (
                     <Box
+                        className='location-history'
                         sx={{
                             width: 400,
                             display: 'flex',
                             justifyContent: 'flex-start',
+                            height: '82vh',
+                            overflowY: 'scroll',
                         }}
                     >
                         {locations.length !== 0 ? (

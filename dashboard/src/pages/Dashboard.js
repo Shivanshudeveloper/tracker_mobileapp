@@ -30,7 +30,6 @@ import Locationview from './Locationview'
 import AllLocationView from './AllLocationView'
 import { db, auth } from '../Firebase/index'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
-import { signOut } from 'firebase/auth'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import { getDevices, getAdminDevices } from '../store/actions/device'
 
@@ -55,7 +54,6 @@ const Dashboard = () => {
     const classes = useStyles()
 
     const [selectedIndex, setSelectedIndex] = useState(-1)
-    // const [deviceList, setdeviceList] = useState([])
     const [userLocations, setUserLocations] = useState([])
     const [search, setSearch] = useState('')
     const [searchResult, setSearchResult] = useState([])
@@ -71,6 +69,7 @@ const Dashboard = () => {
     const dispatch = useDispatch()
     const devices = useSelector((state) => state.devices)
     const { deviceList } = devices
+    console.log(deviceList)
 
     const handleFilterClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -133,26 +132,27 @@ const Dashboard = () => {
         }
     }, [dispatch])
 
-    useEffect(() => {
+    useEffect(async () => {
         if (deviceList.length !== 0) {
             const phoneNumberArr = deviceList.map((x) => x.phoneNumber)
-            const UsersRef = collection(db, 'trackerAndroidUser')
-            const q = query(
-                UsersRef,
-                where('phoneNumber', 'in', phoneNumberArr)
-            )
+            console.log(phoneNumberArr)
 
-            const unsub = onSnapshot(q, (snapshot) => {
-                const users = []
-
-                snapshot.forEach((doc) => {
-                    users.push(doc.data())
-                })
-
-                setUserLocations(users)
-            })
-
-            return () => unsub()
+            try {
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+                const body = { phoneNumbers: phoneNumberArr }
+                const { data } = await axios.post(
+                    `${API_SERVICE}/get/livelocations`,
+                    body,
+                    config
+                )
+                setUserLocations(data)
+            } catch (error) {
+                console.log(error.message)
+            }
         }
     }, [deviceList])
 
@@ -184,13 +184,6 @@ const Dashboard = () => {
 
     const handleListItemClick = (_, index) => {
         setSelectedIndex(index)
-    }
-
-    const logout = () => {
-        sessionStorage.removeItem('userData')
-        signOut(auth)
-            .then(() => navigate('/login', { replace: true }))
-            .catch((error) => console.log(error))
     }
 
     const changeFilter = (val) => {

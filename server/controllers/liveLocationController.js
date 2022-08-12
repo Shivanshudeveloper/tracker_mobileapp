@@ -28,6 +28,18 @@ const getLiveLocationByNumber = asyncHandler(async (req, res) => {
     }
 })
 
+const getLiveLocationByNumbers = asyncHandler(async (req, res) => {
+    try {
+        const { phoneNumbers } = req.body
+        const device = await LiveLocation.find({
+            phoneNumber: { $in: phoneNumbers },
+        })
+        res.status(200).send(device)
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+})
+
 const updateLocationByNumber = asyncHandler(async (req, res) => {
     try {
         const { location, phoneNumber } = req.body
@@ -48,6 +60,7 @@ const updateLocationByNumber = asyncHandler(async (req, res) => {
 
 module.exports = {
     getLiveLocationByNumber,
+    getLiveLocationByNumbers,
     addLocationByNumber,
     updateLocationByNumber,
 }

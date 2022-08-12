@@ -11,8 +11,8 @@ import GroupsIcon from '@mui/icons-material/GroupsOutlined'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsRounded'
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAltOutlined'
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined'
-import { Settings, HomeOutlined } from '@mui/icons-material'
-import { AppBar, Toolbar, Typography } from '@mui/material'
+import { HomeOutlined } from '@mui/icons-material'
+import { Typography } from '@mui/material'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -47,8 +47,6 @@ const useStyles = makeStyles((theme) => ({
 
 const DashboardSidebar = () => {
     const classes = useStyles()
-
-    const [selectedIndex, setSelectedIndex] = React.useState(0)
 
     const adminData = sessionStorage.getItem('adminData')
         ? JSON.parse(sessionStorage.getItem('adminData'))
@@ -122,9 +120,6 @@ const DashboardSidebar = () => {
                                               borderBottomColor: '#007bff',
                                               borderBottomWidth: 10,
                                           }}
-                                          onClick={() =>
-                                              setSelectedIndex(index)
-                                          }
                                       >
                                           <div>{text}</div>
 
@@ -168,9 +163,6 @@ const DashboardSidebar = () => {
                                               borderBottomColor: '#007bff',
                                               borderBottomWidth: 10,
                                           }}
-                                          onClick={() =>
-                                              setSelectedIndex(index)
-                                          }
                                       >
                                           <div>{text}</div>
 

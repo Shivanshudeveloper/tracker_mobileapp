@@ -135,7 +135,7 @@ const DeviceSetting = (props) => {
                 <TableCell component="th" scope="row">
                   {data.fullName}
                 </TableCell>
-                <TableCell align="center">+91 {data.phoneNumber}</TableCell>
+                <TableCell align="center">{data.phoneNumber}</TableCell>
                 {data.groups.length === 0 ? (
                   <TableCell align="center">--</TableCell>
                 ) : (

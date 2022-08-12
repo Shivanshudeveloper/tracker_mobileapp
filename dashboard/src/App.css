@@ -162,3 +162,11 @@
   height: 100%;
   padding: 0 30px;
 }
+
+.location-history::-webkit-scrollbar {
+  display: none;
+}
+
+.css-1rcbby2::before {
+  flex: 0;
+}

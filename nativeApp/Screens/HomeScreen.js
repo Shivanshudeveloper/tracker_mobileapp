@@ -8,8 +8,6 @@ import {
     SafeAreaView,
     Dimensions,
     LogBox,
-    BackHandler,
-    Alert,
 } from 'react-native'
 import { Button, Title } from 'react-native-paper'
 import AppBar from '../Components/AppBarComponent'
@@ -20,10 +18,10 @@ import { auth, db } from '../firebase'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import RequestComponent from '../Components/RequestComponent'
 import MapView, { Marker } from 'react-native-maps'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import moment from 'moment'
 import axios from 'axios'
 import { API_SERVICE } from '../URI'
+import * as BackgroundFetch from 'expo-background-fetch'
 
 const WEEK = [
     'Sunday',
@@ -35,11 +33,45 @@ const WEEK = [
     'Saturday',
 ]
 
+let LAT = 0
+let LON = 0
+
+const LOCATION_TASK_NAME = 'background-location-task'
+
+TaskManager.defineTask(LOCATION_TASK_NAME, async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync()
+    console.log('43 Here')
+
+    if (status === 'granted') {
+        await Location.requestBackgroundPermissionsAsync()
+        console.log('47 Here')
+
+        let location = await Location.getCurrentPositionAsync({})
+        console.log(location)
+    }
+
+    // const latitude = Number(locations[0].coords.latitude.toPrecision(6))
+    // const longitude = Number(locations[0].coords.longitude.toPrecision(6))
+
+    // LAT = latitude
+    // LON = longitude
+
+    return BackgroundFetch.BackgroundFetchResult.NewData
+})
+
+const _getLocationPermission = async () => {
+    console.log('60 Here')
+    return BackgroundFetch.registerTaskAsync(LOCATION_TASK_NAME, {
+        minimumInterval: 10 * 1,
+        stopOnTerminate: false,
+        startOnBoot: true,
+    })
+}
+
 const HomeScreen = () => {
     const [menuVisible, setMenuVisible] = useState(false)
     const [lon, setLon] = useState(77.3021)
     const [lat, setLat] = useState(28.5971)
-    const [granted, setGranted] = useState(false)
     const [requestList, setRequestList] = useState([])
     const [hotspotList, setHotspotList] = useState([])
     const [region, setRegion] = useState({
@@ -65,100 +97,86 @@ const HomeScreen = () => {
     let { phoneNumber } = currentUser
     phoneNumber = phoneNumber.slice(3)
 
-    const LOCATION_TASK_NAME = 'background-location-task'
-
-    TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-        if (error) {
-            console.log(error.message)
-            return
-        }
-        if (data) {
-            const { locations } = data
-            const latitude = Number(locations[0].coords.latitude.toPrecision(6))
-            const longitude = Number(
-                locations[0].coords.longitude.toPrecision(6)
-            )
-
-            console.log('COORD :: ', latitude, longitude)
-
-            setLat(latitude)
-            setLon(longitude)
+    useEffect(() => {
+        const setLatAndLon = async () => {
+            setLat(LAT)
+            setLon(LON)
 
             await updateLocationInDB()
             await markAttendanceAndLocation()
         }
-    })
 
-    useEffect(async () => {
-        if (!granted) {
-            return
-        }
+        setLatAndLon()
+    }, [LAT, LON])
 
-        const interval = setInterval(async () => {
-            await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-                accuracy: Location.Accuracy.Balanced,
-            })
-        }, 60000)
-
-        return () => clearInterval(interval)
-    }, [granted])
-
-    // getting location permission and coordinates from DB
     useEffect(() => {
         _getLocationPermission()
     }, [])
 
-    const _getLocationPermission = async () => {
-        await Location.requestForegroundPermissionsAsync()
-            .then(async ({ status }) => {
-                if (status === 'granted') {
-                    await Location.requestBackgroundPermissionsAsync()
-                        .then(({ bgStatus }) => {
-                            if (bgStatus !== 'granted') {
-                                Alert(
-                                    'Permission to Background Access location was denied'
-                                )
-                                BackHandler.exitApp()
-                            }
-                        })
-                        .catch((error) => console.log(error))
+    useEffect(async () => {
+        const checkAndSaveUser = async () => {
+            const { data } = await axios.get(
+                `${API_SERVICE}/get/livelocation/${phoneNumber}`
+            )
 
-                    await Location.getCurrentPositionAsync({})
-
-                    setGranted(true)
-                } else {
-                    Alert('Permission to Foreground Access location was denied')
-                    BackHandler.exitApp()
+            if (data) {
+                console.log('User Present')
+            } else {
+                try {
+                    const body = {
+                        phoneNumber,
+                        location: {
+                            latitude: 0,
+                            longitude: 0,
+                        },
+                    }
+                    const config = {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                    await axios.post(
+                        `${API_SERVICE}/create/livelocation`,
+                        body,
+                        config
+                    )
+                } catch (error) {
+                    console.log(error.message)
                 }
-            })
-            .catch((error) => console.log(error))
-    }
+            }
+        }
+        checkAndSaveUser()
+    }, [])
 
     // get hotspots
-    useEffect(async () => {
-        await axios
-            .get(`${API_SERVICE}/get/device/${phoneNumber}`)
-            .then((res) => {
-                const { data } = res
-                const hotspots = []
-                data.forEach((device) => {
-                    device.groups.forEach((group) => {
-                        const arr = group.hotspots.map((x) => ({
-                            ...x,
-                            schedule: group.schedule,
-                            groupId: group._id,
-                            device: {
-                                fullName: device.fullName,
-                            },
-                        }))
+    useEffect(() => {
+        const getHotspots = async () => {
+            await axios
+                .get(`${API_SERVICE}/get/device/${phoneNumber}`)
+                .then((res) => {
+                    const { data } = res
+                    const hotspots = []
+                    data.forEach((device) => {
+                        device.groups.forEach((group) => {
+                            const arr = group.hotspots.map((x) => ({
+                                ...x,
+                                schedule: group.schedule,
+                                groupId: group._id,
+                                device: {
+                                    fullName: device.fullName,
+                                },
+                            }))
 
-                        hotspots.push(...arr)
+                            hotspots.push(...arr)
+                        })
                     })
-                })
 
-                setHotspotList(hotspots)
-            })
-            .catch((error) => console.log(error.message))
+                    setHotspotList(hotspots)
+                })
+                .catch((error) => console.log(error.message))
+        }
+
+        getHotspots()
     }, [])
 
     // listening for tracking requests
@@ -183,7 +201,6 @@ const HomeScreen = () => {
 
     const updateLocationInDB = async () => {
         if (checkLatAndLong()) {
-            console.log('Here')
             try {
                 const config = {
                     headers: {
@@ -230,9 +247,9 @@ const HomeScreen = () => {
 
             var format = 'hh:mm:ss'
             const { time } = schedule
-            const currentTime = moment()
-            const startTime = moment(time.startTime, format)
-            const endTime = moment(time.endTime, format)
+            const currentTime = moment().format('hh:mm:ss')
+            const startTime = moment(time.startTime, format).format('hh:mm:ss')
+            const endTime = moment(time.endTime, format).format('hh:mm:ss')
 
             const startDay = WEEK.indexOf(schedule.startDay)
             const endDay = WEEK.indexOf(schedule.endDay)
@@ -374,7 +391,7 @@ const HomeScreen = () => {
                 style={styles.map}
                 onRegionChange={onRegionChange}
             >
-                <Marker coordinate={{ latitude: lat, longitude: lon }} />
+                <Marker coordinate={{ latitude: LAT, longitude: LON }} />
             </MapView>
 
             <SafeAreaView

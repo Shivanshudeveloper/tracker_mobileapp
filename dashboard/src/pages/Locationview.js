@@ -4,15 +4,11 @@ import { Avatar, Box, Container, Typography } from '@mui/material'
 import ReactMapGL, { Marker, Popup } from 'react-map-gl'
 import axios from 'axios'
 import { API_SERVICE, MAP_STYLE, MAP_TOKEN } from '../URI'
-import { db } from '../Firebase/index'
-import { doc, onSnapshot } from 'firebase/firestore'
 import LocationTimeline from '../components/dashboard/LocationTimeline'
 
 const Locationview = (props) => {
     const { user } = props
     const { phoneNumber, createdBy } = user
-
-    console.log(user, phoneNumber, createdBy)
 
     const [lat, setlat] = useState(0)
     const [long, setlong] = useState(0)
@@ -48,27 +44,25 @@ const Locationview = (props) => {
             .catch((err) => console.log(err))
     }, [selectedLat, selectedLong])
 
-    useEffect(() => {
-        var userRef = doc(db, 'trackerAndroidUser', phoneNumber)
-
-        const unsub = onSnapshot(userRef, (document) => {
-            if (document.exists()) {
-                const data = document.data()
-                setViewport({
-                    width: '100%',
-                    height: 800,
-                    latitude: data.liveLocation.latitude,
-                    longitude: data.liveLocation.longitude,
-                    zoom: 15,
-                })
-                setlat(data.liveLocation.latitude)
-                setlong(data.liveLocation.longitude)
-                setImgUri(data.profilePicture)
-            }
-        })
-
-        return () => unsub()
+    useEffect(async () => {
+        try {
+            const { data } = await axios.get(
+                `${API_SERVICE}/get/livelocation/${phoneNumber}`
+            )
+            console.log(data)
+            setlat(data.location.latitude)
+            setlong(data.location.longitude)
+            setViewport({
+                ...viewport,
+                latitude: data.location.latitude,
+                longitude: data.location.longitude,
+            })
+        } catch (error) {
+            console.log(error.message)
+        }
     }, [phoneNumber])
+
+    console.log(lat, long)
 
     useEffect(async () => {
         try {
@@ -82,7 +76,7 @@ const Locationview = (props) => {
         } catch (error) {
             console.log(error.message)
         }
-    }, [user])
+    }, [phoneNumber])
 
     const handleShowDetails = () => {
         if (showDetails) {
@@ -281,10 +275,13 @@ const Locationview = (props) => {
                 </Container>
                 {showDetails && (
                     <Box
+                        className='location-history'
                         sx={{
                             width: 400,
                             display: 'flex',
                             justifyContent: 'flex-start',
+                            height: '82vh',
+                            overflowY: 'scroll',
                         }}
                     >
                         {locations.length !== 0 ? (
