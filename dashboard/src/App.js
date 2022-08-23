@@ -17,19 +17,26 @@ import { useDispatch } from 'react-redux'
 
 const App = () => {
     const content = useRoutes(routes)
-    const navigate = useNavigate()
     const dispatch = useDispatch()
+    const navigate = useNavigate()
 
-    const authToken = sessionStorage.getItem('authToken')
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
-    const adminData = sessionStorage.getItem('adminData')
-        ? JSON.parse(sessionStorage.getItem('adminData'))
+    const adminData = localStorage.getItem('adminData')
+        ? JSON.parse(localStorage.getItem('adminData'))
         : null
 
-    useEffect(async () => {
+    useEffect(() => {
+        const authToken = localStorage.getItem('authToken')
+
+        if (!authToken) {
+            navigate('/login')
+        }
+    }, [])
+
+    useEffect(() => {
         if (adminData === null && userData !== null) {
             dispatch(getDevices(userData.uid))
             dispatch(getHotspots(userData.uid))
@@ -38,29 +45,27 @@ const App = () => {
         }
 
         if (adminData !== null && userData !== null) {
-            const { data } = await axios.get(
-                `${API_SERVICE}/get/admin/${adminData.email}`
-            )
-            dispatch(
-                getAdminDevices({
-                    createdBy: userData.uid,
-                    adminGroups: data.groups,
-                })
-            )
-            dispatch(
-                getAdminHotspots({
-                    createdBy: userData.uid,
-                    adminGroups: data.groups,
-                })
-            )
+            const getAdminData = async () => {
+                const { data } = await axios.get(
+                    `${API_SERVICE}/get/admin/${adminData.email}`
+                )
+                dispatch(
+                    getAdminDevices({
+                        createdBy: userData.uid,
+                        adminGroups: data.groups,
+                    })
+                )
+                dispatch(
+                    getAdminHotspots({
+                        createdBy: userData.uid,
+                        adminGroups: data.groups,
+                    })
+                )
+            }
+
+            getAdminData()
         }
     }, [dispatch])
-
-    useEffect(() => {
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [authToken])
 
     return (
         <StyledEngineProvider injectFirst>

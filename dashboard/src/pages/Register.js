@@ -16,6 +16,7 @@ import { makeStyles } from '@mui/styles'
 import { auth, db } from '../Firebase'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { Alert, Snackbar } from '@mui/material'
 
 const useStyles = makeStyles((theme) => ({
     image: {
@@ -63,8 +64,36 @@ const Register = () => {
     const [lastName, setLastName] = useState('')
     const [companyName, setCompanyName] = useState('')
     const [policy, setPolicy] = useState(false)
+    const [snackOpen, setSnackOpen] = useState(false)
+    const [errorMsg, setErrorMsg] = useState('')
+
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
     const submitHandler = async () => {
+        if (firstName.length === 0) {
+            setErrorMsg('First Name is required field')
+            setSnackOpen(true)
+        } else if (lastName.length === 0) {
+            setErrorMsg('Last Name is required field')
+            setSnackOpen(true)
+        } else if (email.length === 0) {
+            setErrorMsg('Email is required field')
+            setSnackOpen(true)
+        } else if (!email.match(emailRegex)) {
+            setErrorMsg('Invalid Email')
+            setSnackOpen(true)
+        } else if (password.length < 6) {
+            setErrorMsg('Password must be atleast 6 character long')
+            setSnackOpen(true)
+        } else if (companyName.length === 0) {
+            setErrorMsg('Company Name is required field')
+            setSnackOpen(true)
+        } else {
+            signUp()
+        }
+    }
+
+    const signUp = async () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (userCredential) => {
                 const user = userCredential.user
@@ -98,163 +127,181 @@ const Register = () => {
                     })
                     .catch((error) => {
                         const errorCode = error.code
-                        const errorMessage = error.message
-                        alert(errorCode, errorMessage)
+                        setErrorMsg(getErrMsg(errorCode))
+                        setSnackOpen(true)
                     })
             })
             .catch((error) => {
                 const errorCode = error.code
-                const errorMessage = error.message
-                alert(errorCode, errorMessage)
+                setErrorMsg(getErrMsg(errorCode))
+                setSnackOpen(true)
             })
     }
 
+    const getErrMsg = (msg) => {
+        return msg.split('/')[1].split('-').join(' ')
+    }
+
     return (
-        <Grid sx={{ height: '100%' }} container component='main'>
-            <CssBaseline />
-            <Grid item xs={false} sm={4} md={7} className={classes.image} />
-            <Grid
-                item
-                xs={12}
-                sm={8}
-                md={5}
-                component={Paper}
-                elevation={6}
-                square
-                sx={{ p: 2 }}
-            >
-                <div className={classes.paper}>
-                    <Avatar className={classes.avatar}>
-                        <LockOutlinedIcon />
-                    </Avatar>
-                    <Typography
-                        component='h1'
-                        variant='h1'
-                        sx={{ mt: 1, mb: 4 }}
-                    >
-                        GPS REPORT
-                    </Typography>
-                    <form className={classes.form} noValidate>
-                        <TextField
-                            variant='outlined'
-                            margin='normal'
-                            required
-                            fullWidth
-                            id='firstName'
-                            label='First Name'
-                            name='firstName'
-                            autoComplete='name'
-                            autoFocus
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                        />
-                        <TextField
-                            variant='outlined'
-                            margin='normal'
-                            required
-                            fullWidth
-                            id='lastName'
-                            label='Last Name'
-                            name='lastName'
-                            autoComplete='name'
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                        />
-                        <TextField
-                            variant='outlined'
-                            margin='normal'
-                            required
-                            fullWidth
-                            id='email'
-                            label='Email Address'
-                            name='email'
-                            autoComplete='email'
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <TextField
-                            variant='outlined'
-                            margin='normal'
-                            required
-                            fullWidth
-                            id='email'
-                            label='Company Name'
-                            name='companyName'
-                            autoComplete='text'
-                            value={companyName}
-                            onChange={(e) => setCompanyName(e.target.value)}
-                        />
-                        <TextField
-                            variant='outlined'
-                            margin='normal'
-                            required
-                            fullWidth
-                            name='password'
-                            label='Password'
-                            type='password'
-                            id='password'
-                            autoComplete='current-password'
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    value='remember'
-                                    color='primary'
-                                    checked={policy}
-                                    onChange={(e) =>
-                                        setPolicy(e.target.checked)
-                                    }
-                                />
-                            }
-                            label='I have read the Terms and Conditions'
-                        />
-                        <Button
-                            fullWidth
-                            variant='contained'
-                            color='primary'
-                            className={classes.login}
-                            onClick={() => submitHandler()}
+        <React.Fragment>
+            <Grid sx={{ height: '100%' }} container component='main'>
+                <CssBaseline />
+                <Grid item xs={false} sm={4} md={7} className={classes.image} />
+                <Grid
+                    item
+                    xs={12}
+                    sm={8}
+                    md={5}
+                    component={Paper}
+                    elevation={6}
+                    square
+                    sx={{ p: 2 }}
+                >
+                    <div className={classes.paper}>
+                        <Avatar className={classes.avatar}>
+                            <LockOutlinedIcon />
+                        </Avatar>
+                        <Typography
+                            component='h1'
+                            variant='h1'
+                            sx={{ mt: 1, mb: 4 }}
                         >
-                            Sign-Up
-                        </Button>
-                        {/* <Typography sx={{ textAlign: 'center' }} variant='h4'>
-              OR
-            </Typography>
-            <Button
-              fullWidth
-              variant='outlined'
-              color='primary'
-              className={classes.googleLogin}
-            >
-              <Avatar
-                alt='Remy Sharp'
-                src='/static/images/g.png'
-                sx={{ marginRight: 1 }}
-              />
-              Sign-up with Google
-            </Button> */}
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                mt: 1.3,
-                            }}
-                        >
-                            <Link
-                                component={RouterLink}
-                                to='/login'
-                                variant='body2'
-                                underline='hover'
+                            GPS REPORT
+                        </Typography>
+                        <form className={classes.form} noValidate>
+                            <TextField
+                                variant='outlined'
+                                margin='normal'
+                                required
+                                fullWidth
+                                id='firstName'
+                                label='First Name'
+                                name='firstName'
+                                autoComplete='name'
+                                autoFocus
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                            />
+                            <TextField
+                                variant='outlined'
+                                margin='normal'
+                                required
+                                fullWidth
+                                id='lastName'
+                                label='Last Name'
+                                name='lastName'
+                                autoComplete='name'
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                            />
+                            <TextField
+                                variant='outlined'
+                                margin='normal'
+                                required
+                                fullWidth
+                                id='email'
+                                label='Email Address'
+                                name='email'
+                                autoComplete='email'
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            <TextField
+                                variant='outlined'
+                                margin='normal'
+                                required
+                                fullWidth
+                                id='email'
+                                label='Company Name'
+                                name='companyName'
+                                autoComplete='text'
+                                value={companyName}
+                                onChange={(e) => setCompanyName(e.target.value)}
+                            />
+                            <TextField
+                                variant='outlined'
+                                margin='normal'
+                                required
+                                fullWidth
+                                name='password'
+                                label='Password'
+                                type='password'
+                                id='password'
+                                autoComplete='current-password'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        value='remember'
+                                        color='primary'
+                                        checked={policy}
+                                        onChange={(e) =>
+                                            setPolicy(e.target.checked)
+                                        }
+                                    />
+                                }
+                                label={
+                                    <Typography component='p'>
+                                        I have read the{' '}
+                                        <Link href='#' sx={{ color: 'blue' }}>
+                                            Terms and Conditions
+                                        </Link>
+                                    </Typography>
+                                }
+                            />
+                            <Button
+                                disabled={!policy}
+                                fullWidth
+                                variant='contained'
+                                color='primary'
+                                className={classes.login}
+                                onClick={() => submitHandler()}
                             >
-                                Already have an account? Login here
-                            </Link>
-                        </Box>
-                    </form>
-                </div>
+                                Sign-Up
+                            </Button>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    mt: 5,
+                                }}
+                            >
+                                <Link
+                                    component={RouterLink}
+                                    to='/login'
+                                    variant='body2'
+                                    underline='hover'
+                                >
+                                    <Typography component='p'>
+                                        Already have an account? Login here
+                                    </Typography>
+                                </Link>
+                            </Box>
+                        </form>
+                    </div>
+                </Grid>
             </Grid>
-        </Grid>
+
+            {errorMsg && (
+                <Snackbar
+                    open={snackOpen}
+                    autoHideDuration={4000}
+                    onClose={() => setSnackOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <Alert
+                        onClose={() => setSnackOpen(false)}
+                        severity='error'
+                        sx={{ width: '100%' }}
+                        variant='filled'
+                    >
+                        {errorMsg}
+                    </Alert>
+                </Snackbar>
+            )}
+        </React.Fragment>
     )
 }
 

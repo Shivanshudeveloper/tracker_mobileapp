@@ -25,17 +25,15 @@ const GroupFilter = (props) => {
       <Select
         id="hotspotFilter"
         multiple
-        value={props.selectedGroupNames}
+        value={props.selectedGroups}
         onChange={props.handleGroupSelect}
         input={<OutlinedInput label="Groups" />}
-        renderValue={(selected) => selected.join(', ')}
+        renderValue={() => props.selectedGroupsNames.join(', ')}
         MenuProps={MenuProps}
       >
         {props.groupNames.map((group, i) => (
           <MenuItem key={group._id} value={group._id}>
-            <Checkbox
-              checked={props.selectedGroupNames.indexOf(group._id) > -1}
-            />
+            <Checkbox checked={props.selectedGroups.indexOf(group._id) > -1} />
             <ListItemText primary={group.groupName} />
           </MenuItem>
         ))}

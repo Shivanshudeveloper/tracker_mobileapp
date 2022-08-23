@@ -40,7 +40,7 @@ const EditHotspotDialogForm = (props) => {
 
   const [hotspotName, setHotspotName] = useState('')
   const [selectedGroups, setSelectedGroups] = useState([])
-  const [newGroups, setNewGroups] = useState([])
+  const [selectedGroupsNames, setSelectedGroupsNames] = useState([])
   const [location, setLocation] = useState('')
   const [lat, setlat] = useState(28.6077159025)
   const [long, setlong] = useState(77.224249103)
@@ -64,6 +64,10 @@ const EditHotspotDialogForm = (props) => {
       const arr = []
       groups.forEach((x) => arr.push(x._id))
       setSelectedGroups(arr)
+
+      setSelectedGroupsNames(
+        groups.filter((x) => arr.includes(x._id)).map((x) => x.groupName),
+      )
 
       getLatLong(
         selectedHotspot.location.latitude,
@@ -113,6 +117,8 @@ const EditHotspotDialogForm = (props) => {
       target: { value },
     } = event
     setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
+    const arr = trackingGroups.filter((x) => value.includes(x._id))
+    setSelectedGroupsNames(arr.map((x) => x.groupName))
   }
 
   const updateDetails = () => {
@@ -154,7 +160,7 @@ const EditHotspotDialogForm = (props) => {
               value={selectedGroups}
               onChange={handleChange}
               multiple
-              renderValue={(selected) => selected.join(', ')}
+              renderValue={() => selectedGroupsNames.join(', ')}
               MenuProps={MenuProps}
             >
               {trackingGroups.map((item) => (

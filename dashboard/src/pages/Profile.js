@@ -41,8 +41,8 @@ const Profile = () => {
     const [success, setSuccess] = useState(null)
     const [error, setError] = useState(null)
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
     useEffect(() => {
@@ -85,7 +85,7 @@ const Profile = () => {
                             createdAt: userData.createdAt,
                             email: userData.email,
                         }
-                        sessionStorage.setItem('userData', JSON.stringify(data))
+                        localStorage.setItem('userData', JSON.stringify(data))
                         setSuccess('Profile updated successfully')
                         setSnackOpen(true)
                         setSelectedFile(null)
@@ -282,6 +282,7 @@ const Profile = () => {
                 >
                     <Alert
                         onClose={handleSnackClose}
+                        variant='filled'
                         severity='success'
                         sx={{ width: '100%' }}
                     >
@@ -298,6 +299,7 @@ const Profile = () => {
                 >
                     <Alert
                         onClose={handleSnackClose}
+                        variant='filled'
                         severity='error'
                         sx={{ width: '100%' }}
                     >

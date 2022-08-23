@@ -26,16 +26,16 @@ const HotspotFilter = (props) => {
       <Select
         id="hotspotFilter"
         multiple
-        value={props.selectedHotspotNames}
+        value={props.selectedHotspots}
         onChange={props.handleHotspotSelect}
         input={<OutlinedInput label="Hotspots" />}
-        renderValue={(selected) => selected.join(', ')}
+        renderValue={() => props.selectedHotspotsNames.join(', ')}
         MenuProps={MenuProps}
       >
         {props.hotspotNames.map((hotspot) => (
           <MenuItem key={hotspot._id} value={hotspot._id}>
             <Checkbox
-              checked={props.selectedHotspotNames.indexOf(hotspot._id) > -1}
+              checked={props.selectedHotspots.indexOf(hotspot._id) > -1}
             />
             <ListItemText primary={hotspot.hotspotName} />
           </MenuItem>

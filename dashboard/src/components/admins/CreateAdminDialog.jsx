@@ -9,9 +9,7 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material'
-import { addDoc, collection, doc, setDoc, Timestamp } from 'firebase/firestore'
-import { auth, db } from '../../Firebase'
-import { v4 as uuidv4 } from 'uuid'
+import { auth } from '../../Firebase'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { createAdmin, sendEmail } from '../../store/actions/admin'
 

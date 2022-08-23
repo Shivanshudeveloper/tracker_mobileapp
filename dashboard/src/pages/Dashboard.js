@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import {
     Box,
     TextField,
@@ -22,14 +21,11 @@ import ListItemText from '@mui/material/ListItemText'
 import ListItemAvatar from '@mui/material/ListItemAvatar'
 import Avatar from '@mui/material/Avatar'
 import PeopleIcon from '@mui/icons-material/People'
-import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 import { Search as SearchIcon } from 'react-feather'
 import Locationview from './Locationview'
 import AllLocationView from './AllLocationView'
-import { db, auth } from '../Firebase/index'
-import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import { getDevices, getAdminDevices } from '../store/actions/device'
 
@@ -69,7 +65,6 @@ const Dashboard = () => {
     const dispatch = useDispatch()
     const devices = useSelector((state) => state.devices)
     const { deviceList } = devices
-    console.log(deviceList)
 
     const handleFilterClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -77,8 +72,6 @@ const Dashboard = () => {
     const handleFilterClose = () => {
         setAnchorEl(null)
     }
-
-    const navigate = useNavigate()
 
     const handleSnackClose = (_, reason) => {
         if (reason === 'clickaway') {
@@ -89,23 +82,10 @@ const Dashboard = () => {
         setSuccess(null)
     }
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
-        : null
-
-    const adminData = sessionStorage.getItem('adminData')
-        ? JSON.parse(sessionStorage.getItem('adminData'))
-        : null
+    const userData = JSON.parse(localStorage.getItem('userData'))
+    const adminData = JSON.parse(localStorage.getItem('adminData'))
 
     useEffect(() => {
-        const authToken = sessionStorage.getItem('authToken')
-
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [])
-
-    useEffect(async () => {
         if (adminData === null && userData !== null) {
             dispatch(getDevices(userData.uid))
             dispatch(getHotspots(userData.uid))
@@ -114,45 +94,52 @@ const Dashboard = () => {
         }
 
         if (adminData !== null && userData !== null) {
-            const { data } = await axios.get(
-                `${API_SERVICE}/get/admin/${adminData.email}`
-            )
-            dispatch(
-                getAdminDevices({
-                    createdBy: userData.uid,
-                    adminGroups: data.groups,
-                })
-            )
-            dispatch(
-                getAdminHotspots({
-                    createdBy: userData.uid,
-                    adminGroups: data.groups,
-                })
-            )
+            const getHotspotAndDevices = async () => {
+                const { data } = await axios.get(
+                    `${API_SERVICE}/get/admin/${adminData.email}`
+                )
+                dispatch(
+                    getAdminDevices({
+                        createdBy: userData.uid,
+                        adminGroups: data.groups,
+                    })
+                )
+                dispatch(
+                    getAdminHotspots({
+                        createdBy: userData.uid,
+                        adminGroups: data.groups,
+                    })
+                )
+            }
+
+            getHotspotAndDevices()
         }
     }, [dispatch])
 
-    useEffect(async () => {
+    useEffect(() => {
         if (deviceList.length !== 0) {
-            const phoneNumberArr = deviceList.map((x) => x.phoneNumber)
-            console.log(phoneNumberArr)
+            const getUserLocations = async () => {
+                const phoneNumberArr = deviceList.map((x) => x.phoneNumber)
 
-            try {
-                const config = {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                try {
+                    const config = {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                    const body = { phoneNumbers: phoneNumberArr }
+                    const { data } = await axios.post(
+                        `${API_SERVICE}/get/livelocations`,
+                        body,
+                        config
+                    )
+                    setUserLocations(data)
+                } catch (error) {
+                    console.log(error.message)
                 }
-                const body = { phoneNumbers: phoneNumberArr }
-                const { data } = await axios.post(
-                    `${API_SERVICE}/get/livelocations`,
-                    body,
-                    config
-                )
-                setUserLocations(data)
-            } catch (error) {
-                console.log(error.message)
             }
+
+            getUserLocations()
         }
     }, [deviceList])
 

@@ -30,8 +30,8 @@ function Row(props) {
   const [history, setHistory] = React.useState([])
   const [load, setLoad] = React.useState(false)
 
-  const userData = sessionStorage.getItem('userData')
-    ? JSON.parse(sessionStorage.getItem('userData'))
+  const userData = localStorage.getItem('userData')
+    ? JSON.parse(localStorage.getItem('userData'))
     : null
 
   const arr = row.hotspots.map((x) => x.hotspot)

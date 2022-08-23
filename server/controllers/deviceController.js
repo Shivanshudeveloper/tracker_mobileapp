@@ -13,7 +13,9 @@ const createDevice = asyncHandler(async (req, res) => {
         if (doc) {
             return res
                 .status(400)
-                .send('A Device already exist with this phone number')
+                .json({
+                    message: 'A device with this phone number already exist',
+                })
         }
 
         const data = await Device.create(body)

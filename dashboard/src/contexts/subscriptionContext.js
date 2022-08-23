@@ -53,6 +53,16 @@ export const SubscriptionProvider = (props) => {
 
     useEffect(async () => {
         onAuthStateChanged(auth, async (user) => {
+            if (user === null) {
+                dispatch({
+                    type: 'SUBSCRIPTION_DATA_CHANGED',
+                    payload: {
+                        customerId: null,
+                        subscriptions: [],
+                    },
+                })
+            }
+
             try {
                 const ref = doc(db, 'trackerWebUser', user.uid)
                 const snap = await getDoc(ref)
@@ -68,6 +78,7 @@ export const SubscriptionProvider = (props) => {
                     }
                 } else {
                     const _email = user.email
+                    console.log(user)
 
                     const { data } = await axios.get(
                         `${API_SERVICE}/get/admin/${_email}`
@@ -155,7 +166,9 @@ export const SubscriptionProvider = (props) => {
     }
 
     return (
-        <SubscriptionContext.Provider value={{ state, dispatch }}>
+        <SubscriptionContext.Provider
+            value={{ state, dispatch, fetchSubscriptions }}
+        >
             {children}
         </SubscriptionContext.Provider>
     )

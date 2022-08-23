@@ -62,8 +62,6 @@ const Locationview = (props) => {
         }
     }, [phoneNumber])
 
-    console.log(lat, long)
-
     useEffect(async () => {
         try {
             const { data } = await axios.get(

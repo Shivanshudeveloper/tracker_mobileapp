@@ -95,7 +95,6 @@ const HomeScreen = () => {
     const color = Colors[colorScheme]
     const { currentUser } = auth
     let { phoneNumber } = currentUser
-    phoneNumber = phoneNumber.slice(3)
 
     useEffect(() => {
         const setLatAndLon = async () => {

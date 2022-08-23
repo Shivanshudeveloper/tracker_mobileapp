@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler')
 const Admin = require('../models/TrackingAdmin')
 const Group = require('../models/TrackingGroup')
 const postmark = require('postmark')
+const admin = require('../config/firebase')
 
 const createAdmin = asyncHandler(async (req, res) => {
     try {
@@ -102,6 +103,9 @@ const deleteAdmin = asyncHandler(async (req, res) => {
         const doc = await Admin.findById(_id)
 
         if (doc) {
+            const user = await admin.auth().getUserByEmail(doc.email)
+            await admin.auth().deleteUser(user.uid)
+
             await Group.updateMany(
                 { _id: { $in: doc.groups } },
                 { $pull: { admins: doc._id } }

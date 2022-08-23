@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-import { Box, Typography } from '@mui/material'
+import { useNavigate } from 'react-router'
+import { Box, Typography, CircularProgress } from '@mui/material'
 
 import ProCard from '../components/pricing/ProCard'
 import FreeCard from '../components/pricing/FreeCard'
@@ -12,6 +12,7 @@ const Pricing = () => {
     const [quantity, setQuantity] = React.useState(500)
     const [currentPlan, setCurrentPlan] = useState('')
     const [prices, setPrices] = useState([])
+    const [loading, setLoading] = useState(true)
 
     const navigate = useNavigate()
 
@@ -21,18 +22,24 @@ const Pricing = () => {
     useEffect(() => {
         if (state.subscriptions) {
             let subscription
-            for (let sub of state?.subscriptions?.data) {
-                if (sub.status === 'active') {
-                    subscription = sub
-                    break
+
+            if (state.subscriptions.length !== 0) {
+                for (let sub of state?.subscriptions?.data) {
+                    if (sub.status === 'active') {
+                        subscription = sub
+                        break
+                    }
                 }
+
+                const plan = subscription ? subscription.plan.id : ''
+                const subQuantity = subscription ? subscription.quantity : 0
+
+                setCurrentPlan(plan)
+                setQuantity(subQuantity)
+            } else {
+                setCurrentPlan('')
+                setQuantity(0)
             }
-
-            const plan = subscription ? subscription.plan.id : ''
-            const subQuantity = subscription ? subscription.quantity : 0
-
-            setCurrentPlan(plan)
-            setQuantity(subQuantity)
         }
     }, [state])
 
@@ -42,8 +49,8 @@ const Pricing = () => {
                 `${API_SERVICE}/subscription/config`
             )
 
-            console.log(data)
             setPrices(data.prices)
+            setLoading(false)
         }
 
         fetchPrices()
@@ -107,6 +114,22 @@ const Pricing = () => {
         } catch (error) {
             console.log(error.message)
         }
+    }
+
+    if (loading) {
+        return (
+            <Box
+                sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <CircularProgress color='secondary' />
+            </Box>
+        )
     }
 
     return (

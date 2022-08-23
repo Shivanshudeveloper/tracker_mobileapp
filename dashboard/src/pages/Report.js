@@ -32,8 +32,12 @@ const Months = [
 const Report = () => {
     const [tableData, setTableData] = useState([])
 
-    const [selectedHotspotNames, setSelectedHotspotNames] = useState([])
+    const [selectedHotspotsIds, setSelectedHotspotsIds] = useState([])
+    const [selectedHotspotsNames, setSelectedHotspotsNames] = useState([])
+
     const [selectedGroups, setSelectedGroups] = useState([])
+    const [selectedGroupsNames, setSelectedGroupsNames] = useState([])
+
     const [selectedHotspots, setSelectedHotspots] = useState([])
     const [selectedDevices, setSelectedDevices] = useState([])
     const [selectedMonth, setSelectedMonth] = useState(
@@ -45,8 +49,8 @@ const Report = () => {
     // subscription state
     const [subscription, setSubscription] = useState(null)
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
     const devices = useSelector((state) => state.devices)
@@ -58,16 +62,6 @@ const Report = () => {
     const { hotspotList } = hotspots
 
     const { state } = useSubscription()
-
-    const navigate = useNavigate()
-
-    useEffect(() => {
-        const authToken = sessionStorage.getItem('authToken')
-
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [])
 
     useEffect(() => {
         if (userData !== null) {
@@ -102,9 +96,11 @@ const Report = () => {
         const {
             target: { value },
         } = event
-        setSelectedHotspotNames(
+        setSelectedHotspotsIds(
             typeof value === 'string' ? value.split(',') : value
         )
+        const arr = hotspotList.filter((x) => value.includes(x._id))
+        setSelectedHotspotsNames(arr.map((x) => x.hotspotName))
     }
 
     // handling group selection
@@ -113,6 +109,8 @@ const Report = () => {
             target: { value },
         } = event
         setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
+        const arr = groupList.filter((x) => value.includes(x._id))
+        setSelectedGroupsNames(arr.map((x) => x.groupName))
     }
 
     // handling device selection
@@ -127,8 +125,8 @@ const Report = () => {
     useEffect(async () => {
         setLoading(true)
         let hotspots = []
-        if (selectedHotspotNames.length !== 0) {
-            selectedHotspotNames.forEach((x) => {
+        if (selectedHotspotsIds.length !== 0) {
+            selectedHotspotsIds.forEach((x) => {
                 const temp = hotspotList
                 const filterArr = temp.filter((item) => item._id === x)
                 hotspots.push(...filterArr)
@@ -155,7 +153,7 @@ const Report = () => {
         setFilteredData(devices)
 
         setLoading(false)
-    }, [selectedDevices, selectedHotspotNames])
+    }, [selectedDevices, selectedHotspotsIds])
 
     return (
         <Box sx={{ p: 5 }}>
@@ -176,13 +174,15 @@ const Report = () => {
 
                 <HotspotFilter
                     handleHotspotSelect={handleHotspotSelect}
-                    selectedHotspotNames={selectedHotspotNames}
+                    selectedHotspots={selectedHotspotsIds}
+                    selectedHotspotsNames={selectedHotspotsNames}
                     hotspotNames={hotspotList}
                 />
 
                 <GroupFilter
                     handleGroupSelect={handleGroupSelect}
-                    selectedGroupNames={selectedGroups}
+                    selectedGroups={selectedGroups}
+                    selectedGroupsNames={selectedGroupsNames}
                     groupNames={groupList}
                 />
 

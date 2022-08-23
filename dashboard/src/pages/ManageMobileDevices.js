@@ -20,14 +20,7 @@ import {
 import { makeStyles } from '@mui/styles'
 
 import { db } from '../Firebase/index'
-import {
-    addDoc,
-    collection,
-    onSnapshot,
-    query,
-    where,
-    Timestamp,
-} from 'firebase/firestore'
+import { addDoc, collection, Timestamp } from 'firebase/firestore'
 import EditDeviceDialog from '../components/devices/EditDeviceDialog'
 import DeviceTable from '../components/devices/DeviceTable'
 import {
@@ -63,18 +56,19 @@ const MenuProps = {
 const ManageMobileDevices = () => {
     const classes = useStyles()
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
-    const adminData = sessionStorage.getItem('adminData')
-        ? JSON.parse(sessionStorage.getItem('adminData'))
+    const adminData = localStorage.getItem('adminData')
+        ? JSON.parse(localStorage.getItem('adminData'))
         : null
 
     // adding new device states
     const [fullName, setFullName] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('')
     const [selectedGroups, setSelectedGroups] = useState([])
+    const [selectedGroupsNames, setSelectedGroupsNames] = useState([])
     // added devices section states
     const [editDialogOpen, setEditDialogOpen] = useState(false)
     const [selectedDevice, setSelectedDevice] = useState({})
@@ -94,16 +88,7 @@ const ManageMobileDevices = () => {
     const devices = useSelector((state) => state.devices)
     const { success, error, deviceList } = devices
 
-    const navigate = useNavigate()
     const { state } = useSubscription()
-
-    useEffect(() => {
-        const authToken = sessionStorage.getItem('authToken')
-
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [])
 
     useEffect(() => {
         const fetchSubDetail = async () => {
@@ -229,6 +214,10 @@ const ManageMobileDevices = () => {
             setError('Phone number is required')
             setSnackOpen(true)
             return
+        } else if (!phoneNumber.startsWith('+')) {
+            setError('Please enter valid country code. example - +911234567890')
+            setSnackOpen(true)
+            return
         } else if (fullName.length === 0) {
             setError('Full name is required')
             setSnackOpen(true)
@@ -251,6 +240,16 @@ const ManageMobileDevices = () => {
             target: { value },
         } = event
         setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
+
+        const arr = groupList.filter((x) => value.includes(x._id))
+        setSelectedGroupsNames(arr.map((x) => x.groupName))
+    }
+
+    const closeAddDeviceDialog = () => {
+        setFullName('')
+        setPhoneNumber('')
+        setSelectedGroups([])
+        setAddDeviceDialog(false)
     }
 
     return (
@@ -287,7 +286,7 @@ const ManageMobileDevices = () => {
             {/** Dialog for adding a new device */}
             <Dialog
                 open={addDeviceDialog}
-                onClose={() => setAddDeviceDialog(false)}
+                onClose={() => closeAddDeviceDialog()}
             >
                 <DialogTitle sx={{ fontSize: 22 }}>Add New Device</DialogTitle>
                 <DialogContent sx={{ width: 500 }}>
@@ -330,7 +329,9 @@ const ManageMobileDevices = () => {
                                 value={selectedGroups}
                                 onChange={handleChange}
                                 multiple
-                                renderValue={(selected) => selected.join(', ')}
+                                renderValue={() =>
+                                    selectedGroupsNames.join(', ')
+                                }
                                 MenuProps={MenuProps}
                             >
                                 {groupList.map((item) => (
@@ -352,7 +353,7 @@ const ManageMobileDevices = () => {
                     </form>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setAddDeviceDialog(false)}>
+                    <Button onClick={() => closeAddDeviceDialog()}>
                         Cancel
                     </Button>
                     <Button onClick={() => addNewDevice()}>Save Device</Button>

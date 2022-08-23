@@ -30,9 +30,10 @@ const createDevice = (bodyData) => async (dispatch, getState) => {
             JSON.stringify(getState().devices.deviceList)
         )
     } catch (error) {
+        console.log()
         dispatch({
             type: types.CREATE_DEVICE_FAIL,
-            payload: error.message,
+            payload: error.response.data.message,
         })
     }
 }

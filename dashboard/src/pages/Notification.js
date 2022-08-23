@@ -16,19 +16,12 @@ import {
     Divider,
 } from '@mui/material'
 import { Image } from '@mui/icons-material'
-//import { firestore } from '../Firebase/index'
-import { db } from '../Firebase/index'
-import { onSnapshot, doc, query, orderBy } from 'firebase/firestore'
 import moment from 'moment'
 
 const Notification = () => {
     const [filter, setFilter] = useState('All')
     const [notificationList, setNotificationList] = useState([])
     const [filterList, setFilterList] = useState([])
-
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
-        : null
 
     const handleFilterChange = (event) => {
         setFilter(event.target.value)
@@ -63,25 +56,6 @@ const Notification = () => {
                 return first + mid
         }
     }
-
-    // useEffect(async () => {
-    //   const notificationRef = doc(db, 'trackingWebNotification', userData.uid)
-
-    //   const unsub = onSnapshot(notificationRef, (snap) => {
-    //     if (snap.exists()) {
-    //       const data = snap.data()
-    //       if (data.notificationList !== undefined) {
-    //         const list = data.notificationList
-    //         list.sort((a, b) => {
-    //           return new Date(b.createdAt.seconds) - new Date(a.createdAt.seconds)
-    //         })
-    //         setNotificationList(list)
-    //       }
-    //     }
-    //   })
-
-    //   return () => unsub()
-    // }, [])
 
     useEffect(() => {
         const temp = notificationList

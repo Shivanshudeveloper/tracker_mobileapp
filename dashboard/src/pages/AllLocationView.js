@@ -41,7 +41,6 @@ const AllLocationView = (props) => {
                 }
             })
         })
-        console.log(data)
 
         setTrackingData(data)
     }, [trackingList, userList])
@@ -111,7 +110,7 @@ const AllLocationView = (props) => {
                     display: 'flex',
                 }}
             >
-                <Container maxWidth={true} sx={{ height: '100' }}>
+                <Container maxWidth sx={{ height: '100' }}>
                     <ReactMapGL
                         {...viewport}
                         mapboxApiAccessToken={MAP_TOKEN}

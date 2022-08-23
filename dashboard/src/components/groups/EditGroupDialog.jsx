@@ -30,9 +30,8 @@ const MenuProps = {
 
 const EditGroupDialog = (props) => {
   const [groupName, setGroupName] = useState('')
-  // const [adminList, setAdminList] = useState([])
   const [selectedAdmins, setSelectedAdmins] = useState([])
-  // const [admins, setAdmins] = useState([])
+  const [selectedAdminsNames, setSelectedAdminsNames] = useState([])
 
   const [startDay, setStartDay] = useState('Sunday')
   const [endDay, setEndDay] = useState('Saturday')
@@ -63,6 +62,8 @@ const EditGroupDialog = (props) => {
       target: { value },
     } = event
     setSelectedAdmins(typeof value === 'string' ? value.split(',') : value)
+    const arr = adminList.filter((x) => value.includes(x._id))
+    setSelectedAdminsNames(arr.map((x) => x.fullName))
   }
 
   const updateDetails = () => {
@@ -123,7 +124,7 @@ const EditGroupDialog = (props) => {
             value={selectedAdmins}
             onChange={handleChange}
             multiple
-            renderValue={(selected) => selected.join(', ')}
+            renderValue={() => selectedAdminsNames.join(', ')}
             MenuProps={MenuProps}
           >
             {adminList.map((item) => (

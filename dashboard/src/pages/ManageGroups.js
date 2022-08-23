@@ -19,23 +19,17 @@ const ManageGroups = () => {
     // subscription state
     const [subscription, setSubscription] = useState(null)
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
     const groups = useSelector((state) => state.groups)
     const { groupList, success, error } = groups
 
-    const navigate = useNavigate()
     const { state } = useSubscription()
 
-    useEffect(() => {
-        const authToken = sessionStorage.getItem('authToken')
-
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [])
+    console.log(success)
+    console.log(error)
 
     useEffect(() => {
         const fetchSubDetail = async () => {
@@ -51,7 +45,7 @@ const ManageGroups = () => {
             setSuccessMsg(success)
             setSnackOpen(true)
         }
-        if (error !== undefined) {
+        if (error) {
             setErrorMsg(error)
             setSnackOpen(true)
         }
@@ -127,7 +121,7 @@ const ManageGroups = () => {
                 />
             </Box>
 
-            {success !== null && (
+            {success && (
                 <Snackbar
                     open={snackOpen}
                     autoHideDuration={4000}
@@ -144,7 +138,7 @@ const ManageGroups = () => {
                     </Alert>
                 </Snackbar>
             )}
-            {error !== null && (
+            {error && (
                 <Snackbar
                     open={snackOpen}
                     autoHideDuration={4000}

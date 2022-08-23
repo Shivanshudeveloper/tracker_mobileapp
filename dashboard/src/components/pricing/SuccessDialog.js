@@ -1,13 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, useHref } from 'react-router'
 import { Dialog, DialogContent, Box } from '@mui/material'
 import LinearProgress from '@mui/material/LinearProgress'
+import { useSubscription } from '../../hooks/useSubscription'
+import { SubscriptionContext } from '../../contexts/subscriptionContext'
 
 const SuccessDialog = (props) => {
     const [progress, setProgress] = useState(0)
     const [intervalId, setIntervalId] = useState(0)
 
     const navigate = useNavigate()
+    const { state, dispatch } = useSubscription()
+    const { fetchSubscriptions } = useContext(SubscriptionContext)
+    const customerId = state?.customerId
 
     useEffect(() => {
         if (props.open === false) {
@@ -23,9 +28,17 @@ const SuccessDialog = (props) => {
         return () => clearInterval(interval)
     }, [props])
 
-    useEffect(() => {
+    useEffect(async () => {
         if (progress > 100) {
             clearInterval(intervalId)
+            const subscriptions = await fetchSubscriptions(customerId)
+            dispatch({
+                type: 'SUBSCRIPTION_DATA_CHANGED',
+                payload: {
+                    customerId: customerId,
+                    subscriptions: subscriptions,
+                },
+            })
             navigate('/app/pricing', { replace: true })
         }
     }, [progress])

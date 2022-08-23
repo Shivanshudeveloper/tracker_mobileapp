@@ -50,6 +50,7 @@ const ManageHotspots = () => {
     const mapRef = useRef()
     const [hotspotName, setHotspotName] = useState('')
     const [selectedGroups, setSelectedGroups] = useState([])
+    const [selectedGroupsNames, setSelectedGroupsNames] = useState([])
     // const [groups, setGroups] = useState([])
     const [location, setLocation] = useState('')
     const [lat, setlat] = useState(28.6077159025)
@@ -92,24 +93,16 @@ const ManageHotspots = () => {
     const groups = useSelector((state) => state.groups)
     const { groupList } = groups
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
-    const adminData = sessionStorage.getItem('adminData')
-        ? JSON.parse(sessionStorage.getItem('adminData'))
+    const adminData = localStorage.getItem('adminData')
+        ? JSON.parse(localStorage.getItem('adminData'))
         : null
 
     const navigate = useNavigate()
     const { state } = useSubscription()
-
-    useEffect(() => {
-        const authToken = sessionStorage.getItem('authToken')
-
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [])
 
     useEffect(() => {
         const fetchSubDetail = async () => {
@@ -247,6 +240,9 @@ const ManageHotspots = () => {
             target: { value },
         } = event
         setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
+
+        const arr = groupList.filter((x) => value.includes(x._id))
+        setSelectedGroupsNames(arr.map((x) => x.groupName))
     }
 
     const toggleEditHotspotDialog = (item) => {
@@ -257,6 +253,9 @@ const ManageHotspots = () => {
             setDialogOpen(true)
         }
     }
+
+    console.log(selectedGroups)
+    console.log(selectedGroupsNames)
 
     return (
         <Box sx={{ width: '100%', p: 4, height: '100%' }}>
@@ -388,7 +387,9 @@ const ManageHotspots = () => {
                                 value={selectedGroups}
                                 onChange={handleChange}
                                 multiple
-                                renderValue={(selected) => selected.join(', ')}
+                                renderValue={() =>
+                                    selectedGroupsNames.join(', ')
+                                }
                                 MenuProps={MenuProps}
                             >
                                 {groupList.map((item) => (
@@ -439,7 +440,6 @@ const ManageHotspots = () => {
                             mapboxApiAccessToken={MAP_TOKEN}
                             position='top-left'
                             marker={true}
-                            countries='IN'
                             reverseGeocode={true}
                         />
                         <Marker key='1' latitude={lat} longitude={long}>

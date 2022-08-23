@@ -10,11 +10,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from '@mui/material'
 import { Delete, Create } from '@mui/icons-material'
-import { arrayRemove, deleteDoc, doc, updateDoc } from 'firebase/firestore'
-import { db } from '../../Firebase/index'
 import moment from 'moment'
 import { deleteAdmin } from '../../store/actions/admin'
 

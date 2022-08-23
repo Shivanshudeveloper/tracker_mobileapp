@@ -32,7 +32,7 @@ const CreateGroupDialog = (props) => {
   const [groupName, setGroupName] = useState('')
   //const [adminList, setAdminList] = useState([])
   const [selectedAdmins, setSelectedAdmins] = useState([])
-  //const [admins, setAdmins] = useState([])
+  const [selectedAdminsNames, setSelectedAdminsNames] = useState([])
 
   const [startDay, setStartDay] = useState('')
   const [endDay, setEndDay] = useState('')
@@ -88,6 +88,9 @@ const CreateGroupDialog = (props) => {
       target: { value },
     } = event
     setSelectedAdmins(typeof value === 'string' ? value.split(',') : value)
+
+    const arr = adminList.filter((x) => value.includes(x._id))
+    setSelectedAdminsNames(arr.map((x) => x.fullName))
   }
 
   return (
@@ -115,7 +118,7 @@ const CreateGroupDialog = (props) => {
                 value={selectedAdmins}
                 onChange={handleChange}
                 multiple
-                renderValue={(selected) => selected.join(', ')}
+                renderValue={() => selectedAdminsNames.join(', ')}
                 MenuProps={MenuProps}
               >
                 {adminList.map((item) => (

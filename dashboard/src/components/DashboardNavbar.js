@@ -64,17 +64,9 @@ const DashboardNavbar = ({ onMobileNavOpen, ...rest }) => {
 
     const navigate = useNavigate()
 
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
-
-    useEffect(() => {
-        const authToken = sessionStorage.getItem('authToken')
-
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [])
 
     useEffect(() => {
         if (userData !== null) {
@@ -134,7 +126,8 @@ const DashboardNavbar = ({ onMobileNavOpen, ...rest }) => {
     }
 
     const logout = () => {
-        sessionStorage.removeItem('userData')
+        localStorage.removeItem('userData')
+        localStorage.removeItem('authToken')
         signOut(auth)
             .then(() => navigate('/login', { replace: true }))
             .catch((error) => console.log(error))

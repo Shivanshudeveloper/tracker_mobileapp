@@ -14,8 +14,6 @@ import {
   Select,
   TextField,
 } from '@mui/material'
-import { db } from '../../Firebase/index'
-import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore'
 import { updateDevice } from '../../store/actions/device'
 
 const ITEM_HEIGHT = 48
@@ -35,7 +33,6 @@ const EditDeviceDialog = (props) => {
     editDialogOpen,
     selectedDevice,
     trackingGroups,
-    setSuccess,
     setSnackOpen,
     setError,
   } = props
@@ -43,6 +40,7 @@ const EditDeviceDialog = (props) => {
   const [newFullName, setNewFullName] = useState('')
   // const [newDeviceGroup, setNewDeviceGroup] = useState([])
   const [selectedGroups, setSelectedGroups] = useState([])
+  const [selectedGroupsNames, setSelectedGroupsNames] = useState([])
 
   const dispatch = useDispatch()
 
@@ -51,6 +49,9 @@ const EditDeviceDialog = (props) => {
       target: { value },
     } = event
     setSelectedGroups(typeof value === 'string' ? value.split(',') : value)
+
+    const arr = trackingGroups.filter((x) => value.includes(x._id))
+    setSelectedGroupsNames(arr.map((x) => x.groupName))
   }
 
   useEffect(() => {
@@ -61,22 +62,12 @@ const EditDeviceDialog = (props) => {
       const arr = []
       groups.forEach((x) => arr.push(x._id))
       setSelectedGroups(arr)
+
+      setSelectedGroupsNames(
+        groups.filter((x) => arr.includes(x._id)).map((x) => x.groupName),
+      )
     }
   }, [selectedDevice])
-
-  // useEffect(() => {
-  //   const arr = []
-  //   selectedGroups.forEach((x) => {
-  //     const d = trackingGroups.filter((item) => item.id === x)[0]
-  //     const data = {
-  //       groupName: d.groupName,
-  //       id: d.id,
-  //     }
-  //     arr.push(data)
-  //   })
-
-  //   setNewDeviceGroup(arr)
-  // }, [selectedGroups])
 
   const updateDetails = () => {
     if (newFullName.length === 0) {
@@ -96,45 +87,13 @@ const EditDeviceDialog = (props) => {
     setEditDialogOpen(false)
   }
 
-  // const updateDevice = () => {
-  //   const deviceRef = doc(db, 'trackingUsers', selectedDevice.id)
-  //   console.log('Here 1')
-  //   updateDoc(deviceRef, {
-  //     fullName: newFullName,
-  //     deviceGroups: newDeviceGroup,
-  //     groupId: selectedGroups,
-  //   })
-  //     .then(() => {
-  //       selectedDevice.deviceGroups.forEach(({ id }) => {
-  //         const groupRef = doc(db, 'trackingGroups', id)
-  //         updateDoc(groupRef, {
-  //           members: arrayRemove(selectedDevice.phoneNumber),
-  //         }).catch((error) => console.log(error))
-  //       })
-  //       console.log('Here')
-  //       selectedGroups.forEach((id) => {
-  //         const groupRef = doc(db, 'trackingGroups', id)
-  //         updateDoc(groupRef, {
-  //           members: arrayRemove(selectedDevice.phoneNumber),
-  //         }).catch((error) => console.log(error))
-  //         updateDoc(groupRef, {
-  //           members: arrayUnion(selectedDevice.phoneNumber),
-  //         }).catch((error) => console.log(error))
-  //       })
-  //     })
-  //     .then(() => {
-  //       setSuccess('Details Updated Successfully')
-  //       setSnackOpen(true)
-  //       setEditDialogOpen(false)
-  //     })
-  //     .catch((error) => {
-  //       setError(error.message)
-  //       setSnackOpen(true)
-  //     })
-  // }
-
   return (
-    <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+    <Dialog
+      open={editDialogOpen}
+      onClose={() => {
+        setEditDialogOpen(false)
+      }}
+    >
       <DialogTitle sx={{ fontSize: 22 }}>Edit Device</DialogTitle>
       <DialogContent sx={{ width: 500 }}>
         <TextField
@@ -156,7 +115,7 @@ const EditDeviceDialog = (props) => {
             value={selectedGroups}
             onChange={handleChange}
             multiple
-            renderValue={(selected) => selected.join(', ')}
+            renderValue={() => selectedGroupsNames.join(', ')}
             MenuProps={MenuProps}
           >
             {trackingGroups.map((item) => (

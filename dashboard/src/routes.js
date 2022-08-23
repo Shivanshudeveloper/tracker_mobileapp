@@ -14,10 +14,9 @@ import ManageHotspots from './pages/ManageHotspots'
 import Profile from './pages/Profile'
 import ManageGroups from './pages/ManageGroups'
 import ManageAdmins from './pages/ManageAdmins'
-import AdminReport from './pages/admin/Report'
-import ChangePassword from './pages/admin/ChangePassword'
 import Pricing from './pages/Pricing'
 import Subscribe from './pages/Subscribe'
+import ForgotPassword from './pages/ForgotPassword'
 
 const routes = [
     {
@@ -37,19 +36,17 @@ const routes = [
                 element: <Locationview />,
             },
             { path: 'profile', element: <Profile /> },
-
-            { path: '/admin/reports', element: <AdminReport /> },
             { path: '*', element: <Navigate to='/404' /> },
         ],
     },
     {
-        path: '/',
+        path: '',
         element: <MainLayout />,
         children: [
-            { path: 'login', element: <Login /> },
             { path: 'register', element: <Register /> },
+            { path: 'login', element: <Login /> },
             { path: 'subscribe', element: <Subscribe /> },
-            { path: '/admin/change-password', element: <ChangePassword /> },
+            { path: '/forget-password', element: <ForgotPassword /> },
             { path: '404', element: <NotFound /> },
             { path: '/', element: <Navigate to='/app/dashboard' /> },
             { path: '*', element: <Navigate to='/404' /> },

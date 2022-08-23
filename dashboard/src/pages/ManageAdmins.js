@@ -20,9 +20,9 @@ const ManageAdmins = () => {
     // subscription state
     const [subscription, setSubscription] = useState(null)
 
-    const authToken = sessionStorage.getItem('authToken')
-    const userData = sessionStorage.getItem('userData')
-        ? JSON.parse(sessionStorage.getItem('userData'))
+    const authToken = localStorage.getItem('authToken')
+    const userData = localStorage.getItem('userData')
+        ? JSON.parse(localStorage.getItem('userData'))
         : null
 
     const dispatch = useDispatch()
@@ -40,12 +40,6 @@ const ManageAdmins = () => {
 
         fetchSubDetail()
     }, [])
-
-    useEffect(() => {
-        if (!authToken) {
-            navigate('/login')
-        }
-    }, [authToken])
 
     useEffect(() => {
         if (userData !== null) {

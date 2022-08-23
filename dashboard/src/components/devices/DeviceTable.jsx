@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   Table,
@@ -8,110 +8,25 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
   Chip,
-  DialogActions,
-  DialogContent,
-  Dialog,
-  DialogTitle,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import Create from '@mui/icons-material/Create'
-import { db } from '../../Firebase/index'
-import {
-  arrayRemove,
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
-import TimeRangePicker from '@wojtekmaj/react-timerange-picker'
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteDevice } from '../../store/actions/device'
 
 const DeviceSetting = (props) => {
-  const { success, error, open, toggleEditDeviceDialog } = props
-
-  const [deviceData, setDeviceData] = useState([])
-
-  const userData = sessionStorage.getItem('userData')
-    ? JSON.parse(sessionStorage.getItem('userData'))
-    : null
-
-  const adminData = sessionStorage.getItem('adminData')
-    ? JSON.parse(sessionStorage.getItem('adminData'))
-    : null
+  const { toggleEditDeviceDialog } = props
 
   const devices = useSelector((state) => state.devices)
   const { deviceList } = devices
 
   const dispatch = useDispatch()
 
-  // useEffect(async () => {
-  //   if (userData !== null) {
-  //     const deviceRef = collection(db, 'trackingUsers')
-  //     let q
-  //     if (adminData !== null) {
-  //       q = query(
-  //         deviceRef,
-  //         where('senderId', '==', userData.uid),
-  //         where('groupId', 'array-contains-any', adminData.groupId),
-  //       )
-  //     } else {
-  //       q = query(deviceRef, where('senderId', '==', userData.uid))
-  //     }
-
-  //     const unsub = onSnapshot(q, (snapshot) => {
-  //       const devices = []
-  //       snapshot.forEach((snap) => {
-  //         devices.push({ ...snap.data(), id: snap.id })
-  //       })
-  //       setDeviceData(devices)
-  //     })
-
-  //     return () => unsub()
-  //   }
-  // }, [])
-
   const removeDevice = (data) => {
     dispatch(deleteDevice(data._id))
   }
-
-  // const deleteDevice = async (item) => {
-  //   const requestRef = doc(db, 'trackingRequest', item.phoneNumber)
-  //   await deleteDoc(requestRef)
-  //     .then(() => {
-  //       item.deviceGroups.forEach(({ id }) => {
-  //         const groupRef = doc(db, 'trackingGroups', id)
-  //         updateDoc(groupRef, {
-  //           members: arrayRemove(item.phoneNumber),
-  //         }).catch((error) => console.log(error))
-  //       })
-  //     })
-  //     .then(async () => {
-  //       const deviceRef = doc(db, 'trackingUsers', item.id)
-  //       await deleteDoc(deviceRef)
-  //         .then(() => {
-  //           success('Device Deleted Successfully')
-  //           open(true)
-  //         })
-  //         .catch((err) => {
-  //           error(err.message)
-  //           open(true)
-  //         })
-  //     })
-  //     .catch((err) => console.log(err.message))
-  // }
 
   return (
     <Box>
@@ -158,6 +73,9 @@ const DeviceSetting = (props) => {
                   )}
                   {data.trackingStatus === 'pending' && (
                     <Chip label="Pending" color="warning" />
+                  )}
+                  {data.trackingStatus === 'turned off' && (
+                    <Chip label="Turned Off" color="error" />
                   )}
                 </TableCell>
                 <TableCell align="center" sx={{ p: 0 }}>
