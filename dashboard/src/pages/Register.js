@@ -16,7 +16,19 @@ import { makeStyles } from '@mui/styles'
 import { auth, db } from '../Firebase'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore'
-import { Alert, Snackbar } from '@mui/material'
+import {
+    Alert,
+    CircularProgress,
+    FormControl,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    OutlinedInput,
+    Snackbar,
+} from '@mui/material'
+import LoadingButton from '@mui/lab/LoadingButton'
+import Visibility from '@mui/icons-material/Visibility'
+import VisibilityOff from '@mui/icons-material/VisibilityOff'
 
 const useStyles = makeStyles((theme) => ({
     image: {
@@ -66,6 +78,8 @@ const Register = () => {
     const [policy, setPolicy] = useState(false)
     const [snackOpen, setSnackOpen] = useState(false)
     const [errorMsg, setErrorMsg] = useState('')
+    const [clicked, setClicked] = useState(false)
+    const [showPass, setShowPass] = useState(false)
 
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
@@ -89,6 +103,7 @@ const Register = () => {
             setErrorMsg('Company Name is required field')
             setSnackOpen(true)
         } else {
+            setClicked(true)
             signUp()
         }
     }
@@ -113,13 +128,13 @@ const Register = () => {
                     createdAt: serverTimestamp(),
                 }
 
-                sessionStorage.setItem('authToken', user.accessToken)
+                localStorage.setItem('authToken', user.accessToken)
 
                 const userRef = doc(db, 'trackerWebUser', user.uid)
 
                 await setDoc(userRef, userData)
                     .then(() => {
-                        sessionStorage.setItem(
+                        localStorage.setItem(
                             'userData',
                             JSON.stringify(userData)
                         )
@@ -140,6 +155,10 @@ const Register = () => {
 
     const getErrMsg = (msg) => {
         return msg.split('/')[1].split('-').join(' ')
+    }
+
+    const handleClickShowPassword = () => {
+        setShowPass(!showPass)
     }
 
     return (
@@ -218,19 +237,41 @@ const Register = () => {
                                 value={companyName}
                                 onChange={(e) => setCompanyName(e.target.value)}
                             />
-                            <TextField
+                            <FormControl
+                                sx={{ my: 2 }}
                                 variant='outlined'
-                                margin='normal'
                                 required
                                 fullWidth
-                                name='password'
-                                label='Password'
-                                type='password'
-                                id='password'
-                                autoComplete='current-password'
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+                            >
+                                <InputLabel htmlFor='Password'>
+                                    Password
+                                </InputLabel>
+                                <OutlinedInput
+                                    variant='outlined'
+                                    type={showPass ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    endAdornment={
+                                        <InputAdornment position='end'>
+                                            <IconButton
+                                                onClick={
+                                                    handleClickShowPassword
+                                                }
+                                                edge='end'
+                                            >
+                                                {showPass ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                    label='Password'
+                                />
+                            </FormControl>
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -251,16 +292,35 @@ const Register = () => {
                                     </Typography>
                                 }
                             />
-                            <Button
-                                disabled={!policy}
-                                fullWidth
-                                variant='contained'
-                                color='primary'
-                                className={classes.login}
-                                onClick={() => submitHandler()}
-                            >
-                                Sign-Up
-                            </Button>
+                            {clicked ? (
+                                <LoadingButton
+                                    clicked
+                                    fullWidth
+                                    loadingPosition='start'
+                                    startIcon={
+                                        <CircularProgress
+                                            style={{ color: 'white' }}
+                                            size={20}
+                                        />
+                                    }
+                                    variant='contained'
+                                    className={classes.login}
+                                >
+                                    Sign Up
+                                </LoadingButton>
+                            ) : (
+                                <Button
+                                    disabled={!policy}
+                                    fullWidth
+                                    variant='contained'
+                                    color='primary'
+                                    className={classes.login}
+                                    onClick={() => submitHandler()}
+                                >
+                                    Sign Up
+                                </Button>
+                            )}
+
                             <Box
                                 sx={{
                                     display: 'flex',

@@ -101,7 +101,6 @@ const ManageHotspots = () => {
         ? JSON.parse(localStorage.getItem('adminData'))
         : null
 
-    const navigate = useNavigate()
     const { state } = useSubscription()
 
     useEffect(() => {
@@ -254,8 +253,13 @@ const ManageHotspots = () => {
         }
     }
 
-    console.log(selectedGroups)
-    console.log(selectedGroupsNames)
+    const handleAddDialogClose = () => {
+        setHotspotName('')
+        setSelectedGroups([])
+        setSelectedGroupsNames([])
+        setLocation('')
+        setAddHotspotDialog(false)
+    }
 
     return (
         <Box sx={{ width: '100%', p: 4, height: '100%' }}>
@@ -354,10 +358,8 @@ const ManageHotspots = () => {
                 </Grid>
             </Grid>
 
-            <Dialog
-                open={addHotspotDialog}
-                onClose={() => setAddHotspotDialog(false)}
-            >
+            {/* add hotspot dialog */}
+            <Dialog open={addHotspotDialog} onClose={handleAddDialogClose}>
                 <DialogTitle sx={{ fontSize: 22 }}>Add New Hotspot</DialogTitle>
                 <DialogContent sx={{ width: 600 }}>
                     <form noValidate style={{ marginBottom: '20px' }}>
@@ -453,9 +455,7 @@ const ManageHotspots = () => {
                     </ReactMapGL>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setAddHotspotDialog(false)}>
-                        Cancel
-                    </Button>
+                    <Button onClick={handleAddDialogClose}>Cancel</Button>
                     <Button onClick={() => saveHotspot()}>Save Hotspot</Button>
                 </DialogActions>
             </Dialog>

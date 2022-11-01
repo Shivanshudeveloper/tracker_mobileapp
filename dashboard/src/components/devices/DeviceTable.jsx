@@ -15,8 +15,17 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import Create from '@mui/icons-material/Create'
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteDevice } from '../../store/actions/device'
+import { db } from '../../Firebase'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore'
 
-const DeviceSetting = (props) => {
+const DeviceTable = (props) => {
   const { toggleEditDeviceDialog } = props
 
   const devices = useSelector((state) => state.devices)
@@ -24,8 +33,34 @@ const DeviceSetting = (props) => {
 
   const dispatch = useDispatch()
 
-  const removeDevice = (data) => {
+  const removeDevice = async (data) => {
     dispatch(deleteDevice(data._id))
+
+    const requestRef = collection(
+      db,
+      'trackingRequest',
+      data.phoneNumber,
+      'requests',
+    )
+
+    const q = query(requestRef, where('sender.id', '==', data.createdBy))
+    const querySnapshot = await getDocs(q)
+    const arr = []
+    querySnapshot.forEach((x) => {
+      arr.push(x.id)
+    })
+
+    arr.forEach(async (x) => {
+      const requestRef = doc(
+        db,
+        'trackingRequest',
+        data.phoneNumber,
+        'requests',
+        x,
+      )
+
+      await deleteDoc(requestRef)
+    })
   }
 
   return (
@@ -100,4 +135,4 @@ const DeviceSetting = (props) => {
   )
 }
 
-export default React.memo(DeviceSetting)
+export default React.memo(DeviceTable)

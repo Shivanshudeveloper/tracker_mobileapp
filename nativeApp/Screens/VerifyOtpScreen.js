@@ -2,13 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import Colors from '../constants/Colors'
 import { Ionicons } from '@expo/vector-icons'
-import {
-    KeyboardAvoidingView,
-    StyleSheet,
-    View,
-    useColorScheme,
-    Alert,
-} from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, View } from 'react-native'
 import {
     Button,
     Headline,
@@ -29,30 +23,28 @@ const VerifyOtpScreen = (props) => {
     const [visible, setVisible] = useState(false)
     const [message, setMessage] = useState(null)
 
-    const navigation = useNavigation()
-    const colorScheme = useColorScheme()
     const { phoneNumber } = props.route.params
     let clockCall = null
 
     useEffect(() => {
-        const signInWithPhoneNumber = async () => {
-            try {
-                const phoneProvider = new PhoneAuthProvider(auth)
-                const verificationId = await phoneProvider.verifyPhoneNumber(
-                    `+91${phoneNumber}`,
-                    recaptchaVerifier.current
-                )
-                setVerificationId(verificationId)
-                setMessage('Verification code has been sent to your phone.')
-                setVisible(true)
-            } catch (error) {
-                setMessage(error.code.split('/')[1])
-                setVisible(true)
-            }
-        }
-
         signInWithPhoneNumber()
     }, [])
+
+    const signInWithPhoneNumber = async () => {
+        try {
+            const phoneProvider = new PhoneAuthProvider(auth)
+            const verificationId = await phoneProvider.verifyPhoneNumber(
+                phoneNumber,
+                recaptchaVerifier.current
+            )
+            setVerificationId(verificationId)
+            setMessage('Verification code has been sent to your phone.')
+            setVisible(true)
+        } catch (error) {
+            setMessage(error.code.split('/')[1])
+            setVisible(true)
+        }
+    }
 
     // resend timer
     useEffect(() => {
@@ -78,10 +70,9 @@ const VerifyOtpScreen = (props) => {
                 verificationId,
                 code
             )
-            await signInWithCredential(auth, credential)
-            clearInterval(clockCall)
-            clearTimeout(0)
-            navigation.replace('Root')
+            await signInWithCredential(auth, credential).catch((error) =>
+                console.log(error)
+            )
         } catch (err) {
             setMessage(`Error: ${err.message}`)
             setVisible(true)
@@ -91,11 +82,7 @@ const VerifyOtpScreen = (props) => {
     // function to resend the code
     const resendCode = async () => {
         try {
-            const confirmationLink = await auth().signInWithPhoneNumber(
-                `+91${phoneNumber}`,
-                true
-            )
-            setConfirm(confirmationLink)
+            signInWithPhoneNumber()
             setTimer(59)
         } catch (error) {
             console.log(error)
@@ -115,19 +102,15 @@ const VerifyOtpScreen = (props) => {
                 cancelLabel='Close'
             />
             <View style={styles.brandContainer}>
-                <Ionicons
-                    name='location-sharp'
-                    size={30}
-                    color={Colors[colorScheme].text}
-                />
+                <Ionicons name='location-sharp' size={30} color='red' />
                 <Headline style={styles.brandName}>GPS REPORT</Headline>
             </View>
             <View style={styles.subHeadingContainer}>
-                <Subheading style={{ textAlign: 'center' }}>
+                <Subheading style={{ textAlign: 'center', color: 'gray' }}>
                     We have sent a 6-digit verification code to
                 </Subheading>
-                <Subheading style={{ textAlign: 'center' }}>
-                    {`+91 ${phoneNumber}`}
+                <Subheading style={{ textAlign: 'center', color: 'black' }}>
+                    {phoneNumber}
                 </Subheading>
             </View>
             <View style={styles.inputContainer}>
@@ -135,7 +118,12 @@ const VerifyOtpScreen = (props) => {
                     mode='outlined'
                     label='Verification Code'
                     value={code}
+                    outlineColor='#007bff'
                     onChangeText={(val) => setCode(val)}
+                    activeOutlineColor='#007bff'
+                    style={{ backgroundColor: 'white' }}
+                    selectionColor='#007bff'
+                    theme={{ colors: { text: 'black' } }}
                 />
             </View>
             <View style={styles.buttonContainer}>
@@ -143,7 +131,10 @@ const VerifyOtpScreen = (props) => {
                     <Button
                         disabled
                         labelStyle={styles.btnLabelStyle}
-                        style={styles.getCodeButton}
+                        style={[
+                            styles.getCodeButton,
+                            { backgroundColor: 'gray' },
+                        ]}
                         mode='contained'
                         onPress={() => resendCode()}
                     >
@@ -152,7 +143,10 @@ const VerifyOtpScreen = (props) => {
                 ) : (
                     <Button
                         labelStyle={styles.btnLabelStyle}
-                        style={styles.getCodeButton}
+                        style={[
+                            styles.getCodeButton,
+                            { backgroundColor: '#007bff' },
+                        ]}
                         mode='contained'
                         onPress={() => resendCode()}
                     >
@@ -161,7 +155,10 @@ const VerifyOtpScreen = (props) => {
                 )}
                 <Button
                     labelStyle={styles.btnLabelStyle}
-                    style={styles.getCodeButton}
+                    style={[
+                        styles.getCodeButton,
+                        { backgroundColor: '#007bff' },
+                    ]}
                     disabled={!verificationId}
                     mode='contained'
                     onPress={() => verifyCode()}
@@ -198,6 +195,7 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'white',
     },
     brandContainer: {
         display: 'flex',
@@ -208,6 +206,7 @@ const styles = StyleSheet.create({
     brandName: {
         fontSize: 30,
         marginLeft: 10,
+        color: 'black',
     },
     subHeadingContainer: {
         marginBottom: 20,
@@ -228,11 +227,14 @@ const styles = StyleSheet.create({
     btnLabelStyle: {
         paddingVertical: 7,
         paddingHorizontal: 21,
+        fontWeight: 'bold',
+        color: 'white',
     },
     timerContainer: {
         marginVertical: 15,
     },
     timerText: {
         textAlign: 'center',
+        color: 'gray',
     },
 })

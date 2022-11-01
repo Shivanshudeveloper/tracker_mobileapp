@@ -217,6 +217,7 @@ const Report = () => {
                         selectedHotspots={selectedHotspots}
                         selectedGroups={selectedGroups}
                         selectedMonth={Months.indexOf(selectedMonth)}
+                        deviceList={deviceList}
                     />
                 ) : (
                     <Box

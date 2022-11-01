@@ -2,21 +2,8 @@ import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import Colors from '../constants/Colors'
-import {
-    KeyboardAvoidingView,
-    StyleSheet,
-    TouchableWithoutFeedback,
-    View,
-    useColorScheme,
-    LogBox,
-} from 'react-native'
-import {
-    Button,
-    Headline,
-    TextInput,
-    Subheading,
-    Snackbar,
-} from 'react-native-paper'
+import { KeyboardAvoidingView, StyleSheet, View, LogBox } from 'react-native'
+import { Button, Headline, TextInput, Snackbar } from 'react-native-paper'
 
 const LoginScreen = () => {
     const [phoneNumber, setPhoneNumber] = useState('')
@@ -24,15 +11,16 @@ const LoginScreen = () => {
     const [message, setMessage] = useState(null)
 
     const navigation = useNavigation()
-    const colorScheme = useColorScheme()
 
     LogBox.ignoreLogs(['AsyncStorage has been extracted'])
 
     const onDismissSnackBar = () => setVisible(false)
 
     const getVerificationCode = () => {
-        if (phoneNumber.length !== 10) {
-            setMessage('10 digit phone number is required!')
+        if (!phoneNumber.startsWith('+')) {
+            setMessage(
+                'Please include a valid country code, example: +911234567890'
+            )
             setVisible(true)
         } else {
             navigation.navigate('VerifyOtp', { phoneNumber })
@@ -42,11 +30,7 @@ const LoginScreen = () => {
     return (
         <KeyboardAvoidingView style={styles.container}>
             <View style={styles.brandContainer}>
-                <Ionicons
-                    name='location-sharp'
-                    size={30}
-                    color={Colors[colorScheme].text}
-                />
+                <Ionicons name='location-sharp' size={30} color='red' />
                 <Headline style={styles.brandName}>GPS REPORT</Headline>
             </View>
             <View style={styles.inputContainer}>
@@ -55,7 +39,12 @@ const LoginScreen = () => {
                     autoFocus={true}
                     label='Phone Number'
                     value={phoneNumber}
+                    placeholder='+911234567890'
                     onChangeText={(number) => setPhoneNumber(number)}
+                    activeOutlineColor='#007bff'
+                    style={{ backgroundColor: 'white' }}
+                    selectionColor='#007bff'
+                    theme={{ colors: { text: 'black' } }}
                 />
             </View>
             <View style={styles.getCodeBtnContainer}>
@@ -68,16 +57,6 @@ const LoginScreen = () => {
                     Login
                 </Button>
             </View>
-            {/* <View style={styles.registerLinkContainer}>
-                <Subheading>Don't have an account? </Subheading>
-                <TouchableWithoutFeedback
-                    onPress={() => navigation.navigate('Register')}
-                >
-                    <Subheading style={styles.registerLink}>
-                        Sign-up for free
-                    </Subheading>
-                </TouchableWithoutFeedback>
-            </View> */}
             <Snackbar
                 visible={visible}
                 onDismiss={onDismissSnackBar}
@@ -102,6 +81,7 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'white',
     },
     brandContainer: {
         display: 'flex',
@@ -112,6 +92,7 @@ const styles = StyleSheet.create({
     brandName: {
         fontSize: 30,
         marginLeft: 10,
+        color: 'black',
     },
     inputContainer: {
         width: '100%',
@@ -124,9 +105,13 @@ const styles = StyleSheet.create({
     },
     getCodeButton: {
         width: '100%',
+        backgroundColor: '#007bff',
     },
     btnLabelStyle: {
         paddingVertical: 10,
+        fontWeight: 'bold',
+        color: 'white',
+        fontSize: 16,
     },
     registerLinkContainer: {
         display: 'flex',

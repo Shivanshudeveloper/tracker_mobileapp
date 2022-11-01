@@ -18,8 +18,6 @@ import moment from 'moment'
 import { getGroups, deleteGroup } from '../../store/actions/group'
 
 const GroupTable = (props) => {
-  // const [groups, setGroups] = useState([])
-
   const userData = sessionStorage.getItem('userData')
     ? JSON.parse(sessionStorage.getItem('userData'))
     : null
@@ -99,7 +97,13 @@ const GroupTable = (props) => {
 
                 {Object.entries(row.schedule).length !== 0 ? (
                   <TableCell align="center">
-                    {`${row.schedule.startDay} to ${row.schedule.endDay} , ${row.schedule.time.startTime} to ${row.schedule.time.endTime}`}
+                    {`${row.schedule.startDay} - ${
+                      row.schedule.endDay
+                    } , ${moment(row.schedule.time.startTime).format(
+                      'hh:mm a',
+                    )} - ${moment(row.schedule.time.endTime).format(
+                      'hh:mm a',
+                    )}`}
                   </TableCell>
                 ) : (
                   <TableCell align="center">---</TableCell>

@@ -47,13 +47,13 @@ export const groupReducer = (state = { groupList: [] }, action) => {
                     groupList: state.groupList.map((x) =>
                         x._id === existgroup._id ? item : x
                     ),
-                    success: 'Group created succssfully',
+                    success: 'Group updated succssfully',
                 }
             }
             return {
                 ...state,
                 groupList: [...state.groupList, item],
-                success: 'Group created succssfully',
+                success: 'Group updated succssfully',
             }
         }
         case types.UPDATE_GROUP_FAIL:

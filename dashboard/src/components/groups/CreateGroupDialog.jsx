@@ -34,9 +34,12 @@ const CreateGroupDialog = (props) => {
   const [selectedAdmins, setSelectedAdmins] = useState([])
   const [selectedAdminsNames, setSelectedAdminsNames] = useState([])
 
-  const [startDay, setStartDay] = useState('')
-  const [endDay, setEndDay] = useState('')
-  const [time, setTime] = useState(['', ''])
+  const [startDay, setStartDay] = useState('Sunday')
+  const [endDay, setEndDay] = useState('Sunday')
+  const [time, setTime] = useState({
+    startTime: new Date(),
+    endTime: new Date(),
+  })
 
   const dispatch = useDispatch()
   const admins = useSelector((state) => state.admins)
@@ -68,10 +71,7 @@ const CreateGroupDialog = (props) => {
       schedule: {
         startDay,
         endDay,
-        time: {
-          startTime: time[0],
-          endTime: time[1],
-        },
+        time: time,
       },
     }
     dispatch(createGroup(body))
@@ -80,7 +80,7 @@ const CreateGroupDialog = (props) => {
     setGroupName('')
     setStartDay('')
     setEndDay('')
-    setTime(['', ''])
+    setTime({ startTime: new Date(), endTime: new Date() })
   }
 
   const handleChange = (event) => {
@@ -91,6 +91,15 @@ const CreateGroupDialog = (props) => {
 
     const arr = adminList.filter((x) => value.includes(x._id))
     setSelectedAdminsNames(arr.map((x) => x.fullName))
+  }
+
+  const handleClose = () => {
+    setSelectedAdmins([])
+    setGroupName('')
+    setStartDay('')
+    setEndDay('')
+    setTime({ startTime: new Date(), endTime: new Date() })
+    props.setOpen(false)
   }
 
   return (
@@ -141,7 +150,7 @@ const CreateGroupDialog = (props) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => props.setOpen(false)}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button onClick={() => saveGroup()}>Create</Button>
       </DialogActions>
     </Dialog>

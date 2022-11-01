@@ -15,6 +15,15 @@ const SuccessDialog = (props) => {
     const customerId = state?.customerId
 
     useEffect(() => {
+        const val = sessionStorage.getItem('reload')
+
+        if (val === 'true') {
+            sessionStorage.removeItem('reload')
+            navigate('/app/pricing', { replace: true })
+        }
+    }, [])
+
+    useEffect(() => {
         if (props.open === false) {
             return
         }
@@ -39,7 +48,8 @@ const SuccessDialog = (props) => {
                     subscriptions: subscriptions,
                 },
             })
-            navigate('/app/pricing', { replace: true })
+            sessionStorage.setItem('reload', 'true')
+            window.location.reload()
         }
     }, [progress])
 

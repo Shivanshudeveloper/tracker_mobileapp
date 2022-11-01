@@ -101,21 +101,24 @@ const RequestComponent = (props) => {
     <>
       <List.Item
         title={`${companyName} has requested to track you`}
+        titleStyle={{ color: 'black' }}
         description={() => (
           <View style={styles.listActionButtonContainer}>
             <Button
-              style={{ margin: 3 }}
+              style={{ margin: 3, backgroundColor: 'green' }}
               mode="contained"
               icon="check"
               onPress={onAcceptRequest}
+              labelStyle={{ color: '#fff', fontWeight: 'bold' }}
             >
               Accept
             </Button>
             <Button
-              style={{ margin: 3 }}
+              style={{ margin: 3, backgroundColor: 'red' }}
               mode="contained"
               icon="close"
               onPress={onRejectRequest}
+              labelStyle={{ color: 'white', fontWeight: 'bold' }}
             >
               Reject
             </Button>

@@ -71,6 +71,9 @@ const {
     addAttendance,
     getAttendanceByTracker,
 } = require('../controllers/attendanceController')
+const {
+    updateLocationAndAttendance,
+} = require('../controllers/mobileDeviceAPIController')
 
 // const { findById } = require("../models/Class");
 const emailId = require('../config/keys').Email
@@ -972,5 +975,10 @@ router.post('/create/location', addLocation)
 // Attendance
 router.get('/get/attendance/:createdBy/:month', getAttendanceByTracker)
 router.post('/create/attendance', addAttendance)
+
+// Android phone APIs
+// To update location, mark attendance and mark location
+
+router.post('/locationAndattendance', updateLocationAndAttendance)
 
 module.exports = router

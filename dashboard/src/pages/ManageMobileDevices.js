@@ -31,7 +31,6 @@ import {
 
 import axios from 'axios'
 import { API_SERVICE } from '../URI'
-import { useNavigate } from 'react-router'
 import { useSubscription } from '../hooks/useSubscription'
 import { getSubscriptionDetails } from '../utils/getSubscriptionDetails'
 
@@ -86,7 +85,8 @@ const ManageMobileDevices = () => {
     const { groupList } = groups
 
     const devices = useSelector((state) => state.devices)
-    const { success, error, deviceList } = devices
+    const { deviceList } = devices
+    let { success, error } = devices
 
     const { state } = useSubscription()
 
@@ -117,6 +117,11 @@ const ManageMobileDevices = () => {
     }, [dispatch])
 
     useEffect(() => {
+        success = null
+        error = null
+    }, [])
+
+    useEffect(() => {
         if (success) {
             setSuccess(success)
             setSnackOpen(true)
@@ -141,7 +146,7 @@ const ManageMobileDevices = () => {
         }
     }, [success])
 
-    const handleSnackClose = (event, reason) => {
+    const handleSnackClose = (_, reason) => {
         if (reason === 'clickaway') {
             return
         }

@@ -24,12 +24,10 @@ const ManageGroups = () => {
         : null
 
     const groups = useSelector((state) => state.groups)
-    const { groupList, success, error } = groups
+    const { groupList } = groups
+    let { success, error } = groups
 
     const { state } = useSubscription()
-
-    console.log(success)
-    console.log(error)
 
     useEffect(() => {
         const fetchSubDetail = async () => {
@@ -41,24 +39,26 @@ const ManageGroups = () => {
     }, [])
 
     useEffect(() => {
+        success = null
+        error = null
+    }, [])
+
+    useEffect(() => {
         if (success) {
             setSuccessMsg(success)
             setSnackOpen(true)
-        }
-        if (error) {
+        } else if (error) {
             setErrorMsg(error)
             setSnackOpen(true)
         }
     }, [success, error])
 
-    const handleSnackClose = (_, reason) => {
-        if (reason === 'clickaway') {
-            return
-        }
-
+    const handleSnackClose = () => {
         setSnackOpen(false)
-        setErrorMsg(null)
+        success = null
+        error = null
         setSuccessMsg(null)
+        setErrorMsg(null)
     }
 
     return (
@@ -118,10 +118,11 @@ const ManageGroups = () => {
                         id: userData?.uid,
                         fullName: `${userData?.firstName} ${userData?.lastName}`,
                     }}
+                    subscription={subscription}
                 />
             </Box>
 
-            {success && (
+            {successMsg && (
                 <Snackbar
                     open={snackOpen}
                     autoHideDuration={4000}
@@ -138,7 +139,7 @@ const ManageGroups = () => {
                     </Alert>
                 </Snackbar>
             )}
-            {error && (
+            {errorMsg && (
                 <Snackbar
                     open={snackOpen}
                     autoHideDuration={4000}

@@ -3,8 +3,7 @@ import { StyleSheet, View, Text } from 'react-native'
 import { List } from 'react-native-paper'
 import AppBar from '../Components/AppBarComponent'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { auth, db } from '../firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { auth } from '../firebase'
 
 const SettingScreen = () => {
     const [menuVisible, setMenuVisible] = useState(false)
@@ -14,47 +13,42 @@ const SettingScreen = () => {
 
     const currentUser = auth.currentUser
     let phoneNumber = currentUser.phoneNumber
-    phoneNumber = phoneNumber.slice(3)
 
     const handlePress = () => setExpanded(!expanded)
 
     const openMenu = () => setMenuVisible(true)
     const closeMenu = () => setMenuVisible(false)
 
-    // useEffect(async () => {
-    //   let groups = []
-    //   await AsyncStorage.getItem('groups')
-    //     .then(async (res) => {
-    //       if (res !== null || res !== undefined) {
-    //         setGroupList(JSON.parse(res))
-    //         groups = JSON.parse(res)
-    //       }
-    //     })
-    //     .catch((error) => console.log(error))
+    useEffect(() => {
+        const getGroups = async () => {
+            await AsyncStorage.getItem('groups')
+                .then((res) => {
+                    if (res !== null || res !== undefined) {
+                        setGroupList(JSON.parse(res))
+                    }
+                })
+                .catch((err) => {
+                    console.log(err.message)
+                })
+        }
+        getGroups()
+    })
 
-    //   const hotspots = await getHotspots(groups)
+    useEffect(() => {
+        const getHotspots = async () => {
+            await AsyncStorage.getItem('hotspots')
+                .then((res) => {
+                    if (res !== null || res !== undefined) {
+                        setHotspotList(JSON.parse(res))
+                    }
+                })
+                .catch((err) => {
+                    console.log(err.message)
+                })
+        }
 
-    //   setHotspotList(hotspots)
-    // }, [])
-
-    // const getHotspots = async (groups) => {
-    //   return new Promise(async (resolve) => {
-    //     const hotspots = []
-    //     for (let group of groups) {
-    //       const docRef = doc(db, 'trackingGroups', group.id)
-    //       const docSnap = await getDoc(docRef)
-    //       if (docSnap.exists()) {
-    //         const groupData = docSnap.data()
-    //         const hotspot = groupData.hotspot
-    //         hotspots.push(...hotspot)
-    //       }
-    //     }
-
-    //     resolve(hotspots)
-    //   })
-    // }
-
-    //console.log(hotspotList)
+        getHotspots()
+    }, [])
 
     return (
         <View style={styles.container}>
@@ -70,16 +64,20 @@ const SettingScreen = () => {
                         title='Profile'
                         expanded={expanded}
                         onPress={handlePress}
+                        style={{ backgroundColor: '#f5f5f5' }}
+                        titleStyle={{ color: 'black' }}
                     >
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Phone Number :</Text>
-                            <Text style={{ fontSize: 16 }}>
-                                +91 {phoneNumber}
-                            </Text>
+                            <Text style={{ fontSize: 16 }}>{phoneNumber}</Text>
                         </View>
                     </List.Accordion>
 
-                    <List.Accordion title='Groups and Hotspots'>
+                    <List.Accordion
+                        title='Groups and Hotspots'
+                        style={{ backgroundColor: '#f5f5f5' }}
+                        titleStyle={{ color: 'black' }}
+                    >
                         <View style={styles.rowContainer}>
                             <Text style={{ fontSize: 16, marginRight: 10 }}>
                                 Your Groups
@@ -93,7 +91,7 @@ const SettingScreen = () => {
                             >
                                 {groupList.map((item, i) => (
                                     <View
-                                        key={i}
+                                        key={item._id}
                                         style={{
                                             display: 'flex',
                                             flexDirection: 'row',
@@ -122,7 +120,7 @@ const SettingScreen = () => {
                                 }}
                             >
                                 {hotspotList.map((item, i) => (
-                                    <View key={i}>
+                                    <View key={item._id}>
                                         <Text>
                                             {item.hotspotName}
                                             {i !== groupList.length - 1 && (
@@ -146,6 +144,7 @@ const styles = StyleSheet.create({
     container: {
         width: '100%',
         height: '100%',
+        backgroundColor: 'white',
     },
     mainContainer: {
         padding: 10,

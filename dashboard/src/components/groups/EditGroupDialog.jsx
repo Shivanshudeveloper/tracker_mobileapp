@@ -35,8 +35,10 @@ const EditGroupDialog = (props) => {
 
   const [startDay, setStartDay] = useState('Sunday')
   const [endDay, setEndDay] = useState('Saturday')
-  const [time, setTime] = useState(['10:00', '11:00'])
-
+  const [time, setTime] = useState({
+    startTime: new Date(),
+    endTime: new Date(),
+  })
   const admins = useSelector((state) => state.admins)
   const { adminList } = admins
 
@@ -47,10 +49,7 @@ const EditGroupDialog = (props) => {
       setGroupName(props.selectedGroup.groupName)
       setStartDay(props.selectedGroup.schedule.startDay)
       setEndDay(props.selectedGroup.schedule.endDay)
-      setTime([
-        props.selectedGroup.schedule.time.startTime,
-        props.selectedGroup.schedule.time.endTime,
-      ])
+      setTime(props.selectedGroup.schedule.time)
 
       const arr = props.selectedGroup.admins.map((x) => x._id)
       setSelectedAdmins(arr)
@@ -84,14 +83,12 @@ const EditGroupDialog = (props) => {
       schedule: {
         startDay,
         endDay,
-        time: {
-          startTime: time[0],
-          endTime: time[1],
-        },
+        time: time,
       },
     }
 
     dispatch(updateGroup(body))
+
     props.setOpen(false)
     setGroupName('')
     setSelectedAdmins([])
@@ -115,26 +112,28 @@ const EditGroupDialog = (props) => {
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
         />
-
-        <FormControl margin="normal" fullWidth variant="outlined">
-          <InputLabel id="admin">Select Admin</InputLabel>
-          <Select
-            labelId="admin"
-            label="Select Admin"
-            value={selectedAdmins}
-            onChange={handleChange}
-            multiple
-            renderValue={() => selectedAdminsNames.join(', ')}
-            MenuProps={MenuProps}
-          >
-            {adminList.map((item) => (
-              <MenuItem key={item._id} value={item._id}>
-                <Checkbox checked={selectedAdmins.indexOf(item._id) > -1} />
-                <ListItemText primary={item.fullName} />
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {props.subscription !== null &&
+          props.subscription.groupCount === Number.MAX_VALUE && (
+            <FormControl margin="normal" fullWidth variant="outlined">
+              <InputLabel id="admin">Select Admin</InputLabel>
+              <Select
+                labelId="admin"
+                label="Select Admin"
+                value={selectedAdmins}
+                onChange={handleChange}
+                multiple
+                renderValue={() => selectedAdminsNames.join(', ')}
+                MenuProps={MenuProps}
+              >
+                {adminList.map((item) => (
+                  <MenuItem key={item._id} value={item._id}>
+                    <Checkbox checked={selectedAdmins.indexOf(item._id) > -1} />
+                    <ListItemText primary={item.fullName} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
         <ScheduleForm
           startDay={startDay}

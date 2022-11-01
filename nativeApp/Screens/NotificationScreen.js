@@ -4,6 +4,8 @@ import {
     StyleSheet,
     TouchableWithoutFeedback,
     ScrollView,
+    Text,
+    ActivityIndicator,
 } from 'react-native'
 import { Subheading, Title, List, Divider, Avatar } from 'react-native-paper'
 import { Picker } from '@react-native-picker/picker'
@@ -24,7 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 const NotificationScreen = () => {
     const [menuVisible, setMenuVisible] = useState(false)
-    const [filter, setFilter] = useState('cpp')
+    const [loading, setLoading] = useState(false)
     const [notificationList, setNotficationList] = useState([])
 
     const openMenu = () => setMenuVisible(true)
@@ -32,9 +34,6 @@ const NotificationScreen = () => {
 
     const currentUser = auth.currentUser
     let { phoneNumber } = currentUser
-    phoneNumber = phoneNumber.slice(3)
-
-    console.log('here 1')
 
     const getTime = (sec) => {
         const str = moment(new Date(sec * 1000)).fromNow()
@@ -124,22 +123,38 @@ const NotificationScreen = () => {
             />
             <SafeAreaView style={styles.mainContainer}>
                 <TouchableWithoutFeedback onPress={() => markedAsRead()}>
-                    <Subheading style={styles.markAllText}>
-                        Mark all as Read
-                    </Subheading>
+                    <Text style={styles.markAllText}>Mark all as Read</Text>
                 </TouchableWithoutFeedback>
+                {loading && (
+                    <View
+                        style={{
+                            display: 'flex',
+                            marginVertical: 50,
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <ActivityIndicator
+                            animating={true}
+                            color='purple'
+                            size={30}
+                        />
+                    </View>
+                )}
                 <ScrollView style={styles.notificationContainer}>
-                    {notificationList.map((item, i) => (
+                    {notificationList.map((item) => (
                         <View key={item.id}>
                             <List.Item
                                 style={{ marginVertical: 5 }}
                                 title={item.message}
                                 titleStyle={{
                                     fontWeight: item.seen ? '500' : 'bold',
+                                    color: 'black',
                                 }}
                                 description={`${getTime(
                                     item.createdAt.seconds
                                 )} ago`}
+                                descriptionStyle={{ color: 'black' }}
                                 left={(props) => (
                                     <Avatar.Image
                                         {...props}
@@ -152,6 +167,18 @@ const NotificationScreen = () => {
                             />
                         </View>
                     ))}
+
+                    {notificationList.length === 0 && (
+                        <View style={styles.noNotificationContainer}>
+                            {!loading && (
+                                <Text
+                                    style={{ fontSize: 20, fontWeight: 'bold' }}
+                                >
+                                    No Notification
+                                </Text>
+                            )}
+                        </View>
+                    )}
                 </ScrollView>
             </SafeAreaView>
         </View>
@@ -185,6 +212,12 @@ const styles = StyleSheet.create({
     },
     notificationContainer: {
         marginTop: 10,
+    },
+    noNotificationContainer: {
+        marginTop: 10,
+        height: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 })
 

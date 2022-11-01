@@ -18,7 +18,7 @@ const AppBar = ({ title, onPress, menuVisible, closeMenu }) => {
   }
 
   return (
-    <Appbar.Header>
+    <Appbar.Header style={{ backgroundColor: '#007bff' }}>
       <Appbar.Content
         titleStyle={{ textTransform: 'uppercase' }}
         title={title}
@@ -28,15 +28,15 @@ const AppBar = ({ title, onPress, menuVisible, closeMenu }) => {
         onDismiss={closeMenu}
         anchor={
           <Appbar.Action
-            color='white'
-            icon='account-circle'
+            color="white"
+            icon="account-circle"
             onPress={onPress}
           />
         }
       >
-        <Menu.Item onPress={() => goToSettingPage()} title='Settings' />
+        <Menu.Item onPress={() => goToSettingPage()} title="Settings" />
         <Divider />
-        <Menu.Item onPress={() => logout()} title='Logout' />
+        <Menu.Item onPress={() => logout()} title="Logout" />
       </Menu>
     </Appbar.Header>
   )

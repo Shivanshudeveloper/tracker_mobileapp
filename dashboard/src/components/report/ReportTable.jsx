@@ -196,6 +196,7 @@ function Row(props) {
 }
 
 const ReportTable = (props) => {
+  console.log(props.tableData)
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -219,16 +220,49 @@ const ReportTable = (props) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {props.tableData.map((row) => (
-            <Row
-              key={row.phoneNumber}
-              row={row}
-              hotspotList={props.hotspotList}
-              selectedHotspots={props.selectedHotspots}
-              selectedGroups={props.selectedGroups}
-              selectedMonth={props.selectedMonth}
-            />
-          ))}
+          {props.tableData.length !== 0 &&
+            props.tableData.map((row) => (
+              <Row
+                key={row.phoneNumber}
+                row={row}
+                hotspotList={props.hotspotList}
+                selectedHotspots={props.selectedHotspots}
+                selectedGroups={props.selectedGroups}
+                selectedMonth={props.selectedMonth}
+              />
+            ))}
+
+          {props.tableData.length === 0 &&
+            props.deviceList.map((row) => (
+              <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+                <TableCell>
+                  <IconButton aria-label="expand row" size="small">
+                    <KeyboardArrowUpIcon />
+                  </IconButton>
+                </TableCell>
+                <TableCell component="th" scope="row">
+                  {row.fullName}
+                </TableCell>
+                <TableCell align="center">{row.phoneNumber}</TableCell>
+
+                {props.selectedHotspots.length === 0 &&
+                  props.hotspotList.map((x, i) => (
+                    <React.Fragment key={x.hotspot}>
+                      <TableCell key={x.hotspot} align="center">
+                        0
+                      </TableCell>
+                    </React.Fragment>
+                  ))}
+                {props.selectedHotspots.length !== 0 &&
+                  props.selectedHotspots.map((x, i) => (
+                    <React.Fragment key={x.hotspot}>
+                      <TableCell key={x.hotspot} align="center">
+                        0
+                      </TableCell>
+                    </React.Fragment>
+                  ))}
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </TableContainer>

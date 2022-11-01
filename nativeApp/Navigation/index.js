@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons'
-import {
-    NavigationContainer,
-    DefaultTheme,
-    DarkTheme,
-} from '@react-navigation/native'
+import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import Colors from '../constants/Colors'
@@ -20,7 +16,7 @@ import TrackerListScreen from '../Screens/TrackerListScreen'
 import { auth } from '../firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 
-const Navigation = ({ colorScheme }) => {
+const Navigation = () => {
     const [initializing, setInitializing] = useState(true)
     const [user, setUser] = useState()
 
@@ -35,18 +31,14 @@ const Navigation = ({ colorScheme }) => {
 
     if (!user) {
         return (
-            <NavigationContainer
-                theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-            >
+            <NavigationContainer>
                 <AuthNavigator />
             </NavigationContainer>
         )
     }
 
     return (
-        <NavigationContainer
-            theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-        >
+        <NavigationContainer>
             <RootNavigator />
         </NavigationContainer>
     )
@@ -106,11 +98,14 @@ const BottomTabNavigator = () => {
         <BottomTab.Navigator
             initialRouteName='Home'
             screenOptions={{
-                tabBarShowLabel: false,
                 tabBarActiveTintColor: Colors[colorScheme].tint,
                 tabBarStyle: {
                     paddingVertical: 10,
                     height: 55,
+                    paddingBottom: 3,
+                },
+                tabBarLabelStyle: {
+                    fontWeight: 'bold',
                 },
             }}
         >
@@ -125,6 +120,7 @@ const BottomTabNavigator = () => {
                             <IonIconIcon name='home' color='#007fff' />
                         </>
                     ),
+                    tabBarLabel: 'Home',
                 }}
             />
             <BottomTab.Screen
@@ -132,9 +128,10 @@ const BottomTabNavigator = () => {
                 component={NotificationScreen}
                 options={{
                     headerShown: false,
-                    tabBarIcon: ({ color }) => (
+                    tabBarIcon: () => (
                         <IonIconIcon name='notifications' color='#007fff' />
                     ),
+                    tabBarLabel: 'Notifications',
                 }}
             />
             <BottomTab.Screen
@@ -143,7 +140,7 @@ const BottomTabNavigator = () => {
                 options={{
                     headerShown: false,
                     title: 'Location History',
-                    tabBarIcon: ({ color }) => (
+                    tabBarIcon: () => (
                         <FontAwesome5
                             style={{ marginBottom: -3 }}
                             name='map-marked-alt'
@@ -151,6 +148,7 @@ const BottomTabNavigator = () => {
                             color='#007fff'
                         />
                     ),
+                    tabBarLabel: 'History',
                 }}
             />
         </BottomTab.Navigator>

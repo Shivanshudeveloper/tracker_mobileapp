@@ -1,19 +1,16 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogActions,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  Button,
+  TextField,
 } from '@mui/material'
-import TimeRangePicker from '@wojtekmaj/react-timerange-picker'
-import { db } from '../../Firebase/index'
-import { doc, setDoc } from 'firebase/firestore'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { TimePicker } from '@mui/x-date-pickers/TimePicker'
+import { useEffect } from 'react'
 
 const ScheduleForm = (props) => {
   const week = [
@@ -70,14 +67,29 @@ const ScheduleForm = (props) => {
           display: 'flex',
           mb: 2,
           mt: 3,
+          gap: 2,
         }}
       >
-        <TimeRangePicker
-          disableClock={true}
-          onChange={props.setTime}
-          value={props.time}
-          rangeDivider="-- to --"
-        />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <TimePicker
+            label="Start Time"
+            value={props.time.startTime}
+            onChange={(newValue) => {
+              props.setTime({ ...props.time, startTime: newValue })
+            }}
+            renderInput={(params) => <TextField {...params} />}
+          />
+        </LocalizationProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <TimePicker
+            label="End Time"
+            value={props.time.endTime}
+            onChange={(newValue) => {
+              props.setTime({ ...props.time, endTime: newValue })
+            }}
+            renderInput={(params) => <TextField {...params} />}
+          />
+        </LocalizationProvider>
       </Box>
     </Box>
   )

@@ -16,11 +16,9 @@ const LocationHistoryScreen = () => {
     const closeMenu = () => setMenuVisible(false)
 
     let { phoneNumber } = auth.currentUser
-    phoneNumber = phoneNumber.slice(3)
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log('Here')
             try {
                 setLoading(true)
                 const { data } = await axios.get(
@@ -37,14 +35,21 @@ const LocationHistoryScreen = () => {
     }, [])
 
     return (
-        <SafeAreaView style={{ paddingBottom: 90 }}>
+        <SafeAreaView
+            style={{
+                paddingBottom: 90,
+                backgroundColor: 'white',
+                height: '100%',
+                minWidth: '100%',
+            }}
+        >
             <AppBar
                 onPress={openMenu}
                 closeMenu={closeMenu}
                 title='Location History'
                 menuVisible={menuVisible}
             />
-            {loading ? (
+            {loading && (
                 <View
                     style={{
                         display: 'flex',
@@ -59,41 +64,68 @@ const LocationHistoryScreen = () => {
                         size={30}
                     />
                 </View>
-            ) : (
+            )}
+            {history.length !== 0 ? (
                 <ScrollView
                     style={{ paddingHorizontal: 10, paddingBottom: 50 }}
                 >
                     <ScrollView horizontal>
                         <DataTable>
                             <DataTable.Header>
-                                <DataTable.Title>Date</DataTable.Title>
-                                <DataTable.Title numeric>
-                                    Address
+                                <DataTable.Title>
+                                    <Text style={{ color: 'gray' }}>Date</Text>
                                 </DataTable.Title>
                                 <DataTable.Title numeric>
-                                    Hotspot
+                                    <Text style={{ color: 'gray' }}>
+                                        Address
+                                    </Text>
+                                </DataTable.Title>
+                                <DataTable.Title numeric>
+                                    <Text style={{ color: 'gray' }}>Group</Text>
                                 </DataTable.Title>
                             </DataTable.Header>
                             {history.map((x, i) => (
                                 <DataTable.Row key={i}>
                                     <DataTable.Cell style={{ marginRight: 10 }}>
-                                        {moment(x.createdAt).format(
-                                            'DD-MMM-YYYY, hh:mm'
-                                        )}
+                                        <Text style={{ color: 'black' }}>
+                                            {moment(x.createdAt).format(
+                                                'DD-MMM-YYYY, hh:mm'
+                                            )}
+                                        </Text>
                                     </DataTable.Cell>
                                     <DataTable.Cell
                                         style={{ marginHorizontal: 10 }}
                                     >
-                                        {x.address}
+                                        <Text style={{ color: 'black' }}>
+                                            {x.address}
+                                        </Text>
                                     </DataTable.Cell>
                                     <DataTable.Cell style={{ marginLeft: 10 }}>
-                                        {x.hotspot.hotspotName}
+                                        {x.group && (
+                                            <Text style={{ color: 'black' }}>
+                                                {x.group.groupName}
+                                            </Text>
+                                        )}
                                     </DataTable.Cell>
                                 </DataTable.Row>
                             ))}
                         </DataTable>
                     </ScrollView>
                 </ScrollView>
+            ) : (
+                <View
+                    style={{
+                        height: 200,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    {!loading && (
+                        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>
+                            No History Found
+                        </Text>
+                    )}
+                </View>
             )}
         </SafeAreaView>
     )
